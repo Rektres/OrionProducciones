@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-surface text-text font-inter;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bebas tracking-wide;
+  }
+}
+
+@layer components {
+  .gradient-primary {
+    @apply bg-gradient-to-r from-primary via-primary to-tertiary;
+  }
+
+  .gradient-warm {
+    @apply bg-gradient-to-r from-secondary to-primary;
+  }
+
+  .gradient-overlay {
+    @apply bg-gradient-to-t from-surface via-surface/50 to-transparent;
+  }
+
+  .card-glass {
+    @apply bg-card/80 backdrop-blur-xl border border-border rounded-lg;
+  }
+
+  .btn-primary {
+    @apply px-6 py-3 rounded-lg font-medium transition-all duration-300 gradient-primary text-white hover:shadow-lg hover:shadow-primary/50;
+  }
+
+  .btn-outline {
+    @apply px-6 py-3 rounded-lg font-medium border-2 border-primary text-primary hover:bg-primary/10 transition-all duration-300;
+  }
+
+  .section-title {
+    @apply text-4xl md:text-6xl font-bebas tracking-wider mb-8;
+  }
+}
