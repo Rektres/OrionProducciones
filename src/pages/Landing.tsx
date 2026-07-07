@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -20,6 +20,13 @@ export const Landing = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!loading && location.hash === '#cotizacion') {
+      document.getElementById('cotizacion')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [loading, location.hash]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -247,7 +254,7 @@ export const Landing = () => {
       </section>
 
       {/* CTA Section */}
-      <section id="cotizacion" className="py-20 gradient-primary">
+      <section id="cotizacion" className="py-20 bg-gradient-to-b from-surface via-tertiary/10 to-surface">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <FadeInUp>
             <h2 className="text-4xl md:text-6xl font-bebas text-white mb-6">

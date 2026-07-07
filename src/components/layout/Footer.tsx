@@ -88,7 +88,7 @@ export const Footer = () => {
 
         <div className="border-t border-border pt-8">
           <p className="text-center text-sm text-muted">
-            © 2025 Todos los derechos reservados | Desarrollado por Mateo Araneda Medina
+            © 2026 Todos los derechos reservados | Desarrollado por Mateo Araneda Medina
           </p>
         </div>
       </div>
