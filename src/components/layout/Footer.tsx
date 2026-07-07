@@ -1,4 +1,5 @@
-import { Mail, MapPin, Phone } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { MapPin, Phone } from 'lucide-react';
 
 const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '56944830378';
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
@@ -20,24 +21,24 @@ export const Footer = () => {
             <h4 className="font-grotesk font-semibold text-text mb-4">Sitio</h4>
             <ul className="space-y-2 text-sm text-muted">
               <li>
-                <a href="/" className="hover:text-primary transition-colors">
+                <Link to="/" className="hover:text-primary transition-colors">
                   Inicio
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/servicios" className="hover:text-primary transition-colors">
+                <Link to="/servicios" className="hover:text-primary transition-colors">
                   Servicios
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/portafolio" className="hover:text-primary transition-colors">
+                <Link to="/portafolio" className="hover:text-primary transition-colors">
                   Portafolio
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/blog" className="hover:text-primary transition-colors">
+                <Link to="/blog" className="hover:text-primary transition-colors">
                   Blog
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import { Navbar, Footer, WhatsAppButton } from '@/components/layout';
 import { FadeInUp, ParticleBackground } from '@/components/animations';
@@ -97,7 +97,7 @@ export const BlogLista = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {posts.map((post) => (
               <FadeInUp key={post.id}>
-                <a href={`/blog/${post.slug}`}>
+                <Link to={`/blog/${post.slug}`}>
                   <Card className="h-full overflow-hidden cursor-pointer group">
                     <div
                       className="w-full h-48 bg-cover bg-center mb-4 rounded group-hover:scale-110 transition-transform duration-300"
@@ -125,7 +125,7 @@ export const BlogLista = () => {
                       Leer más →
                     </p>
                   </Card>
-                </a>
+                </Link>
               </FadeInUp>
             ))}
           </div>
@@ -150,6 +150,7 @@ export const BlogLista = () => {
 
 export const BlogDetalle = () => {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -222,7 +223,7 @@ export const BlogDetalle = () => {
         <div className="bg-card border border-border rounded-lg p-8 text-center">
           <h3 className="text-2xl font-bebas text-primary mb-4">¿Interesado en trabajar juntos?</h3>
           <p className="text-muted mb-6">Cuéntanos tu idea y haremos magia</p>
-          <Button onClick={() => window.location.href = '/#cotizacion'}>
+          <Button onClick={() => navigate('/#cotizacion')}>
             Solicitar cotización
           </Button>
         </div>

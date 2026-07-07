@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Menu, X, Zap } from 'lucide-react';
 import { Button } from '@/components/ui';
@@ -30,25 +31,20 @@ export const Navbar = () => {
       transition={{ duration: 0.3 }}
     >
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-        <motion.a
-          href="/"
-          className="flex items-center gap-2 font-bebas text-2xl"
-          whileHover={{ scale: 1.05 }}
-        >
+        <Link to="/" className="flex items-center gap-2 font-bebas text-2xl">
           <Zap className="text-primary" size={28} />
           <span className="text-primary">ORION</span>
-        </motion.a>
+        </Link>
 
         <div className="hidden md:flex gap-8 items-center">
           {navLinks.map((link) => (
-            <motion.a
+            <Link
               key={link.href}
-              href={link.href}
+              to={link.href}
               className="text-text hover:text-primary transition-colors font-grotesk"
-              whileHover={{ scale: 1.05 }}
             >
               {link.label}
-            </motion.a>
+            </Link>
           ))}
           <Button
             onClick={() => {
@@ -78,14 +74,14 @@ export const Navbar = () => {
         >
           <div className="flex flex-col gap-4 px-4 py-6">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.href}
-                href={link.href}
+                to={link.href}
                 className="text-text hover:text-primary transition-colors"
                 onClick={() => setIsOpen(false)}
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
             <Button fullWidth className="w-full">
               Cotiza

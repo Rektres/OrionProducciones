@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Navbar, Footer, WhatsAppButton } from '@/components/layout';
 import { FadeInUp, ParticleBackground } from '@/components/animations';
 import { Button, Card, Badge } from '@/components/ui';
-import { ContactForm } from '@/components/shared/ContactForm';
 import { portafolioService } from '@/services/portafolio.service';
 import { Evento, EventoTipo } from '@/types';
 import Masonry from 'react-masonry-css';
@@ -103,7 +102,7 @@ export const PortafolioLista = () => {
           >
             {filteredEventos.map((evento) => (
               <FadeInUp key={evento.id}>
-                <a href={`/portafolio/${evento.slug}`}>
+                <Link to={`/portafolio/${evento.slug}`}>
                   <Card className="overflow-hidden cursor-pointer h-64">
                     <div
                       className="w-full h-full bg-cover bg-center relative group-hover:scale-105 transition-transform"
@@ -120,7 +119,7 @@ export const PortafolioLista = () => {
                       </div>
                     </div>
                   </Card>
-                </a>
+                </Link>
               </FadeInUp>
             ))}
           </Masonry>
@@ -134,6 +133,7 @@ export const PortafolioLista = () => {
 
 export const PortafolioDetalle = () => {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const [evento, setEvento] = useState<Evento | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -237,7 +237,7 @@ export const PortafolioDetalle = () => {
           <div className="bg-card border border-border rounded-lg p-8 text-center">
             <h3 className="text-2xl font-bebas text-primary mb-4">¿Quieres un evento así?</h3>
             <p className="text-muted mb-6">Cuéntanos tu idea y crearemos algo especial</p>
-            <Button onClick={() => window.location.href = '/#cotizacion'}>
+            <Button onClick={() => navigate('/#cotizacion')}>
               Solicitar cotización
             </Button>
           </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -18,6 +19,7 @@ export const Landing = () => {
   const [eventosDestacados, setEventosDestacados] = useState<Evento[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadData = async () => {
@@ -83,7 +85,7 @@ export const Landing = () => {
 
           <FadeInUp delay={0.4}>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-              <Button onClick={() => window.location.href = '/portafolio'}>
+              <Button onClick={() => navigate('/portafolio')}>
                 Ver Portafolio
               </Button>
               <Button
@@ -176,7 +178,7 @@ export const Landing = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
             {eventosDestacados.slice(0, 4).map((evento, idx) => (
               <FadeInUp key={evento.id} delay={idx * 0.1}>
-                <a href={`/portafolio/${evento.slug}`}>
+                <Link to={`/portafolio/${evento.slug}`}>
                   <Card className="h-72 overflow-hidden group cursor-pointer">
                     <div
                       className="w-full h-full bg-cover bg-center relative group-hover:scale-105 transition-transform duration-300"
@@ -195,13 +197,13 @@ export const Landing = () => {
                       </div>
                     </div>
                   </Card>
-                </a>
+                </Link>
               </FadeInUp>
             ))}
           </div>
 
           <div className="text-center">
-            <Button onClick={() => (window.location.href = '/portafolio')} variant="outline">
+            <Button onClick={() => navigate('/portafolio')} variant="outline">
               Ver todo el portafolio
             </Button>
           </div>
@@ -219,7 +221,7 @@ export const Landing = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {posts.map((post, idx) => (
                 <FadeInUp key={post.id} delay={idx * 0.1}>
-                  <a href={`/blog/${post.slug}`}>
+                  <Link to={`/blog/${post.slug}`}>
                     <Card className="h-full overflow-hidden group cursor-pointer">
                       <div
                         className="w-full h-48 bg-cover bg-center mb-4 rounded group-hover:scale-110 transition-transform duration-300"
@@ -236,7 +238,7 @@ export const Landing = () => {
                       <p className="text-sm text-muted line-clamp-2">{post.extracto}</p>
                       <p className="text-xs text-muted mt-4">Leer más →</p>
                     </Card>
-                  </a>
+                  </Link>
                 </FadeInUp>
               ))}
             </div>
