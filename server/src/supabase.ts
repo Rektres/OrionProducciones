@@ -8,6 +8,7 @@ if (!url || !secretKey) {
 }
 
 // Cliente admin (secret key): bypassea RLS. Cada query DEBE filtrar contenido publicado.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- sin tipos de DB generados
 export const supabase = createAdminClient<any>({
   env: {
     url,
