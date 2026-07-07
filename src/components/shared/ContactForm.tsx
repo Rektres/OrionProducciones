@@ -18,6 +18,8 @@ export const ContactForm = () => {
     presupuesto_estimado: '',
   });
 
+  const hoy = new Date().toISOString().split('T')[0];
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
@@ -157,7 +159,8 @@ export const ContactForm = () => {
             name="fecha_estimada"
             value={formData.fecha_estimada}
             onChange={handleChange}
-            className="w-full bg-card border border-border rounded-lg px-4 py-2 text-text focus:outline-none focus:border-primary transition-colors"
+            min={hoy}
+            className="w-full bg-card border border-border rounded-lg px-4 py-2 text-text focus:outline-none focus:border-primary transition-colors [color-scheme:dark]"
           />
         </div>
       </div>

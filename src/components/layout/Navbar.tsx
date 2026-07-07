@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Menu, X, Zap } from 'lucide-react';
 import { Button } from '@/components/ui';
@@ -14,6 +14,7 @@ const navLinks = [
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -46,13 +47,7 @@ export const Navbar = () => {
               {link.label}
             </Link>
           ))}
-          <Button
-            onClick={() => {
-              document.querySelector('#cotizacion')?.scrollIntoView({
-                behavior: 'smooth',
-              });
-            }}
-          >
+          <Button onClick={() => navigate('/#cotizacion')}>
             Cotiza
           </Button>
         </div>
@@ -83,7 +78,13 @@ export const Navbar = () => {
                 {link.label}
               </Link>
             ))}
-            <Button fullWidth className="w-full">
+            <Button
+              className="w-full"
+              onClick={() => {
+                setIsOpen(false);
+                navigate('/#cotizacion');
+              }}
+            >
               Cotiza
             </Button>
           </div>
