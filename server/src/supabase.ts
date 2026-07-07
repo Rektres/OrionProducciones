@@ -1,13 +1,19 @@
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@supabase/server/core';
 
 const url = process.env.SUPABASE_URL;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const secretKey = process.env.SUPABASE_SECRET_KEY;
 
-if (!url || !serviceRoleKey) {
-  throw new Error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en el entorno');
+if (!url || !secretKey) {
+  throw new Error('Faltan SUPABASE_URL o SUPABASE_SECRET_KEY en el entorno');
 }
 
-// service_role bypassea RLS: cada query DEBE filtrar contenido publicado explicitamente.
-export const supabase = createClient(url, serviceRoleKey, {
-  auth: { persistSession: false, autoRefreshToken: false },
+// Cliente admin (secret key): bypassea RLS. Cada query DEBE filtrar contenido publicado.
+export const supabase = createAdminClient<any>({
+  env: {
+    url,
+    secretKeys: { default: secretKey },
+  },
+  supabaseOptions: {
+    auth: { persistSession: false, autoRefreshToken: false },
+  },
 });
