@@ -1,0 +1,29 @@
+:root {
+  --orion-primary: #ff3d6b;
+  --orion-secondary: #ffb800;
+  --orion-tertiary: #6b2ffa;
+}
+
+body {
+  background-color: #0a0a0f;
+  color: #f8f8ff;
+}
+
+.text-orion-primary { color: var(--orion-primary) !important; }
+.bg-orion-primary { background-color: var(--orion-primary) !important; }
+.btn-orion {
+  background: linear-gradient(90deg, var(--orion-primary), var(--orion-tertiary));
+  color: #fff;
+  border: none;
+}
+.btn-orion:hover { color: #fff; opacity: 0.9; }
+
+.cotiza-section {
+  background: linear-gradient(180deg, #0a0a0f, rgba(107, 47, 250, 0.12), #0a0a0f);
+}
+
+.card-cover {
+  height: 16rem;
+  background-size: cover;
+  background-position: center;
+}

@@ -1,130 +1,97 @@
-# Orion — Productora de Eventos
+# Orion — Stack Django REST + Express BFF + Vue (rama `migracion-django-vue`)
 
-Sitio web de **Orion**, productora de eventos (Chile). SPA en React + TypeScript + Vite que consume contenido desde Supabase (servicios, portafolio, blog) y permite enviar cotizaciones. Incluye un API opcional en Node/Express.
+Migración del sitio de Orion (productora de eventos) a un stack de 3 servicios:
 
-## Stack
+```
+Vue 3 SPA (Bootstrap, TS)  →  Express BFF (TS)  →  Django REST (DRF)  →  Supabase Postgres
+      frontend-vue/               bff-express/         backend-django/
+   GitHub Pages (estático)        Render/Railway       Render/Railway
+```
 
-- **React 18** + **TypeScript** + **Vite**
-- **Tailwind CSS** (tema oscuro, paleta custom) + **Framer Motion** (animaciones)
-- **Supabase** (Postgres + RLS) como backend
-- **React Router v7**, **Lucide** (iconos), **DOMPurify** (sanitización de HTML del blog)
-- API opcional: **Express** + TypeScript (`tsx`)
+- **frontend-vue/** — Vue 3 + TypeScript + Vite + Bootstrap 5. SPA que consume el BFF.
+- **bff-express/** — Express + TypeScript. Gateway/proxy fino hacia Django.
+- **backend-django/** — Django REST Framework. Único dueño del esquema (ORM) sobre Supabase Postgres.
+- **Supabase** se usa solo como base de datos Postgres (sin supabase-js ni RLS; el acceso lo controla el API).
+
+Dominio en **español** (tablas/campos/slugs).
 
 ## Requisitos
 
-- **Node.js 18+** y npm.
-  > En este equipo Node está en `C:\Users\mateo.araneda\node` (ya agregado al PATH de usuario). Si `npm` no se reconoce en una terminal nueva, ciérrala y abre otra, o usa la ruta completa `C:\Users\mateo.araneda\node\npm`.
-- Un proyecto **Supabase** con sus credenciales (Project URL + anon/publishable key; service_role solo si usas el API).
+- **Python 3.12+** (probado con 3.14). En este equipo está en `C:\Users\mateo.araneda\AppData\Local\Programs\Python\Python314`.
+- **Node 20+** (en este equipo en `C:\Users\mateo.araneda\node`, ya en PATH).
+- Cadena de conexión de **Supabase Postgres** con password.
 
-## Estructura
+## Variables de entorno
 
+Cada servicio tiene su `.env.example`. Copiar a `.env` y completar.
+
+### backend-django/.env
 ```
-.
-├── src/                      # Frontend (React)
-│   ├── components/           # ui/ (Button, Card, Modal, Badge), layout/, animations/, shared/
-│   ├── pages/                # Landing, Servicios, Portafolio, Blog
-│   ├── services/             # Acceso a Supabase (servicios, portafolio, blog, contacto)
-│   ├── lib/supabase.ts       # Cliente Supabase del frontend
-│   └── types/                # Tipos TypeScript
-├── server/                   # API Node/Express (opcional)
-│   ├── src/routes/           # servicios, portafolio, blog, cotizaciones
-│   └── src/supabase.ts       # Cliente Supabase del API (service_role)
-├── supabase/migrations/      # Esquema + datos iniciales (SQL)
-└── index.html
+DATABASE_URL=postgresql://postgres.<ref>:<PASSWORD>@aws-0-<region>.pooler.supabase.com:6543/postgres?sslmode=require
+DJANGO_SECRET_KEY=<algo-largo-y-aleatorio>
+DEBUG=True
+CORS_ALLOWED_ORIGINS=http://localhost:3001
+ALLOWED_HOSTS=localhost,127.0.0.1
 ```
+La cadena se obtiene en Supabase → **Settings → Database → Connection string → URI** (usar el **pooler**, puerto 6543).
 
-## Configuración de variables de entorno
-
-### Frontend — `.env` en la raíz
-
-```env
-VITE_SUPABASE_URL=https://xxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=tu_anon_o_publishable_key
-VITE_WHATSAPP_NUMBER=56944830378
+### bff-express/.env
 ```
-
-Las credenciales se obtienen en Supabase → **Settings → API** (`Project URL` y `anon public key`). El frontend **no arranca** si faltan `VITE_SUPABASE_URL` o `VITE_SUPABASE_ANON_KEY`.
-
-### API (opcional) — `server/.env`
-
-Copia `server/.env.example` y complétalo:
-
-```env
-SUPABASE_URL=https://xxxxx.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
+DJANGO_API_URL=http://localhost:8000
 PORT=3001
-ALLOWED_ORIGINS=http://localhost:5173
+ALLOWED_ORIGINS=http://localhost:5173,https://rektres.github.io
 ```
 
-> La `service_role` key **nunca** debe exponerse al cliente ni ir en variables `VITE_*`. Ambos `.env` están en `.gitignore`.
+### frontend-vue/.env
+```
+VITE_API_URL=http://localhost:3001/api
+VITE_WHATSAPP_NUMBER=56944830378
+VITE_BASE=/
+```
 
-## Correr en local
+## Levantar en local (3 terminales)
 
-### Frontend
-
+### 1. Django (API de datos) — puerto 8000
 ```bash
-npm install
-npm run dev          # http://localhost:5173
+cd backend-django
+python -m venv .venv
+.venv\Scripts\activate           # Windows (macOS/Linux: source .venv/bin/activate)
+pip install -r requirements.txt
+# Con DATABASE_URL configurado en .env:
+python manage.py migrate --fake-initial   # adopta las tablas existentes sin recrearlas
+python manage.py runserver 8000
 ```
 
-### API (opcional, en otra terminal)
-
+### 2. Express BFF — puerto 3001
 ```bash
-cd server
+cd bff-express
 npm install
-npm run dev          # http://localhost:3001
+npm run dev
 ```
 
-Abre **http://localhost:5173** en el navegador. El sitio funciona solo con el frontend (habla directo a Supabase); el API es aditivo.
+### 3. Vue SPA — puerto 5173
+```bash
+cd frontend-vue
+npm install
+npm run dev
+```
 
-## Scripts
+Abrir **http://localhost:5173**.
 
-### Frontend (raíz)
+## Endpoints del API (Django, bajo `/api/`)
 
-| Comando | Descripción |
-|---|---|
-| `npm run dev` | Servidor de desarrollo (Vite) |
-| `npm run build` | Build de producción a `dist/` |
-| `npm run preview` | Sirve el build |
-| `npm run lint` | ESLint |
-| `npm run typecheck` | Chequeo de tipos (`tsc`) |
+`categorias-servicio/` · `servicios/?categoria=<slug>` · `servicios/<id>/` · `evento-tipos/` · `eventos/?tipo=<slug>&destacado=<bool>` · `eventos/<slug>/` · `eventos/<id>/fotos/` · `posts/?tag=<slug>&limit=&offset=` · `posts/<slug>/` · `tags/` · `POST cotizaciones/`
 
-### API (`server/`)
-
-| Comando | Descripción |
-|---|---|
-| `npm run dev` | API en watch mode |
-| `npm start` | Levanta el API |
-| `npm run typecheck` | Chequeo de tipos |
-
-## Rutas del sitio
-
-- `/` — Landing
-- `/servicios` — Servicios con filtros
-- `/portafolio` y `/portafolio/:slug` — Portafolio y detalle
-- `/blog` y `/blog/:slug` — Blog y artículo
-
-## Endpoints del API
-
-- `GET /health`
-- `GET /api/servicios/categorias`, `GET /api/servicios?categoria=<slug>`, `GET /api/servicios/:id`
-- `GET /api/portafolio/tipos`, `GET /api/portafolio/eventos?tipo=&destacado=`, `GET /api/portafolio/eventos/:slug`, `GET /api/portafolio/eventos/:id/fotos`
-- `GET /api/blog/posts?limit=&offset=&tag=`, `GET /api/blog/posts/:slug`, `GET /api/blog/tags`
-- `POST /api/cotizaciones`
-
-## Base de datos
-
-El esquema y los datos iniciales están en `supabase/migrations/`. Todas las tablas tienen **RLS** habilitado: lectura pública solo de contenido publicado, e inserción pública únicamente en `cotizaciones`. Para cambiar el esquema, agrega una **nueva migración** (no edites las existentes).
+El BFF expone las mismas rutas en `http://localhost:3001/api/...` (proxy).
 
 ## Deploy
 
-Build estático (`npm run build`) desplegable en Vercel o Netlify. Configura las variables `VITE_*` en el dashboard del host.
+- **Vue → GitHub Pages**: build con `VITE_BASE=/OrionProducciones/` y `VITE_API_URL=<URL pública del BFF>`; copiar `dist/index.html` a `404.html`; publicar `frontend-vue/dist`.
+- **Django + Express → Render/Railway**: cada uno como servicio web. Variables de entorno (incl. `DATABASE_URL`, secretos) en el panel. `CORS_ALLOWED_ORIGINS`/`ALLOWED_ORIGINS` deben incluir `https://rektres.github.io`. Django en prod con `gunicorn orion_api.wsgi`.
 
 ## Notas
 
-- El proyecto respeta `prefers-reduced-motion` (accesibilidad).
-- ⚠️ Si trabajas dentro de OneDrive y falla con *"Failed to load /src/main.tsx"*, corre `git restore src` (OneDrive puede mover/eliminar archivos). Se recomienda mover el proyecto fuera de OneDrive.
-
----
-
-Desarrollado por Mateo Araneda Medina.
+- 🔐 `DATABASE_URL` incluye password → solo en `.env` (git-ignored) o en el panel del host. Nunca en el front.
+- Django conecta como rol privilegiado ⇒ RLS no protege: cada endpoint de lectura filtra contenido publicado (`activo`/`publicado`/`estado='publicado'`).
+- `--fake-initial` adopta las tablas ya existentes en Supabase sin recrearlas (preserva los datos seed).
+- El app React original permanece en la rama `main` como referencia.
