@@ -119,7 +119,7 @@ export const Servicios = () => {
         </div>
       </section>
 
-      <section id="cotizacion-servicios" className="py-20 gradient-primary">
+      <section id="cotizacion-servicios" className="py-20 bg-gradient-to-b from-surface via-tertiary/10 to-surface">
         <div className="max-w-4xl mx-auto px-4">
           <FadeInUp>
             <h2 className="text-4xl font-bebas text-white mb-6 text-center">
