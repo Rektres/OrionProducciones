@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
 import ContactForm from '@/components/ContactForm.vue';
+import FadeInUp from '@/components/animations/FadeInUp.vue';
+import ParticleBackground from '@/components/animations/ParticleBackground.vue';
 import { serviciosService } from '@/services/servicios';
 import type { Servicio, CategoriaServicio } from '@/types';
 
@@ -21,8 +23,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="py-5 text-center">
-    <div class="container">
+  <section class="py-5 text-center position-relative overflow-hidden">
+    <ParticleBackground />
+    <div class="container position-relative" style="z-index: 1">
       <h1 class="display-4 fw-bold">SERVICIOS</h1>
       <p class="text-secondary">Lo que hacemos para tu evento</p>
     </div>
@@ -38,13 +41,15 @@ onMounted(async () => {
         </button>
       </div>
       <div class="row g-4">
-        <div v-for="svc in filtrados" :key="svc.id" class="col-md-6 col-lg-4">
-          <div class="card h-100 bg-dark border-secondary">
-            <div class="card-body">
-              <h5 class="card-title">{{ svc.nombre }}</h5>
-              <p class="card-text text-secondary small">{{ svc.descripcion_corta }}</p>
+        <div v-for="(svc, idx) in filtrados" :key="svc.id" class="col-md-6 col-lg-4">
+          <FadeInUp :delay="idx * 0.05">
+            <div class="card h-100 bg-dark border-secondary">
+              <div class="card-body">
+                <h5 class="card-title">{{ svc.nombre }}</h5>
+                <p class="card-text text-secondary small">{{ svc.descripcion_corta }}</p>
+              </div>
             </div>
-          </div>
+          </FadeInUp>
         </div>
       </div>
     </div>
