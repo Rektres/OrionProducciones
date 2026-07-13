@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
+import FadeInUp from '@/components/animations/FadeInUp.vue';
+import ParticleBackground from '@/components/animations/ParticleBackground.vue';
 import { blogService } from '@/services/blog';
 import type { Post, Tag } from '@/types';
 
@@ -27,8 +29,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="py-5 text-center">
-    <div class="container">
+  <section class="py-5 text-center position-relative overflow-hidden">
+    <ParticleBackground />
+    <div class="container position-relative" style="z-index: 1">
       <h1 class="display-4 fw-bold">EL BLOG</h1>
       <p class="text-secondary">Consejos, tendencias e insights del equipo Orion</p>
     </div>
@@ -45,15 +48,17 @@ onMounted(async () => {
       </div>
       <div class="row g-4">
         <div v-for="p in posts" :key="p.id" class="col-md-4">
-          <RouterLink :to="`/blog/${p.slug}`" class="text-decoration-none">
-            <div class="card h-100 bg-dark border-secondary">
-              <div class="card-cover" style="height: 12rem" :style="{ backgroundImage: `url('${p.imagen_destacada}')` }"></div>
-              <div class="card-body">
-                <h6 class="card-title">{{ p.titulo }}</h6>
-                <p class="card-text text-secondary small">{{ p.extracto }}</p>
+          <FadeInUp>
+            <RouterLink :to="`/blog/${p.slug}`" class="text-decoration-none">
+              <div class="card h-100 bg-dark border-secondary">
+                <div class="card-cover" style="height: 12rem" :style="{ backgroundImage: `url('${p.imagen_destacada}')` }"></div>
+                <div class="card-body">
+                  <h6 class="card-title">{{ p.titulo }}</h6>
+                  <p class="card-text text-secondary small">{{ p.extracto }}</p>
+                </div>
               </div>
-            </div>
-          </RouterLink>
+            </RouterLink>
+          </FadeInUp>
         </div>
       </div>
     </div>

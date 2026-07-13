@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -10,10 +11,15 @@ const links = [
 ];
 
 const irCotizar = () => router.push({ path: '/', hash: '#cotizacion' });
+
+const scrolled = ref(false);
+const onScroll = () => { scrolled.value = window.scrollY > 20; };
+onMounted(() => window.addEventListener('scroll', onScroll));
+onBeforeUnmount(() => window.removeEventListener('scroll', onScroll));
 </script>
 
 <template>
-  <nav class="navbar navbar-expand-md fixed-top" style="background: rgba(10, 10, 15, 0.95)">
+  <nav class="navbar navbar-expand-md fixed-top navbar-orion" :class="{ 'navbar-orion-scrolled': scrolled }">
     <div class="container">
       <RouterLink class="navbar-brand" to="/">
         <img src="/logo.png" alt="Orión Stage" height="40" />

@@ -2,6 +2,8 @@
 import { onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import ContactForm from '@/components/ContactForm.vue';
+import FadeInUp from '@/components/animations/FadeInUp.vue';
+import ParticleBackground from '@/components/animations/ParticleBackground.vue';
 import { serviciosService } from '@/services/servicios';
 import { portafolioService } from '@/services/portafolio';
 import { blogService } from '@/services/blog';
@@ -32,25 +34,34 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="py-5 text-center">
-    <div class="container py-5">
-      <h1 class="display-3 fw-bold">CREAMOS EXPERIENCIAS<br /><span class="text-orion-primary">INOLVIDABLES</span></h1>
-      <p class="lead text-secondary mx-auto mt-3" style="max-width: 640px">
-        Desde lo corporativo hasta lo más social. Orion transforma tus ideas en realidad.
-      </p>
-      <div class="d-flex gap-3 justify-content-center mt-4">
-        <RouterLink to="/portafolio" class="btn btn-orion btn-lg">Ver Portafolio</RouterLink>
-        <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-outline-light btn-lg">Cotiza tu evento</RouterLink>
-      </div>
+  <section class="py-5 text-center position-relative overflow-hidden">
+    <ParticleBackground />
+    <div class="container py-5 position-relative" style="z-index: 1">
+      <FadeInUp>
+        <h1 class="display-3 fw-bold">CREAMOS EXPERIENCIAS<br /><span class="text-orion-primary">INOLVIDABLES</span></h1>
+      </FadeInUp>
+      <FadeInUp :delay="0.2">
+        <p class="lead text-secondary mx-auto mt-3" style="max-width: 640px">
+          Desde lo corporativo hasta lo más social. Orion transforma tus ideas en realidad.
+        </p>
+      </FadeInUp>
+      <FadeInUp :delay="0.4">
+        <div class="d-flex gap-3 justify-content-center mt-4">
+          <RouterLink to="/portafolio" class="btn btn-orion btn-lg">Ver Portafolio</RouterLink>
+          <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-outline-light btn-lg">Cotiza tu evento</RouterLink>
+        </div>
+      </FadeInUp>
     </div>
   </section>
 
   <section class="py-5 bg-black bg-opacity-25">
     <div class="container">
       <div class="row text-center">
-        <div v-for="s in stats" :key="s.l" class="col-6 col-md-3 mb-3">
-          <div class="display-5 fw-bold text-orion-primary">{{ s.n }}</div>
-          <div class="text-secondary small">{{ s.l }}</div>
+        <div v-for="(s, idx) in stats" :key="s.l" class="col-6 col-md-3 mb-3">
+          <FadeInUp :delay="idx * 0.1">
+            <div class="display-5 fw-bold text-orion-primary">{{ s.n }}</div>
+            <div class="text-secondary small">{{ s.l }}</div>
+          </FadeInUp>
         </div>
       </div>
     </div>

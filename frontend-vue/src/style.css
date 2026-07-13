@@ -31,6 +31,36 @@ h1, h2, h3, .navbar-brand {
   background: linear-gradient(180deg, #03081c, rgba(19, 214, 234, 0.12), #03081c);
 }
 
+.card, .btn, .hover-scale {
+  transition: transform 0.2s ease;
+}
+.card:hover, .btn:hover, .hover-scale:hover {
+  transform: scale(1.02);
+}
+.btn:active, .hover-scale:active {
+  transform: scale(0.98);
+}
+
+.navbar-orion {
+  background: rgba(3, 8, 28, 0.4);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+.navbar-orion-scrolled {
+  background: rgba(3, 8, 28, 0.95);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.whatsapp-pulse {
+  animation: whatsapp-pulse-kf 2s ease-in-out infinite;
+}
+.whatsapp-pulse:hover {
+  animation-play-state: paused;
+}
+@keyframes whatsapp-pulse-kf {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
 .card-cover {
   height: 16rem;
   background-size: cover;

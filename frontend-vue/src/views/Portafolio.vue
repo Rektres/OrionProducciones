@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
 import { RouterLink } from 'vue-router';
+import FadeInUp from '@/components/animations/FadeInUp.vue';
+import ParticleBackground from '@/components/animations/ParticleBackground.vue';
 import { portafolioService } from '@/services/portafolio';
 import type { Evento, EventoTipo } from '@/types';
 
@@ -21,8 +23,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="py-5 text-center">
-    <div class="container">
+  <section class="py-5 text-center position-relative overflow-hidden">
+    <ParticleBackground />
+    <div class="container position-relative" style="z-index: 1">
       <h1 class="display-4 fw-bold">PORTAFOLIO</h1>
       <p class="text-secondary">{{ eventos.length }} eventos realizados con pasión</p>
     </div>
@@ -39,16 +42,18 @@ onMounted(async () => {
       </div>
       <div class="row g-4">
         <div v-for="ev in filtrados" :key="ev.id" class="col-md-6 col-lg-4">
-          <RouterLink :to="`/portafolio/${ev.slug}`" class="text-decoration-none">
-            <div class="card border-0 card-cover d-flex justify-content-end"
-              :style="{ backgroundImage: `url('${ev.imagen_destacada}')` }">
-              <div class="p-3" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent)">
-                <span class="badge text-bg-warning mb-1">{{ ev.tipo_slug }}</span>
-                <h6 class="text-white mb-0">{{ ev.nombre }}</h6>
-                <small class="text-secondary">{{ ev.lugar }}</small>
+          <FadeInUp>
+            <RouterLink :to="`/portafolio/${ev.slug}`" class="text-decoration-none">
+              <div class="card border-0 card-cover d-flex justify-content-end"
+                :style="{ backgroundImage: `url('${ev.imagen_destacada}')` }">
+                <div class="p-3" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent)">
+                  <span class="badge text-bg-warning mb-1">{{ ev.tipo_slug }}</span>
+                  <h6 class="text-white mb-0">{{ ev.nombre }}</h6>
+                  <small class="text-secondary">{{ ev.lugar }}</small>
+                </div>
               </div>
-            </div>
-          </RouterLink>
+            </RouterLink>
+          </FadeInUp>
         </div>
       </div>
     </div>
