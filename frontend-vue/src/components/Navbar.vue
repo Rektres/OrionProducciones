@@ -15,7 +15,9 @@ const irCotizar = () => router.push({ path: '/', hash: '#cotizacion' });
 <template>
   <nav class="navbar navbar-expand-md fixed-top" style="background: rgba(10, 10, 15, 0.95)">
     <div class="container">
-      <RouterLink class="navbar-brand fw-bold text-orion-primary" to="/">⚡ ORION</RouterLink>
+      <RouterLink class="navbar-brand" to="/">
+        <img src="/logo.png" alt="Orión Stage" height="40" />
+      </RouterLink>
       <button
         class="navbar-toggler"
         type="button"

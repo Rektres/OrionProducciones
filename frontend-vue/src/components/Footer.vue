@@ -8,7 +8,7 @@ const numero = import.meta.env.VITE_WHATSAPP_NUMBER || '56944830378';
     <div class="container">
       <div class="row g-4">
         <div class="col-md-4">
-          <h5 class="text-orion-primary fw-bold">ORION</h5>
+          <img src="/logo.png" alt="Orión Stage" height="56" class="mb-2" />
           <p class="text-secondary small">
             Creamos experiencias inolvidables. Desde lo corporativo hasta lo más social.
           </p>

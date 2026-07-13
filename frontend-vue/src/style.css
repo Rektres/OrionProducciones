@@ -1,25 +1,34 @@
 :root {
-  --orion-primary: #ff3d6b;
-  --orion-secondary: #ffb800;
-  --orion-tertiary: #6b2ffa;
+  --orion-primary: #13d6ea;
+  --orion-secondary: #d06c26;
+  --orion-tertiary: #0d537d;
+  --orion-bg-deep: #021636;
+  --orion-gray-graphite: #332b2e;
+  --orion-gray-titanium: #564e4c;
+  --orion-star-light: #c5e2ac;
 }
 
 body {
-  background-color: #0a0a0f;
+  background-color: #03081c;
   color: #f8f8ff;
+  font-family: 'Montserrat', sans-serif;
+}
+
+h1, h2, h3, .navbar-brand {
+  font-family: 'Cinzel', serif;
 }
 
 .text-orion-primary { color: var(--orion-primary) !important; }
 .bg-orion-primary { background-color: var(--orion-primary) !important; }
 .btn-orion {
-  background: linear-gradient(90deg, var(--orion-primary), var(--orion-tertiary));
+  background: linear-gradient(90deg, var(--orion-primary), var(--orion-secondary));
   color: #fff;
   border: none;
 }
 .btn-orion:hover { color: #fff; opacity: 0.9; }
 
 .cotiza-section {
-  background: linear-gradient(180deg, #0a0a0f, rgba(107, 47, 250, 0.12), #0a0a0f);
+  background: linear-gradient(180deg, #03081c, rgba(19, 214, 234, 0.12), #03081c);
 }
 
 .card-cover {
