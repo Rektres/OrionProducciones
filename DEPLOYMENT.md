@@ -1,408 +1,249 @@
-# Dockerización y Despliegue en Servidor Linux — Orion
+# Despliegue en Ubuntu Server — Orion
 
-## Overview
+Guía para levantar el stack completo (Nginx + Vue + Express + Django + PostgreSQL) en tu
+servidor Ubuntu, accediendo por **IP pública** (sin dominio ni SSL por ahora).
 
-Este documento guía la dockerización completa del proyecto Orion (Vue 3 SPA + Express BFF + Django REST + PostgreSQL) para despliegue en un servidor Ubuntu 22.04 LTS.
-
-**Arquitectura:**
-```
-[ Nginx (reverse proxy, TLS) ]
-    ↓           ↓
-[ Vue SPA ]  [ Express BFF ]
-               ↓
-           [ Django REST ]
-               ↓
-           [ PostgreSQL ]
-```
+Todo el stack corre en contenedores propios — el `docker-compose.yml` incluye su propio
+PostgreSQL, no depende de Supabase.
 
 ---
 
-## Pre-requisitos
+## 0. Requisitos previos
 
-✅ Los siguientes archivos ya están en el repo:
-- `Dockerfile` en cada servicio (bff-express, backend-django, frontend-vue)
-- `nginx/Dockerfile`, `nginx/nginx.conf`, `nginx/conf.d/default.conf`
-- `docker-compose.yml` en raíz
-- `.dockerignore` en cada servicio
-- `.env.production.example` como template
-- `.systemd/orion-compose.service` para auto-start
-
----
-
-## Despliegue en Ubuntu 22.04 LTS
-
-### **Paso 1: Preparar servidor**
+- Servidor Ubuntu Server (20.04+) con acceso SSH y usuario con permisos `sudo`.
+- IP pública del servidor (ej. `203.0.113.10`) — la necesitarás en el paso 3.
+- Docker ya instalado (según mencionaste). Verifica:
 
 ```bash
-# SSH al servidor
-ssh user@server.example.com
+docker --version
+docker compose version
+```
 
-# Update system
-sudo apt update && sudo apt upgrade -y
+Si falta alguno, instálalo:
 
-# Install Docker & Docker Compose
-sudo apt install -y docker.io docker-compose-plugin curl git
+```bash
+sudo apt update
+sudo apt install -y docker.io docker-compose-plugin
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER   # evita usar sudo en cada comando docker
+newgrp docker                    # aplica el grupo sin cerrar sesión
+```
 
-# Add user 'orion' to docker group (opcional, evita sudo en cada comando)
-sudo useradd -m -s /bin/bash orion
-sudo usermod -aG docker orion
+---
 
-# Clone repository
+## 1. Clonar el repositorio
+
+```bash
 sudo mkdir -p /opt/orion
-sudo git clone https://github.com/Rektres/Orion_Project.git /opt/orion
+sudo chown $USER:$USER /opt/orion
+git clone https://github.com/Rektres/Orion_Project.git /opt/orion
 cd /opt/orion
 git checkout migracion-django-vue
-sudo chown -R orion:orion /opt/orion
 ```
 
-### **Paso 2: Crear `.env.production` con secrets**
+---
+
+## 2. Abrir puertos en el firewall
+
+Solo necesitas **80** (HTTP) abierto al público. El resto de servicios (Express, Django,
+Postgres) quedan solo en la red interna de Docker — nunca expuestos al exterior.
+
+```bash
+sudo apt install -y ufw
+sudo ufw allow OpenSSH
+sudo ufw allow 80/tcp
+sudo ufw enable
+sudo ufw status
+```
+
+Si tu proveedor cloud (AWS/GCP/Azure/DigitalOcean) tiene su propio firewall/security group,
+abre el puerto **80** ahí también.
+
+---
+
+## 3. Crear `.env.production` con tus valores reales
 
 ```bash
 cd /opt/orion
+cp .env.production.example .env.production
+```
 
-# Generar valores aleatorios seguros
-POSTGRES_PW=$(openssl rand -base64 32)
-DJANGO_SECRET=$(openssl rand -base64 50)
+Genera secrets seguros y edita el archivo:
 
-cat > .env.production <<EOF
-# DATABASE
-DATABASE_URL=postgresql://postgres:${POSTGRES_PW}@postgres:5432/orion
-POSTGRES_PASSWORD=${POSTGRES_PW}
+```bash
+# Generar valores aleatorios
+openssl rand -base64 32   # usar para POSTGRES_PASSWORD
+openssl rand -base64 50   # usar para DJANGO_SECRET_KEY
+```
 
-# DJANGO
-DJANGO_SECRET_KEY=${DJANGO_SECRET}
+Edita `.env.production`:
+
+```bash
+nano .env.production
+```
+
+Contenido esperado (reemplaza `TU_IP_PUBLICA` por la IP real del servidor, y las
+contraseñas por las generadas arriba):
+
+```bash
+DATABASE_URL=postgresql://postgres:TU_PASSWORD_GENERADO@postgres:5432/orion
+POSTGRES_PASSWORD=TU_PASSWORD_GENERADO
+
+DJANGO_SECRET_KEY=TU_SECRET_KEY_GENERADO
 DEBUG=False
+DB_SSL_REQUIRE=False
 
-# HOSTS / CORS (⚠️ reemplazar con dominio real)
-CORS_ALLOWED_ORIGINS=https://example.com,https://www.example.com
-ALLOWED_HOSTS=example.com,www.example.com
+SERVER_IP=TU_IP_PUBLICA
+ALLOWED_ORIGINS=http://TU_IP_PUBLICA
+```
 
-# BFF / FRONTEND
-VITE_API_URL=https://example.com/api
-VITE_WHATSAPP_NUMBER=56944830378
-VITE_BASE=/
+⚠️ `POSTGRES_PASSWORD` debe coincidir con el password dentro de `DATABASE_URL`.
 
-# NGINX / LETSENCRYPT
-LETSENCRYPT_EMAIL=admin@example.com
-EOF
-
+```bash
 chmod 600 .env.production
 ```
 
-**⚠️ Reemplazar:**
-- `example.com` → tu dominio real
-- `admin@example.com` → tu email real
-- `56944830378` → número WhatsApp si corresponde
-
-### **Paso 3: Obtener certificado SSL con Let's Encrypt**
+**Vincula este archivo como el `.env` que usará docker compose:**
 
 ```bash
-# Install Certbot
-sudo apt install -y certbot python3-certbot-nginx
-
-# Obtener certificado (requiere puerto 80 abierto)
-sudo certbot certonly --standalone \
-  -d example.com \
-  -d www.example.com \
-  --agree-tos \
-  -m admin@example.com \
-  --non-interactive
-
-# Copiar certs al proyecto
-sudo mkdir -p /opt/orion/certs
-sudo cp -r /etc/letsencrypt/live /opt/orion/certs/
-sudo chown -R orion:orion /opt/orion/certs
+ln -sf .env.production .env
 ```
 
-Verifica:
-```bash
-ls -la /opt/orion/certs/live/example.com/
-# Debe mostrar: fullchain.pem, privkey.pem
-```
+---
 
-### **Paso 4: Build Docker images**
+## 4. Build de las imágenes
 
 ```bash
 cd /opt/orion
-
-# Build imágenes (toma 5-10 min según conexión)
 docker compose build
-
-# Verifica que se cargó .env.production
-docker compose config | grep "DATABASE_URL"
 ```
 
-### **Paso 5: Crear volumen de BD e inicializar**
+Esto toma ~5-10 min la primera vez (descarga imágenes base + instala dependencias).
+
+---
+
+## 5. Levantar el stack
 
 ```bash
-# Crear carpeta de backups
-mkdir -p /opt/orion/backups
-
-# Start servicios (Django es el último para que migre la BD)
 docker compose up -d
+```
 
-# Esperar ~30s para que todos levanten
-sleep 30
+Espera ~20 segundos y verifica que todo esté `healthy`/`Up`:
 
-# Verificar estado
+```bash
 docker compose ps
 ```
 
-**Esperado:**
+Salida esperada:
+
 ```
-NAME         STATUS
-nginx        Up (healthy)
-frontend     Up
-express      Up
-django       Up (healthy)
-postgres     Up (healthy)
+NAME       STATUS
+nginx      Up
+frontend   Up
+express    Up
+django     Up (healthy)
+postgres   Up (healthy)
 ```
 
-### **Paso 6: Registrar como systemd service (auto-start)**
+---
+
+## 6. Aplicar migraciones de base de datos
+
+La base de datos arranca vacía — hay que crear las tablas:
 
 ```bash
-# Crear directorio systemd
-sudo mkdir -p /etc/systemd/system
+docker compose exec django python manage.py migrate
+```
 
-# Copiar archivo de servicio
+(Opcional) Si quieres cargar datos de ejemplo, revisa si existe un fixture/seed en
+`backend-django/` antes de crear contenido manualmente vía Django admin o API.
+
+---
+
+## 7. Verificación
+
+```bash
+# Frontend
+curl -I http://TU_IP_PUBLICA
+# Esperado: HTTP/1.1 200 OK
+
+# API (a través del proxy completo Nginx -> Express -> Django)
+curl http://TU_IP_PUBLICA/api/servicios
+# Esperado: [] o un JSON con datos, HTTP 200
+
+curl http://TU_IP_PUBLICA/api/health
+# Esperado: {"ok":true}
+```
+
+Abre `http://TU_IP_PUBLICA` en el navegador — deberías ver el sitio de Orion.
+
+---
+
+## 8. Auto-inicio al reiniciar el servidor (systemd)
+
+```bash
 sudo cp /opt/orion/.systemd/orion-compose.service /etc/systemd/system/
-
-# Editar si es necesario (verificar WorkingDirectory y User)
 sudo nano /etc/systemd/system/orion-compose.service
+# Verifica que WorkingDirectory=/opt/orion y User=<tu-usuario> sean correctos
 
-# Recargar daemon
 sudo systemctl daemon-reload
-
-# Habilitar y arrancar
-sudo systemctl enable orion-compose.service
-sudo systemctl start orion-compose.service
-
-# Verificar estado
+sudo systemctl enable --now orion-compose.service
 sudo systemctl status orion-compose.service
-```
-
-### **Paso 7: Verificación final**
-
-```bash
-# Todos los servicios corriendo
-docker compose ps
-
-# Puertos abiertos
-sudo netstat -tuln | grep -E '80|443'
-
-# Test HTTP→HTTPS redirect
-curl -i http://example.com
-# Debe devolver: 301 (redirect a HTTPS)
-
-# Test HTTPS
-curl -i https://example.com
-# Debe devolver: 200 OK (desde Nginx)
-
-# Test API (a través de Express)
-curl -i https://example.com/api/servicios
-# Debe devolver: JSON desde Django
-
-# Ver logs completos
-docker compose logs --tail=50
-
-# Logs específicos
-docker compose logs django
-docker compose logs express
-docker compose logs nginx
 ```
 
 ---
 
 ## Operaciones comunes
 
-### **Ver logs en tiempo real**
-
 ```bash
+# Logs
 docker compose logs -f
 docker compose logs -f django
-docker compose logs -f express
-```
 
-### **Ejecutar migraciones de Django**
-
-```bash
-docker compose exec django python manage.py migrate
-```
-
-### **Backup de base de datos**
-
-```bash
-docker compose exec postgres pg_dump -U postgres orion > /opt/orion/backups/orion_$(date +%Y%m%d).sql
-```
-
-### **Restaurar base de datos**
-
-```bash
-docker compose exec -T postgres psql -U postgres -d orion < /opt/orion/backups/orion_20240101.sql
-```
-
-### **Reiniciar servicio específico**
-
-```bash
+# Reiniciar un servicio
 docker compose restart django
-docker compose restart express
-docker compose restart frontend
-```
 
-### **Detener e iniciar todo**
-
-```bash
-# Detener
+# Detener / levantar todo
 docker compose down
-
-# Iniciar
 docker compose up -d
-```
 
-### **Ver variables de entorno cargadas**
+# Backup de BD
+docker compose exec postgres pg_dump -U postgres orion > backup_$(date +%Y%m%d).sql
 
-```bash
-docker compose exec django env | grep -E "DATABASE|DJANGO_SECRET|DEBUG|CORS"
-```
-
----
-
-## Renovación de certificados SSL (automático)
-
-Certbot renueva automáticamente 30 días antes de expiración:
-
-```bash
-# Verificar renovación seca (sin hacer cambios)
-sudo certbot renew --dry-run
-
-# Forzar renovación
-sudo certbot renew --force-renewal
-
-# Ver próxima renovación
-sudo certbot certificates
+# Restaurar BD
+docker compose exec -T postgres psql -U postgres -d orion < backup_20260101.sql
 ```
 
 ---
 
 ## Troubleshooting
 
-### **Django no conecta a PostgreSQL**
-
+**`400 Bad Request` en `/api/*`**
+`ALLOWED_HOSTS` de Django no incluye el host correcto. Verifica que `SERVER_IP` esté
+seteado en `.env.production` y que `docker compose config` lo refleje:
 ```bash
-# Verificar .env.production
-cat /opt/orion/.env.production | grep DATABASE_URL
-
-# Check logs
-docker compose logs django | tail -20
-
-# Verificar conectividad desde Express hacia Django
-docker compose exec express curl -v http://django:8000/health
+docker compose config | grep ALLOWED_HOSTS
 ```
 
-### **Nginx devuelve 502 Bad Gateway**
+**`500` en cualquier endpoint que use la BD**
+Revisa que `DB_SSL_REQUIRE=False` esté en `.env.production` — el Postgres del
+docker-compose no tiene SSL habilitado.
 
+**Puerto 80 ocupado**
 ```bash
-# Express no está respondiendo
-docker compose logs express
-
-# Verificar puerto
-docker compose exec express lsof -i :3001
-```
-
-### **Certificado SSL expirado**
-
-```bash
-# Renovar manualmente
-sudo certbot renew --force-renewal
-
-# Copiar nuevos certificados
-sudo cp -r /etc/letsencrypt/live /opt/orion/certs/
-sudo chown -R orion:orion /opt/orion/certs
-
-# Reiniciar Nginx
-docker compose restart nginx
-```
-
-### **Puertos ya en uso**
-
-```bash
-# Verificar qué proceso usa puerto 80/443
 sudo lsof -i :80
-sudo lsof -i :443
-
-# Matar proceso
-sudo kill -9 <PID>
-
-# O cambiar puerto en docker-compose.yml
+sudo systemctl stop apache2 nginx 2>/dev/null   # si hay un servidor web nativo corriendo
 ```
 
----
-
-## Seguridad (Checklist)
-
-- [ ] `.env.production` no está en git (gitignored)
-- [ ] `DEBUG=False` en producción
-- [ ] `DJANGO_SECRET_KEY` es aleatorio y largo (50+ caracteres)
-- [ ] Firewall permite solo 80/443 (no 3001, 8000, 5432)
-- [ ] Backups de BD hechos regularmente
-- [ ] SSL/TLS vigente (chequear `certbot certificates`)
-- [ ] CORS_ALLOWED_ORIGINS no incluye wildcard `*`
-- [ ] Base de datos PostgreSQL no expuesta (solo acceso interno)
-
----
-
-## Monitoreo recomendado
-
+**Nginx no arranca / config inválida**
 ```bash
-# Health check manual (cada 5 min via cron)
-docker compose exec django curl -s http://localhost:8000/health || notify-admin
-
-# Logs centralizados (opcional)
-# Considerar ELK stack (Elasticsearch/Logstash/Kibana) o Loki
-
-# Métricas (opcional)
-# Prometheus + Grafana para CPU/RAM/Disco de contenedores
+docker compose logs nginx
 ```
 
 ---
 
-## Rollback a versión anterior
+## Siguiente paso: dominio + SSL
 
-```bash
-cd /opt/orion
-
-# Ver último commit conocido bueno
-git log --oneline | head -5
-
-# Revertir
-git checkout <commit-hash>
-
-# Rebuild y restart
-docker compose down
-docker compose build
-docker compose up -d
-```
-
----
-
-## Guía de URLs post-despliegue
-
-- **Frontend (SPA):** `https://example.com`
-- **API Gateway:** `https://example.com/api/*`
-- **Health check:** `https://example.com/api/health` (desde Express)
-- **Django directo:** Accesible solo internamente en `http://django:8000/api/*`
-
----
-
-## Contacto & Soporte
-
-Para issues con Docker/Compose:
-```bash
-docker --version
-docker compose version
-```
-
-Ver logs detallados:
-```bash
-docker compose logs --follow --timestamps
-```
+Cuando tengas un dominio apuntando a la IP del servidor (registro DNS tipo A), se puede
+agregar HTTPS con Let's Encrypt/Certbot. Avísame cuando llegues a ese punto y ajustamos
+`nginx/conf.d/default.conf` y `ALLOWED_ORIGINS`/`SERVER_IP` para el dominio.
