@@ -14,6 +14,7 @@ app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
+app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
 // Proxy fino: reenvia cualquier /api/* a Django conservando metodo, query y body.
 app.use('/api', async (req, res) => {
