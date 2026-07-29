@@ -21,3 +21,8 @@ dist-ssr
 *.sln
 *.sw?
 .env
+.env.production
+.env.local
+certs/
+backups/
+postgres_data/

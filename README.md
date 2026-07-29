@@ -78,6 +78,37 @@ npm run dev
 
 Abrir **http://localhost:5173**.
 
+## Docker & Docker Compose (desarrollo/producción)
+
+### Desarrollo local con Docker
+
+```bash
+# Build imágenes
+docker compose build
+
+# Levantar stack completo (Nginx + Vue + Express + Django + PostgreSQL)
+docker compose up -d
+
+# Ver logs
+docker compose logs -f
+
+# Detener
+docker compose down
+```
+
+Acceder en **http://localhost** (Nginx redirige HTTP a HTTPS en prod).
+
+### Despliegue en servidor Ubuntu 22.04 LTS
+
+Ver [DEPLOYMENT.md](./DEPLOYMENT.md) para guía completa, que incluye:
+1. Preparación del servidor (Docker, certificados SSL)
+2. Configuración de variables de entorno
+3. Build y arranque de servicios
+4. Registro como systemd service (auto-start)
+5. Operaciones comunes (backups, logs, renovación de certs)
+
+**Nota:** El archivo `.env.production` con secrets debe crearse manualmente en el servidor (no está en git).
+
 ## Endpoints del API (Django, bajo `/api/`)
 
 `categorias-servicio/` · `servicios/?categoria=<slug>` · `servicios/<id>/` · `evento-tipos/` · `eventos/?tipo=<slug>&destacado=<bool>` · `eventos/<slug>/` · `eventos/<id>/fotos/` · `posts/?tag=<slug>&limit=&offset=` · `posts/<slug>/` · `tags/` · `POST cotizaciones/`

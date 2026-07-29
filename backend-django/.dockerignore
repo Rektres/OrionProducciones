@@ -1,0 +1,12 @@
+.git
+.gitignore
+*.pyc
+__pycache__
+.venv
+venv
+*.egg-info
+.env
+.env.example
+README.md
+.DS_Store
+staticfiles
