@@ -1,0 +1,84 @@
+name: Deploy Docker Stack (Django + Express + Vue)
+
+on:
+  push:
+    branches: [migracion-django-vue]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-vps
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Typecheck bff-express
+        working-directory: bff-express
+        run: |
+          npm ci
+          npm run typecheck
+
+      - name: Typecheck frontend-vue
+        working-directory: frontend-vue
+        run: |
+          npm ci
+          npm run typecheck
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check backend-django
+        working-directory: backend-django
+        env:
+          DATABASE_URL: postgresql://postgres:dummy@localhost:5432/dummy
+          DJANGO_SECRET_KEY: dummy-ci-key
+          DB_SSL_REQUIRE: "False"
+        run: |
+          pip install --no-cache-dir -r requirements.txt
+          python manage.py check
+
+  deploy:
+    needs: test
+    runs-on: [self-hosted, orion-prod]
+    steps:
+      - name: Actualizar código y reconstruir imágenes
+        run: |
+          cd /opt/orion/OrionProducciones
+          git fetch origin migracion-django-vue
+          git reset --hard origin/migracion-django-vue
+          docker compose build
+          docker compose up -d --remove-orphans
+
+      - name: Esperar a que django y postgres estén healthy
+        run: |
+          cd /opt/orion/OrionProducciones
+          for i in $(seq 1 20); do
+            django_health=$(docker inspect --format='{{.State.Health.Status}}' "$(docker compose ps -q django)" 2>/dev/null || echo starting)
+            postgres_health=$(docker inspect --format='{{.State.Health.Status}}' "$(docker compose ps -q postgres)" 2>/dev/null || echo starting)
+            if [ "$django_health" = "healthy" ] && [ "$postgres_health" = "healthy" ]; then
+              echo "Servicios healthy"
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "Timeout esperando healthy"
+          docker compose logs --tail=50
+          exit 1
+
+      - name: Aplicar migraciones
+        run: |
+          cd /opt/orion/OrionProducciones
+          docker compose exec -T django python manage.py migrate --noinput
+
+      - name: Smoke test
+        run: |
+          curl -sf http://localhost/api/health
+          curl -sf -o /dev/null http://localhost/
