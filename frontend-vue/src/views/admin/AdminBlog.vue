@@ -120,11 +120,11 @@ const agregarTag = async () => {
 
 <template>
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">Blog</h4>
-    <button type="button" class="btn btn-orion btn-sm" @click="nuevo">Nuevo post</button>
+    <h4 class="mb-0">Preguntas frecuentes</h4>
+    <button type="button" class="btn btn-orion btn-sm" @click="nuevo">Nueva pregunta</button>
   </div>
 
-  <div v-if="mostrarForm" class="card bg-dark border-secondary p-4 mb-4">
+  <div v-if="mostrarForm" class="card admin-card p-4 mb-4">
     <form class="row g-3" @submit.prevent="guardar">
       <div class="col-md-6">
         <label class="form-label">Título *</label>
@@ -178,14 +178,14 @@ const agregarTag = async () => {
 
   <div class="row g-3">
     <div v-for="p in posts" :key="p.id" class="col-sm-6 col-lg-4 col-xl-3">
-      <div class="card h-100 bg-dark border-secondary hover-scale" role="button" @click="editar(p)">
+      <div class="card h-100 admin-card hover-scale" role="button" @click="editar(p)">
         <div class="card-cover rounded-top" style="height: 8rem"
           :style="p.imagen_url ? { backgroundImage: `url('${p.imagen_url}')` } : {}"></div>
         <div class="card-body">
           <h6 class="card-title mb-1">{{ p.titulo }}</h6>
           <div class="small text-secondary">{{ p.estado }} · {{ p.fecha_publicacion || 'sin fecha' }}</div>
         </div>
-        <div class="card-footer bg-dark border-secondary d-flex justify-content-between">
+        <div class="card-footer admin-card d-flex justify-content-between">
           <button type="button" class="btn btn-outline-light btn-sm" @click.stop="editar(p)">Editar</button>
           <button type="button" class="btn btn-outline-danger btn-sm" @click.stop="eliminar(p)">Eliminar</button>
         </div>

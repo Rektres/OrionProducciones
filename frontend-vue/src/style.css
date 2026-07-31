@@ -8,10 +8,62 @@
   --orion-star-light: #c5e2ac;
 }
 
+/* Panel de administracion: siempre oscuro (data-bs-theme="dark" fijo en su
+   raiz, sin importar el toggle claro/oscuro del sitio publico). El fondo de
+   la pagina y el de las cards usan tonos distintos a proposito — antes
+   ambos eran bg-dark y las cards se perdian contra el fondo. */
+.admin-shell {
+  background-color: #05070f;
+}
+.admin-card {
+  background-color: #1b2333;
+  border-color: rgba(255, 255, 255, 0.09) !important;
+}
+
+/* Acordeon de FAQ: hereda el color de superficie theme-aware (el mismo
+   --bs-dark-rgb que usan las cards) en vez del fondo por defecto de
+   Bootstrap, que es igual al de la pagina y se pierde de vista. */
+.accordion {
+  --bs-accordion-bg: rgba(var(--bs-dark-rgb), 1);
+  --bs-accordion-active-bg: rgba(var(--bs-dark-rgb), 1);
+  --bs-accordion-btn-color: var(--bs-body-color);
+  --bs-accordion-active-color: var(--orion-primary);
+  --bs-accordion-border-color: var(--bs-border-color);
+  --bs-accordion-body-bg: rgba(var(--bs-dark-rgb), 1);
+}
+
+/* Tema oscuro (default) — valores actuales, sin cambios visuales. */
+[data-bs-theme='dark'] {
+  --bs-body-bg: #03081c;
+  --bs-body-color: #f8f8ff;
+  --navbar-bg: rgba(3, 8, 28, 0.4);
+  --navbar-bg-scrolled: rgba(3, 8, 28, 0.95);
+  --section-alt-bg: rgba(0, 0, 0, 0.25);
+  --cotiza-gradient: linear-gradient(180deg, #03081c, rgba(19, 214, 234, 0.12), #03081c);
+}
+
+/* Tema claro — paleta pastel suave (peach #FFDFD3, amarillo #FFF1B0,
+   rosa #FFB7B2). Las cards usan un peach mas claro que el fondo de
+   pagina para no perderse contra el (mismo criterio que el admin). */
+[data-bs-theme='light'] {
+  --bs-body-bg: #fff9f5;
+  --bs-body-color: #4a3327;
+  --bs-dark-rgb: 255, 226, 217;
+  --bs-secondary-rgb: 209, 140, 132;
+  --bs-secondary-color: rgba(209, 140, 132, 1);
+  --bs-border-color: rgba(209, 140, 132, 0.35);
+  --bs-tertiary-bg: #fff1b0;
+  --navbar-bg: rgba(255, 249, 245, 0.8);
+  --navbar-bg-scrolled: rgba(255, 249, 245, 0.97);
+  --section-alt-bg: rgba(255, 183, 178, 0.22);
+  --cotiza-gradient: linear-gradient(135deg, rgba(255, 241, 176, 0.55), rgba(255, 223, 211, 0.55), rgba(255, 183, 178, 0.55));
+}
+
 body {
-  background-color: #03081c;
-  color: #f8f8ff;
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
   font-family: 'Montserrat', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1, h2, h3, .navbar-brand {
@@ -28,7 +80,26 @@ h1, h2, h3, .navbar-brand {
 .btn-orion:hover { color: #fff; opacity: 0.9; }
 
 .cotiza-section {
-  background: linear-gradient(180deg, #03081c, rgba(19, 214, 234, 0.12), #03081c);
+  background: var(--cotiza-gradient);
+}
+
+.section-alt {
+  background-color: var(--section-alt-bg);
+}
+
+.theme-toggle-btn {
+  background: none;
+  border: 1px solid var(--bs-border-color);
+  color: inherit;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.theme-toggle-btn:hover {
+  background: rgba(127, 127, 127, 0.15);
 }
 
 .card, .btn, .hover-scale {
@@ -42,11 +113,11 @@ h1, h2, h3, .navbar-brand {
 }
 
 .navbar-orion {
-  background: rgba(3, 8, 28, 0.4);
+  background: var(--navbar-bg);
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 .navbar-orion-scrolled {
-  background: rgba(3, 8, 28, 0.95);
+  background: var(--navbar-bg-scrolled);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -76,11 +147,11 @@ h1, h2, h3, .navbar-brand {
   flex: 0 0 auto;
 }
 .servicio-slide-move {
-  transition: transform 0.5s ease;
+  transition: transform 0.9s ease;
 }
 .servicio-slide-enter-active,
 .servicio-slide-leave-active {
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  transition: opacity 0.9s ease, transform 0.9s ease;
 }
 .servicio-slide-enter-from {
   opacity: 0;
@@ -92,6 +163,20 @@ h1, h2, h3, .navbar-brand {
 }
 .servicio-slide-leave-active {
   position: absolute;
+}
+
+.carousel-arrow-ghost {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 2.25rem;
+  line-height: 1;
+  padding: 0 0.5rem;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.carousel-arrow-ghost:hover {
+  color: rgba(255, 255, 255, 0.85);
+  transform: scale(1.15);
 }
 
 .empresa-logo {

@@ -30,8 +30,8 @@ const onSubmit = async () => {
 </script>
 
 <template>
-  <div class="bg-dark text-white min-vh-100 d-flex align-items-center justify-content-center">
-    <div class="card bg-dark border-secondary p-4" style="width: 100%; max-width: 380px">
+  <div class="admin-shell text-white min-vh-100 d-flex align-items-center justify-content-center" data-bs-theme="dark">
+    <div class="card admin-card p-4" style="width: 100%; max-width: 380px">
       <h4 class="text-center mb-4">Administración Orion</h4>
       <form @submit.prevent="onSubmit">
         <div class="mb-3">

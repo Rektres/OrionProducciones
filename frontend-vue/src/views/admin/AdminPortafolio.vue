@@ -173,7 +173,7 @@ const eliminarTipo = async (t: EventoTipo) => {
     <button type="button" class="btn btn-orion btn-sm" @click="nuevo">Nuevo evento</button>
   </div>
 
-  <div class="card bg-dark border-secondary p-3 mb-4">
+  <div class="card admin-card p-3 mb-4">
     <div class="d-flex justify-content-between align-items-center" style="cursor: pointer" @click="mostrarTipos = !mostrarTipos">
       <h6 class="mb-0">Tipos de evento</h6>
       <span class="text-secondary">{{ mostrarTipos ? '▲' : '▼' }}</span>
@@ -181,11 +181,11 @@ const eliminarTipo = async (t: EventoTipo) => {
     <div v-if="mostrarTipos" class="mt-3">
       <ul class="list-group list-group-flush mb-2">
         <li v-for="t in tipos" :key="t.id"
-          class="list-group-item bg-dark text-white d-flex justify-content-between align-items-center px-0">
+          class="list-group-item admin-card text-white d-flex justify-content-between align-items-center px-0">
           {{ t.nombre }}
           <button type="button" class="btn btn-outline-danger btn-sm" @click="eliminarTipo(t)">Eliminar</button>
         </li>
-        <li v-if="!tipos.length" class="list-group-item bg-dark text-secondary px-0">Sin tipos todavía.</li>
+        <li v-if="!tipos.length" class="list-group-item admin-card text-secondary px-0">Sin tipos todavía.</li>
       </ul>
       <div class="input-group input-group-sm">
         <input v-model="nuevoTipoNombre" type="text" class="form-control" placeholder="Nuevo tipo..."
@@ -195,7 +195,7 @@ const eliminarTipo = async (t: EventoTipo) => {
     </div>
   </div>
 
-  <div v-if="mostrarForm" class="card bg-dark border-secondary p-4 mb-4">
+  <div v-if="mostrarForm" class="card admin-card p-4 mb-4">
     <form class="row g-3" @submit.prevent="guardar">
       <div class="col-md-6">
         <label class="form-label">Nombre *</label>
@@ -286,7 +286,7 @@ const eliminarTipo = async (t: EventoTipo) => {
 
   <div class="row g-3">
     <div v-for="ev in eventos" :key="ev.id" class="col-sm-6 col-lg-4 col-xl-3">
-      <div class="card h-100 bg-dark border-secondary hover-scale" role="button" @click="editar(ev)">
+      <div class="card h-100 admin-card hover-scale" role="button" @click="editar(ev)">
         <div class="card-cover rounded-top" style="height: 8rem"
           :style="ev.imagen_url ? { backgroundImage: `url('${ev.imagen_url}')` } : {}"></div>
         <div class="card-body">
@@ -294,7 +294,7 @@ const eliminarTipo = async (t: EventoTipo) => {
           <div class="small text-secondary">{{ ev.tipo_slug || 'sin tipo' }} · {{ ev.fecha_realizacion }}</div>
           <div class="small text-secondary">{{ ev.publicado ? 'Publicado' : 'Sin publicar' }}</div>
         </div>
-        <div class="card-footer bg-dark border-secondary d-flex justify-content-between">
+        <div class="card-footer admin-card d-flex justify-content-between">
           <button type="button" class="btn btn-outline-light btn-sm" @click.stop="editar(ev)">Editar</button>
           <button type="button" class="btn btn-outline-danger btn-sm" @click.stop="eliminar(ev)">Eliminar</button>
         </div>

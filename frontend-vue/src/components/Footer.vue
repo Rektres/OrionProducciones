@@ -22,7 +22,8 @@ const linkedinUrl = import.meta.env.VITE_LINKEDIN_URL || '#';
             <li><RouterLink class="link-secondary text-decoration-none" to="/">Inicio</RouterLink></li>
             <li><RouterLink class="link-secondary text-decoration-none" to="/servicios">Servicios</RouterLink></li>
             <li><RouterLink class="link-secondary text-decoration-none" to="/portafolio">Portafolio</RouterLink></li>
-            <li><RouterLink class="link-secondary text-decoration-none" to="/blog">Blog</RouterLink></li>
+            <li><RouterLink class="link-secondary text-decoration-none" to="/faq">Preguntas frecuentes</RouterLink></li>
+            <li><RouterLink class="link-secondary text-decoration-none" to="/quienes-somos">Quiénes somos</RouterLink></li>
           </ul>
         </div>
         <div class="col-md-4">
@@ -57,6 +58,7 @@ const linkedinUrl = import.meta.env.VITE_LINKEDIN_URL || '#';
       <hr class="border-secondary" />
       <p class="text-center text-secondary small mb-0">
         © 2026 Todos los derechos reservados | Desarrollado por Mateo Araneda Medina
+        · <RouterLink class="link-secondary" to="/terminos-y-condiciones">Términos y condiciones</RouterLink>
       </p>
     </div>
   </footer>

@@ -8,12 +8,10 @@ import ParticleBackground from '@/components/animations/ParticleBackground.vue';
 import { useReducedMotion } from '@/composables/useReducedMotion';
 import { serviciosService } from '@/services/servicios';
 import { portafolioService } from '@/services/portafolio';
-import { blogService } from '@/services/blog';
-import type { Servicio, Evento, Post, FotoEvento } from '@/types';
+import type { Servicio, Evento, FotoEvento } from '@/types';
 
 const servicios = ref<Servicio[]>([]);
 const eventosDestacados = ref<Evento[]>([]);
-const posts = ref<Post[]>([]);
 
 const servicioModalRef = ref<InstanceType<typeof ServicioModal> | null>(null);
 const abrirServicio = (svc: Servicio) => servicioModalRef.value?.abrir(svc);
@@ -53,7 +51,7 @@ const detenerAutoServicios = () => {
 const iniciarAutoServicios = () => {
   detenerAutoServicios();
   if (prefersReducedMotion.value || servicios.value.length <= 1) return;
-  servicioAutoTimer = setInterval(servicioSiguiente, 3000);
+  servicioAutoTimer = setInterval(servicioSiguiente, 5000);
 };
 const avanzarManual = (fn: () => void) => {
   fn();
@@ -89,14 +87,12 @@ const stats = [
 
 onMounted(async () => {
   try {
-    const [todosServicios, todosEventos, todosPosts] = await Promise.all([
+    const [todosServicios, todosEventos] = await Promise.all([
       serviciosService.getServicios(),
       portafolioService.getEventos(),
-      blogService.getPosts(3),
     ]);
     servicios.value = todosServicios;
     eventosDestacados.value = todosEventos.filter((e) => e.destacado).slice(0, 4);
-    posts.value = todosPosts;
 
     const pool: FotoGaleria[] = [];
     for (const ev of todosEventos) {
@@ -140,7 +136,7 @@ onBeforeUnmount(detenerAutoServicios);
     </div>
   </section>
 
-  <section class="py-5 bg-black bg-opacity-25">
+  <section class="py-5 section-alt">
     <div class="container">
       <div class="row text-center">
         <div v-for="(s, idx) in stats" :key="s.l" class="col-6 col-md-3 mb-3">
@@ -169,8 +165,8 @@ onBeforeUnmount(detenerAutoServicios);
       <h2 class="text-center fw-bold mb-5">LO QUE HACEMOS</h2>
       <div v-if="servicios.length" class="d-flex align-items-center justify-content-center gap-2"
         @mouseenter="detenerAutoServicios" @mouseleave="iniciarAutoServicios">
-        <button v-if="servicios.length > 1" type="button" class="btn btn-outline-light btn-sm flex-shrink-0"
-          @click="avanzarManual(servicioAnterior)">‹</button>
+        <button v-if="servicios.length > 1" type="button" class="carousel-arrow-ghost flex-shrink-0"
+          aria-label="Servicio anterior" @click="avanzarManual(servicioAnterior)">‹</button>
         <div class="servicios-carousel-viewport">
           <TransitionGroup name="servicio-slide" tag="div" class="d-flex gap-3 justify-content-center">
             <div v-for="svc in serviciosVisibles" :key="svc.id" class="servicio-carousel-item">
@@ -186,13 +182,13 @@ onBeforeUnmount(detenerAutoServicios);
             </div>
           </TransitionGroup>
         </div>
-        <button v-if="servicios.length > 1" type="button" class="btn btn-outline-light btn-sm flex-shrink-0"
-          @click="avanzarManual(servicioSiguiente)">›</button>
+        <button v-if="servicios.length > 1" type="button" class="carousel-arrow-ghost flex-shrink-0"
+          aria-label="Servicio siguiente" @click="avanzarManual(servicioSiguiente)">›</button>
       </div>
     </div>
   </section>
 
-  <section class="py-5 bg-black bg-opacity-25">
+  <section class="py-5 section-alt">
     <div class="container">
       <h2 class="text-center fw-bold mb-5">NUESTRO TRABAJO</h2>
       <div class="row g-4">
@@ -214,27 +210,7 @@ onBeforeUnmount(detenerAutoServicios);
     </div>
   </section>
 
-  <section class="py-5">
-    <div class="container">
-      <h2 class="text-center fw-bold mb-5">DESDE EL EQUIPO</h2>
-      <div class="row g-4">
-        <div v-for="p in posts" :key="p.id" class="col-md-4">
-          <RouterLink :to="`/blog/${p.slug}`" class="text-decoration-none">
-            <div class="card h-100 bg-dark border-secondary">
-              <div class="card-cover" style="height: 12rem" :style="p.imagen_url ? { backgroundImage: `url('${p.imagen_url}')` } : {}"></div>
-              <div class="card-body">
-                <span class="badge text-bg-danger mb-2">Blog</span>
-                <h6 class="card-title">{{ p.titulo }}</h6>
-                <p class="card-text text-secondary small">{{ p.extracto }}</p>
-              </div>
-            </div>
-          </RouterLink>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section v-if="fotosGaleria.length" class="py-5 bg-black bg-opacity-25">
+  <section v-if="fotosGaleria.length" class="py-5 section-alt">
     <div class="container">
       <h2 class="text-center fw-bold mb-5">MOMENTOS QUE CREAMOS</h2>
       <div class="galeria-mosaico">

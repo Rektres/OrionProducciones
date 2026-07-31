@@ -132,7 +132,7 @@ const eliminarCategoria = async (c: CategoriaServicio) => {
     <button type="button" class="btn btn-orion btn-sm" @click="nuevo">Nuevo servicio</button>
   </div>
 
-  <div class="card bg-dark border-secondary p-3 mb-4">
+  <div class="card admin-card p-3 mb-4">
     <div class="d-flex justify-content-between align-items-center" style="cursor: pointer" @click="mostrarCategorias = !mostrarCategorias">
       <h6 class="mb-0">Categorías</h6>
       <span class="text-secondary">{{ mostrarCategorias ? '▲' : '▼' }}</span>
@@ -140,11 +140,11 @@ const eliminarCategoria = async (c: CategoriaServicio) => {
     <div v-if="mostrarCategorias" class="mt-3">
       <ul class="list-group list-group-flush mb-2">
         <li v-for="c in categorias" :key="c.id"
-          class="list-group-item bg-dark text-white d-flex justify-content-between align-items-center px-0">
+          class="list-group-item admin-card text-white d-flex justify-content-between align-items-center px-0">
           {{ c.nombre }}
           <button type="button" class="btn btn-outline-danger btn-sm" @click="eliminarCategoria(c)">Eliminar</button>
         </li>
-        <li v-if="!categorias.length" class="list-group-item bg-dark text-secondary px-0">Sin categorías todavía.</li>
+        <li v-if="!categorias.length" class="list-group-item admin-card text-secondary px-0">Sin categorías todavía.</li>
       </ul>
       <div class="input-group input-group-sm">
         <input v-model="nuevaCategoriaNombre" type="text" class="form-control" placeholder="Nueva categoría..."
@@ -154,7 +154,7 @@ const eliminarCategoria = async (c: CategoriaServicio) => {
     </div>
   </div>
 
-  <div v-if="mostrarForm" class="card bg-dark border-secondary p-4 mb-4">
+  <div v-if="mostrarForm" class="card admin-card p-4 mb-4">
     <form class="row g-3" @submit.prevent="guardar">
       <div class="col-md-6">
         <label class="form-label">Nombre *</label>
@@ -207,14 +207,14 @@ const eliminarCategoria = async (c: CategoriaServicio) => {
 
   <div class="row g-3">
     <div v-for="s in servicios" :key="s.id" class="col-sm-6 col-lg-4 col-xl-3">
-      <div class="card h-100 bg-dark border-secondary hover-scale" role="button" @click="editar(s)">
+      <div class="card h-100 admin-card hover-scale" role="button" @click="editar(s)">
         <div class="card-cover rounded-top" style="height: 8rem"
           :style="s.imagen_url ? { backgroundImage: `url('${s.imagen_url}')` } : {}"></div>
         <div class="card-body">
           <h6 class="card-title mb-1">{{ s.nombre }}</h6>
           <div class="small text-secondary">{{ s.categoria_slug || 'sin categoría' }} · {{ s.activo ? 'Activo' : 'Inactivo' }}</div>
         </div>
-        <div class="card-footer bg-dark border-secondary d-flex justify-content-between">
+        <div class="card-footer admin-card d-flex justify-content-between">
           <button type="button" class="btn btn-outline-light btn-sm" @click.stop="editar(s)">Editar</button>
           <button type="button" class="btn btn-outline-danger btn-sm" @click.stop="eliminar(s)">Eliminar</button>
         </div>
