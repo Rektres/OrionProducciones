@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
-import { Modal } from 'bootstrap';
 import ContactForm from '@/components/ContactForm.vue';
+import ServicioModal from '@/components/ServicioModal.vue';
 import FadeInUp from '@/components/animations/FadeInUp.vue';
 import ParticleBackground from '@/components/animations/ParticleBackground.vue';
+import { useReducedMotion } from '@/composables/useReducedMotion';
 import { serviciosService } from '@/services/servicios';
 import { portafolioService } from '@/services/portafolio';
 import { blogService } from '@/services/blog';
@@ -14,17 +15,15 @@ const servicios = ref<Servicio[]>([]);
 const eventos = ref<Evento[]>([]);
 const posts = ref<Post[]>([]);
 
-const modalServicioEl = ref<HTMLElement | null>(null);
-const servicioSeleccionado = ref<Servicio | null>(null);
-let modalServicioInstance: Modal | null = null;
+const servicioModalRef = ref<InstanceType<typeof ServicioModal> | null>(null);
+const abrirServicio = (svc: Servicio) => servicioModalRef.value?.abrir(svc);
 
-const abrirServicio = (svc: Servicio) => {
-  servicioSeleccionado.value = svc;
-  if (!modalServicioInstance && modalServicioEl.value) {
-    modalServicioInstance = new Modal(modalServicioEl.value);
-  }
-  modalServicioInstance?.show();
-};
+const prefersReducedMotion = useReducedMotion();
+// Se duplica la lista para que la animacion translateX(-50%) cierre el loop
+// sin salto visible. Con reduced-motion se muestra una sola vez, sin animar.
+const serviciosMarquee = computed(() =>
+  prefersReducedMotion.value ? servicios.value : [...servicios.value, ...servicios.value],
+);
 
 const stats = [
   { n: '+150', l: 'Eventos realizados' },
@@ -80,35 +79,23 @@ onMounted(async () => {
     </div>
   </section>
 
-  <section class="py-5">
+  <section class="py-5 overflow-hidden">
     <div class="container">
       <h2 class="text-center fw-bold mb-5">LO QUE HACEMOS</h2>
-      <div v-if="servicios.length" id="serviciosCarousel" class="carousel slide">
-        <div class="carousel-inner">
-          <div v-for="(svc, idx) in servicios" :key="svc.id" class="carousel-item" :class="{ active: idx === 0 }">
-            <div class="d-flex justify-content-center">
-              <div class="card bg-dark border-secondary hover-scale" style="max-width: 22rem; cursor: pointer"
-                @click="abrirServicio(svc)">
-                <div class="card-cover rounded-top" style="height: 12rem"
-                  :style="svc.imagen_url ? { backgroundImage: `url('${svc.imagen_url}')` } : {}"></div>
-                <div class="card-body text-center">
-                  <span class="badge text-bg-warning mb-2">{{ svc.nombre.split(' ')[0] }}</span>
-                  <h5 class="card-title mb-0">{{ svc.nombre }}</h5>
-                </div>
-              </div>
+    </div>
+    <div v-if="servicios.length" class="servicios-marquee-wrap">
+      <div class="servicios-marquee-track" :class="{ 'marquee-static': prefersReducedMotion }">
+        <div v-for="(svc, idx) in serviciosMarquee" :key="`${svc.id}-${idx}`" class="servicio-marquee-item">
+          <div class="card bg-dark border-secondary hover-scale" style="width: 16rem; cursor: pointer"
+            @click="abrirServicio(svc)">
+            <div class="card-cover rounded-top" style="height: 10rem"
+              :style="svc.imagen_url ? { backgroundImage: `url('${svc.imagen_url}')` } : {}"></div>
+            <div class="card-body text-center">
+              <span class="badge text-bg-warning mb-2">{{ svc.nombre.split(' ')[0] }}</span>
+              <h6 class="card-title mb-0">{{ svc.nombre }}</h6>
             </div>
           </div>
         </div>
-        <button v-if="servicios.length > 1" class="carousel-control-prev" type="button"
-          data-bs-target="#serviciosCarousel" data-bs-slide="prev">
-          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Anterior</span>
-        </button>
-        <button v-if="servicios.length > 1" class="carousel-control-next" type="button"
-          data-bs-target="#serviciosCarousel" data-bs-slide="next">
-          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Siguiente</span>
-        </button>
       </div>
     </div>
   </section>
@@ -163,19 +150,5 @@ onMounted(async () => {
     </div>
   </section>
 
-  <div ref="modalServicioEl" class="modal fade" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content bg-dark border-secondary text-white">
-        <div class="modal-header border-secondary">
-          <h5 class="modal-title mb-0">{{ servicioSeleccionado?.nombre }}</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <div class="modal-body">
-          <div v-if="servicioSeleccionado?.imagen_url" class="card-cover rounded mb-3" style="height: 14rem"
-            :style="{ backgroundImage: `url('${servicioSeleccionado.imagen_url}')` }"></div>
-          <p class="text-secondary mb-0">{{ servicioSeleccionado?.descripcion_corta }}</p>
-        </div>
-      </div>
-    </div>
-  </div>
+  <ServicioModal ref="servicioModalRef" />
 </template>

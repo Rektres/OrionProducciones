@@ -66,3 +66,29 @@ h1, h2, h3, .navbar-brand {
   background-size: cover;
   background-position: center;
 }
+
+.servicios-marquee-wrap {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+.servicios-marquee-track {
+  display: flex;
+  gap: 1.5rem;
+  width: max-content;
+  padding: 0 1.5rem;
+  animation: servicios-marquee-scroll 36s linear infinite;
+}
+.servicios-marquee-track:hover {
+  animation-play-state: paused;
+}
+.servicios-marquee-track.marquee-static {
+  animation: none;
+}
+.servicio-marquee-item {
+  flex: 0 0 auto;
+}
+@keyframes servicios-marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}

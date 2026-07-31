@@ -2,12 +2,16 @@
 import { onMounted, ref, computed } from 'vue';
 import FadeInUp from '@/components/animations/FadeInUp.vue';
 import ParticleBackground from '@/components/animations/ParticleBackground.vue';
+import ServicioModal from '@/components/ServicioModal.vue';
 import { serviciosService } from '@/services/servicios';
 import type { Servicio, CategoriaServicio } from '@/types';
 
 const categorias = ref<CategoriaServicio[]>([]);
 const servicios = ref<Servicio[]>([]);
 const sel = ref<string | null>(null);
+
+const servicioModalRef = ref<InstanceType<typeof ServicioModal> | null>(null);
+const abrirServicio = (svc: Servicio) => servicioModalRef.value?.abrir(svc);
 
 const filtrados = computed(() =>
   sel.value ? servicios.value.filter((s) => s.categoria_slug === sel.value) : servicios.value,
@@ -42,12 +46,11 @@ onMounted(async () => {
       <div class="row g-4">
         <div v-for="(svc, idx) in filtrados" :key="svc.id" class="col-md-6 col-lg-4">
           <FadeInUp :delay="idx * 0.05">
-            <div class="card h-100 bg-dark border-secondary">
+            <div class="card h-100 bg-dark border-secondary hover-scale" style="cursor: pointer" @click="abrirServicio(svc)">
               <div v-if="svc.imagen_url" class="card-cover" style="height: 10rem"
                 :style="{ backgroundImage: `url('${svc.imagen_url}')` }"></div>
               <div class="card-body">
-                <h5 class="card-title">{{ svc.nombre }}</h5>
-                <p class="card-text text-secondary small">{{ svc.descripcion_corta }}</p>
+                <h5 class="card-title mb-0">{{ svc.nombre }}</h5>
               </div>
             </div>
           </FadeInUp>
@@ -55,4 +58,6 @@ onMounted(async () => {
       </div>
     </div>
   </section>
+
+  <ServicioModal ref="servicioModalRef" />
 </template>

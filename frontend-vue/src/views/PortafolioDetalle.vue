@@ -87,24 +87,19 @@ onMounted(async () => {
     </div>
 
     <div ref="modalGaleriaEl" class="modal fade" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content bg-dark border-secondary text-white">
-          <div class="modal-header border-secondary">
-            <h5 class="modal-title mb-0">{{ fotoActual?.descripcion || 'Foto del evento' }}</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-          </div>
-          <div class="modal-body position-relative">
-            <div v-if="fotoActual?.imagen_url" class="card-cover rounded" style="height: 26rem"
-              :style="{ backgroundImage: `url('${fotoActual.imagen_url}')` }"></div>
+      <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content bg-transparent border-0">
+          <div class="modal-body position-relative p-0 text-center">
+            <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" style="z-index: 2"
+              data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            <img v-if="fotoActual?.imagen_url" :src="fotoActual.imagen_url" alt="" class="img-fluid rounded" style="max-height: 80vh" />
             <button v-if="totalFotos > 1" type="button"
               class="btn btn-outline-light position-absolute top-50 start-0 translate-middle-y ms-2"
               @click="fotoAnterior">‹</button>
             <button v-if="totalFotos > 1" type="button"
               class="btn btn-outline-light position-absolute top-50 end-0 translate-middle-y me-2"
               @click="fotoSiguiente">›</button>
-          </div>
-          <div v-if="totalFotos > 1" class="modal-footer border-secondary justify-content-center">
-            <small class="text-secondary">{{ fotoIndex + 1 }} / {{ totalFotos }}</small>
+            <div v-if="totalFotos > 1" class="text-white small mt-2">{{ fotoIndex + 1 }} / {{ totalFotos }}</div>
           </div>
         </div>
       </div>
