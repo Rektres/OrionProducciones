@@ -24,7 +24,7 @@ const prefersReducedMotion = useReducedMotion();
 // (modulo), sin duplicar el arreglo — evita que un mismo servicio aparezca
 // repetido en pantalla. Avanzar mueve el indice +1; al pasar el ultimo
 // vuelve a 0 (el "final a la izquierda reaparece a la derecha").
-const SERVICIOS_VISIBLES = 4;
+const SERVICIOS_VISIBLES = 3;
 const servicioInicio = ref(0);
 let servicioAutoTimer: ReturnType<typeof setInterval> | undefined;
 
@@ -52,8 +52,8 @@ const detenerAutoServicios = () => {
 };
 const iniciarAutoServicios = () => {
   detenerAutoServicios();
-  if (prefersReducedMotion.value || servicios.value.length <= SERVICIOS_VISIBLES) return;
-  servicioAutoTimer = setInterval(servicioSiguiente, 3500);
+  if (prefersReducedMotion.value || servicios.value.length <= 1) return;
+  servicioAutoTimer = setInterval(servicioSiguiente, 3000);
 };
 const avanzarManual = (fn: () => void) => {
   fn();
@@ -169,7 +169,7 @@ onBeforeUnmount(detenerAutoServicios);
       <h2 class="text-center fw-bold mb-5">LO QUE HACEMOS</h2>
       <div v-if="servicios.length" class="d-flex align-items-center justify-content-center gap-2"
         @mouseenter="detenerAutoServicios" @mouseleave="iniciarAutoServicios">
-        <button v-if="servicios.length > SERVICIOS_VISIBLES" type="button" class="btn btn-outline-light btn-sm flex-shrink-0"
+        <button v-if="servicios.length > 1" type="button" class="btn btn-outline-light btn-sm flex-shrink-0"
           @click="avanzarManual(servicioAnterior)">‹</button>
         <div class="servicios-carousel-viewport">
           <TransitionGroup name="servicio-slide" tag="div" class="d-flex gap-3 justify-content-center">
@@ -186,7 +186,7 @@ onBeforeUnmount(detenerAutoServicios);
             </div>
           </TransitionGroup>
         </div>
-        <button v-if="servicios.length > SERVICIOS_VISIBLES" type="button" class="btn btn-outline-light btn-sm flex-shrink-0"
+        <button v-if="servicios.length > 1" type="button" class="btn btn-outline-light btn-sm flex-shrink-0"
           @click="avanzarManual(servicioSiguiente)">›</button>
       </div>
     </div>

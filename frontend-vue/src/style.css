@@ -136,19 +136,14 @@ h1, h2, h3, .navbar-brand {
   display: flex;
   align-items: flex-end;
   padding: 0.6rem;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.88), transparent 60%);
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.85), transparent 45%);
   color: #fff;
-  font-size: 0.8rem;
-  font-weight: 600;
-  opacity: 0;
-  transition: opacity 0.25s ease;
+  font-size: 0.85rem;
+  font-weight: 700;
   pointer-events: none;
 }
 .galeria-item-activa {
   transform: scale(1.06);
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.55);
   z-index: 2;
-}
-.galeria-item-activa .galeria-item-leyenda {
-  opacity: 1;
 }
