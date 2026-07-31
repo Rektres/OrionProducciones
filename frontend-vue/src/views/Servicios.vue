@@ -44,6 +44,8 @@ onMounted(async () => {
         <div v-for="(svc, idx) in filtrados" :key="svc.id" class="col-md-6 col-lg-4">
           <FadeInUp :delay="idx * 0.05">
             <div class="card h-100 bg-dark border-secondary">
+              <div v-if="svc.imagen_url" class="card-cover" style="height: 10rem"
+                :style="{ backgroundImage: `url('${svc.imagen_url}')` }"></div>
               <div class="card-body">
                 <h5 class="card-title">{{ svc.nombre }}</h5>
                 <p class="card-text text-secondary small">{{ svc.descripcion_corta }}</p>

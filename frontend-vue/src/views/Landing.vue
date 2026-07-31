@@ -91,7 +91,7 @@ onMounted(async () => {
         <div v-for="ev in eventos.slice(0, 4)" :key="ev.id" class="col-md-6">
           <RouterLink :to="`/portafolio/${ev.slug}`" class="text-decoration-none">
             <div class="card border-0 card-cover d-flex justify-content-end"
-              :style="{ backgroundImage: `url('${ev.imagen_destacada}')` }">
+              :style="ev.imagen_url ? { backgroundImage: `url('${ev.imagen_url}')` } : {}">
               <div class="p-3" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent)">
                 <h5 class="text-white mb-0">{{ ev.nombre }}</h5>
                 <small class="text-secondary">{{ ev.lugar }}</small>
@@ -113,7 +113,7 @@ onMounted(async () => {
         <div v-for="p in posts" :key="p.id" class="col-md-4">
           <RouterLink :to="`/blog/${p.slug}`" class="text-decoration-none">
             <div class="card h-100 bg-dark border-secondary">
-              <div class="card-cover" style="height: 12rem" :style="{ backgroundImage: `url('${p.imagen_destacada}')` }"></div>
+              <div class="card-cover" style="height: 12rem" :style="p.imagen_url ? { backgroundImage: `url('${p.imagen_url}')` } : {}"></div>
               <div class="card-body">
                 <span class="badge text-bg-danger mb-2">Blog</span>
                 <h6 class="card-title">{{ p.titulo }}</h6>

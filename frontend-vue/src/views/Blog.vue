@@ -51,7 +51,7 @@ onMounted(async () => {
           <FadeInUp>
             <RouterLink :to="`/blog/${p.slug}`" class="text-decoration-none">
               <div class="card h-100 bg-dark border-secondary">
-                <div class="card-cover" style="height: 12rem" :style="{ backgroundImage: `url('${p.imagen_destacada}')` }"></div>
+                <div class="card-cover" style="height: 12rem" :style="p.imagen_url ? { backgroundImage: `url('${p.imagen_url}')` } : {}"></div>
                 <div class="card-body">
                   <h6 class="card-title">{{ p.titulo }}</h6>
                   <p class="card-text text-secondary small">{{ p.extracto }}</p>

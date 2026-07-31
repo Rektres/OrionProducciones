@@ -14,6 +14,8 @@ export interface Servicio {
   descripcion_corta: string;
   descripcion_larga: string;
   imagen: string | null;
+  imagen_archivo: string | null;
+  imagen_url: string | null;
   icono_svg: string | null;
   activo: boolean;
   orden: number;
@@ -23,7 +25,9 @@ export interface Servicio {
 export interface FotoEvento {
   id: string;
   evento: string;
-  imagen: string;
+  imagen: string | null;
+  imagen_archivo: string | null;
+  imagen_url: string | null;
   descripcion: string | null;
   orden: number;
   created_at: string;
@@ -46,6 +50,8 @@ export interface Evento {
   descripcion_corta: string;
   descripcion_larga: string;
   imagen_destacada: string | null;
+  imagen_archivo: string | null;
+  imagen_url: string | null;
   fecha_realizacion: string;
   lugar: string;
   asistentes: number | null;
@@ -68,6 +74,8 @@ export interface Post {
   titulo: string;
   slug: string;
   imagen_destacada: string | null;
+  imagen_archivo: string | null;
+  imagen_url: string | null;
   extracto: string;
   contenido: string;
   estado: 'borrador' | 'revision' | 'publicado';
@@ -88,4 +96,43 @@ export interface CotizacionFormData {
   descripcion: string;
   fecha_estimada?: string;
   presupuesto_estimado?: string;
+}
+
+// --- Tipos de entrada para el panel de administracion ---
+// No incluyen los campos derivados/read-only (categoria_slug, tipo_slug,
+// imagen_archivo, created_at, etc.) que el servidor calcula solo.
+
+export interface ServicioInput {
+  nombre: string;
+  categoria: string | null;
+  descripcion_corta: string;
+  descripcion_larga: string;
+  icono_svg: string | null;
+  activo: boolean;
+  orden: number;
+}
+
+export interface EventoInput {
+  nombre: string;
+  slug: string;
+  tipo: string | null;
+  cliente: string;
+  descripcion_corta: string;
+  descripcion_larga: string;
+  fecha_realizacion: string;
+  lugar: string;
+  asistentes: number | null;
+  destacado: boolean;
+  publicado: boolean;
+  orden: number;
+}
+
+export interface PostInput {
+  titulo: string;
+  slug: string;
+  extracto: string;
+  contenido: string;
+  estado: 'borrador' | 'revision' | 'publicado';
+  fecha_publicacion: string | null;
+  tags: string[];
 }

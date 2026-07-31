@@ -1,7 +1,14 @@
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_http_methods
 from rest_framework import generics
+from rest_framework.throttling import AnonRateThrottle
+
+from .emails import enviar_notificacion_cotizacion
+from .imagenes import TIPOS_IMAGEN_PERMITIDOS
 from .models import (
     CategoriaServicio, Servicio, EventoTipo, Evento, FotoEvento,
-    Tag, Post, Cotizacion,
+    Tag, Post, Cotizacion, ImagenArchivo,
 )
 from .serializers import (
     CategoriaServicioSerializer, ServicioSerializer, EventoTipoSerializer,
@@ -90,6 +97,28 @@ class PostDetail(generics.RetrieveAPIView):
     queryset = Post.objects.filter(estado='publicado')
 
 
+class CotizacionThrottle(AnonRateThrottle):
+    scope = 'cotizacion'
+
+
 class CotizacionCreate(generics.CreateAPIView):
     serializer_class = CotizacionSerializer
     queryset = Cotizacion.objects.all()
+    throttle_classes = [CotizacionThrottle]
+
+    def perform_create(self, serializer):
+        cotizacion = serializer.save()
+        enviar_notificacion_cotizacion(cotizacion)
+
+
+@require_http_methods(['GET', 'HEAD'])
+def imagen_archivo_raw(request, pk):
+    imagen = get_object_or_404(
+        ImagenArchivo.objects.only('contenido', 'content_type', 'nombre_original'), pk=pk,
+    )
+    content_type = imagen.content_type if imagen.content_type in TIPOS_IMAGEN_PERMITIDOS else 'application/octet-stream'
+    response = HttpResponse(bytes(imagen.contenido), content_type=content_type)
+    response['Content-Disposition'] = 'inline'
+    response['X-Content-Type-Options'] = 'nosniff'
+    response['Cache-Control'] = 'public, max-age=31536000, immutable'
+    return response

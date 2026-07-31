@@ -25,7 +25,7 @@ onMounted(async () => {
   <div v-else-if="!evento" class="container py-5 text-center text-secondary">Evento no encontrado</div>
   <template v-else>
     <div class="card-cover d-flex align-items-end" style="height: 24rem"
-      :style="{ backgroundImage: `url('${evento.imagen_destacada}')` }">
+      :style="evento.imagen_url ? { backgroundImage: `url('${evento.imagen_url}')` } : {}">
       <div class="container p-4" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent)">
         <span class="badge text-bg-warning mb-2">{{ evento.tipo_slug }}</span>
         <h1 class="text-white">{{ evento.nombre }}</h1>
@@ -46,8 +46,9 @@ onMounted(async () => {
         <h2 class="text-orion-primary">Galería</h2>
         <div class="row g-3">
           <div v-for="f in evento.fotos" :key="f.id" class="col-6 col-md-4">
-            <a :href="f.imagen" target="_blank" rel="noopener noreferrer">
-              <div class="card-cover rounded" style="height: 12rem" :style="{ backgroundImage: `url('${f.imagen}')` }"></div>
+            <a :href="f.imagen_url ?? undefined" target="_blank" rel="noopener noreferrer">
+              <div class="card-cover rounded" style="height: 12rem"
+                :style="f.imagen_url ? { backgroundImage: `url('${f.imagen_url}')` } : {}"></div>
             </a>
           </div>
         </div>

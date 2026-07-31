@@ -27,7 +27,7 @@ onMounted(async () => {
   <div v-else-if="!post" class="container py-5 text-center text-secondary">Artículo no encontrado</div>
   <template v-else>
     <div class="card-cover d-flex align-items-end" style="height: 22rem"
-      :style="{ backgroundImage: `url('${post.imagen_destacada}')` }">
+      :style="post.imagen_url ? { backgroundImage: `url('${post.imagen_url}')` } : {}">
       <div class="container p-4" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent)">
         <h1 class="text-white">{{ post.titulo }}</h1>
       </div>

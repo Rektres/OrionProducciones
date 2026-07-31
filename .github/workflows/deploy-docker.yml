@@ -44,6 +44,7 @@ jobs:
         run: |
           pip install --no-cache-dir -r requirements.txt
           python manage.py check
+          python manage.py makemigrations --check --dry-run
 
   deploy:
     needs: test

@@ -2,6 +2,18 @@ import uuid
 from django.db import models
 
 
+class ImagenArchivo(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    contenido = models.BinaryField(editable=False)
+    content_type = models.CharField(max_length=100)
+    nombre_original = models.CharField(max_length=255)
+    tamano = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'imagenes_archivo'
+
+
 class CategoriaServicio(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nombre = models.TextField()
@@ -24,6 +36,10 @@ class Servicio(models.Model):
     descripcion_corta = models.TextField()
     descripcion_larga = models.TextField()
     imagen = models.TextField(null=True, blank=True)
+    imagen_archivo = models.ForeignKey(
+        ImagenArchivo, on_delete=models.SET_NULL, null=True, blank=True,
+        db_column='imagen_archivo_id', related_name='+',
+    )
     icono_svg = models.TextField(null=True, blank=True)
     activo = models.BooleanField(default=True)
     orden = models.IntegerField(default=0)
@@ -56,6 +72,10 @@ class Evento(models.Model):
     descripcion_corta = models.TextField()
     descripcion_larga = models.TextField()
     imagen_destacada = models.TextField(null=True, blank=True)
+    imagen_archivo = models.ForeignKey(
+        ImagenArchivo, on_delete=models.SET_NULL, null=True, blank=True,
+        db_column='imagen_archivo_id', related_name='+',
+    )
     fecha_realizacion = models.DateField()
     lugar = models.TextField()
     asistentes = models.IntegerField(null=True, blank=True)
@@ -74,7 +94,11 @@ class FotoEvento(models.Model):
         Evento, on_delete=models.CASCADE,
         db_column='evento_id', related_name='fotos',
     )
-    imagen = models.TextField()
+    imagen = models.TextField(null=True, blank=True)
+    imagen_archivo = models.ForeignKey(
+        ImagenArchivo, on_delete=models.SET_NULL, null=True, blank=True,
+        db_column='imagen_archivo_id', related_name='+',
+    )
     descripcion = models.TextField(null=True, blank=True)
     orden = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -100,6 +124,10 @@ class Post(models.Model):
     titulo = models.TextField()
     slug = models.TextField(unique=True)
     imagen_destacada = models.TextField(null=True, blank=True)
+    imagen_archivo = models.ForeignKey(
+        ImagenArchivo, on_delete=models.SET_NULL, null=True, blank=True,
+        db_column='imagen_archivo_id', related_name='+',
+    )
     extracto = models.TextField()
     contenido = models.TextField()
     estado = models.TextField(choices=ESTADOS, default='borrador')

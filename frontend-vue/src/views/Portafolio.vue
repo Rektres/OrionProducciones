@@ -45,7 +45,7 @@ onMounted(async () => {
           <FadeInUp>
             <RouterLink :to="`/portafolio/${ev.slug}`" class="text-decoration-none">
               <div class="card border-0 card-cover d-flex justify-content-end"
-                :style="{ backgroundImage: `url('${ev.imagen_destacada}')` }">
+                :style="ev.imagen_url ? { backgroundImage: `url('${ev.imagen_url}')` } : {}">
                 <div class="p-3" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent)">
                   <span class="badge text-bg-warning mb-1">{{ ev.tipo_slug }}</span>
                   <h6 class="text-white mb-0">{{ ev.nombre }}</h6>
