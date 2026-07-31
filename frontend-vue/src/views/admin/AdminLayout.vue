@@ -21,7 +21,7 @@ const salir = () => {
         <button type="button" class="btn btn-outline-light btn-sm" @click="salir">Salir</button>
       </div>
     </nav>
-    <div class="container-fluid py-4">
+    <div class="container-fluid px-4 px-md-5 py-4">
       <router-view />
     </div>
   </div>

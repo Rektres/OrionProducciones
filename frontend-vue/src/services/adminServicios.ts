@@ -7,6 +7,15 @@ export const adminServiciosService = {
     return data;
   },
 
+  async crearCategoria(nombre: string, slug: string): Promise<CategoriaServicio> {
+    const { data } = await api.post('/admin/categorias-servicio/', { nombre, slug, orden: 0 });
+    return data;
+  },
+
+  async eliminarCategoria(id: string): Promise<void> {
+    await api.delete(`/admin/categorias-servicio/${id}/`);
+  },
+
   async listar(): Promise<Servicio[]> {
     const { data } = await api.get('/admin/servicios/');
     return data;

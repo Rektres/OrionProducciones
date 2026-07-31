@@ -124,7 +124,7 @@ const agregarTag = async () => {
     <button type="button" class="btn btn-orion btn-sm" @click="nuevo">Nuevo post</button>
   </div>
 
-  <div v-if="mostrarForm" class="card bg-dark border-secondary p-3 mb-4">
+  <div v-if="mostrarForm" class="card bg-dark border-secondary p-4 mb-4">
     <form class="row g-3" @submit.prevent="guardar">
       <div class="col-md-6">
         <label class="form-label">Título *</label>
@@ -176,30 +176,21 @@ const agregarTag = async () => {
     </form>
   </div>
 
-  <table class="table table-dark table-sm align-middle">
-    <thead>
-      <tr>
-        <th></th>
-        <th>Título</th>
-        <th>Estado</th>
-        <th>Publicación</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="p in posts" :key="p.id">
-        <td style="width: 60px">
-          <div v-if="p.imagen_url" class="card-cover rounded" style="height: 2.5rem; width: 2.5rem"
-            :style="{ backgroundImage: `url('${p.imagen_url}')` }"></div>
-        </td>
-        <td>{{ p.titulo }}</td>
-        <td>{{ p.estado }}</td>
-        <td>{{ p.fecha_publicacion || '-' }}</td>
-        <td class="text-end">
-          <button type="button" class="btn btn-outline-light btn-sm me-2" @click="editar(p)">Editar</button>
-          <button type="button" class="btn btn-outline-danger btn-sm" @click="eliminar(p)">Eliminar</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="row g-3">
+    <div v-for="p in posts" :key="p.id" class="col-sm-6 col-lg-4 col-xl-3">
+      <div class="card h-100 bg-dark border-secondary hover-scale" role="button" @click="editar(p)">
+        <div class="card-cover rounded-top" style="height: 8rem"
+          :style="p.imagen_url ? { backgroundImage: `url('${p.imagen_url}')` } : {}"></div>
+        <div class="card-body">
+          <h6 class="card-title mb-1">{{ p.titulo }}</h6>
+          <div class="small text-secondary">{{ p.estado }} · {{ p.fecha_publicacion || 'sin fecha' }}</div>
+        </div>
+        <div class="card-footer bg-dark border-secondary d-flex justify-content-between">
+          <button type="button" class="btn btn-outline-light btn-sm" @click.stop="editar(p)">Editar</button>
+          <button type="button" class="btn btn-outline-danger btn-sm" @click.stop="eliminar(p)">Eliminar</button>
+        </div>
+      </div>
+    </div>
+    <div v-if="!posts.length" class="col-12 text-secondary">Sin posts todavía.</div>
+  </div>
 </template>

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
-import ContactForm from '@/components/ContactForm.vue';
 import FadeInUp from '@/components/animations/FadeInUp.vue';
 import ParticleBackground from '@/components/animations/ParticleBackground.vue';
 import { serviciosService } from '@/services/servicios';
@@ -54,13 +53,6 @@ onMounted(async () => {
           </FadeInUp>
         </div>
       </div>
-    </div>
-  </section>
-
-  <section id="cotizacion-servicios" class="py-5 cotiza-section">
-    <div class="container" style="max-width: 720px">
-      <h2 class="text-center fw-bold mb-4">CUÉNTANOS TU IDEA</h2>
-      <ContactForm />
     </div>
   </section>
 </template>

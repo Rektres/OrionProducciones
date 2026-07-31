@@ -14,6 +14,9 @@ const error = ref('');
 const fotos = ref<FotoEvento[]>([]);
 const subiendoFoto = ref(false);
 
+const mostrarTipos = ref(false);
+const nuevoTipoNombre = ref('');
+
 const formVacio = (): EventoInput => ({
   nombre: '',
   slug: '',
@@ -145,6 +148,23 @@ const eliminarFoto = async (foto: FotoEvento) => {
   await adminPortafolioService.eliminarFoto(foto.id);
   if (editandoId.value) await cargarFotos(editandoId.value);
 };
+
+const slugify = (texto: string) =>
+  texto.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+const agregarTipo = async () => {
+  const nombre = nuevoTipoNombre.value.trim();
+  if (!nombre) return;
+  await adminPortafolioService.crearTipo(nombre, slugify(nombre));
+  nuevoTipoNombre.value = '';
+  tipos.value = await adminPortafolioService.listarTipos();
+};
+
+const eliminarTipo = async (t: EventoTipo) => {
+  if (!confirm(`¿Eliminar el tipo "${t.nombre}"? Los eventos que lo usen quedarán sin tipo.`)) return;
+  await adminPortafolioService.eliminarTipo(t.id);
+  await cargar();
+};
 </script>
 
 <template>
@@ -153,7 +173,29 @@ const eliminarFoto = async (foto: FotoEvento) => {
     <button type="button" class="btn btn-orion btn-sm" @click="nuevo">Nuevo evento</button>
   </div>
 
-  <div v-if="mostrarForm" class="card bg-dark border-secondary p-3 mb-4">
+  <div class="card bg-dark border-secondary p-3 mb-4">
+    <div class="d-flex justify-content-between align-items-center" style="cursor: pointer" @click="mostrarTipos = !mostrarTipos">
+      <h6 class="mb-0">Tipos de evento</h6>
+      <span class="text-secondary">{{ mostrarTipos ? '▲' : '▼' }}</span>
+    </div>
+    <div v-if="mostrarTipos" class="mt-3">
+      <ul class="list-group list-group-flush mb-2">
+        <li v-for="t in tipos" :key="t.id"
+          class="list-group-item bg-dark text-white d-flex justify-content-between align-items-center px-0">
+          {{ t.nombre }}
+          <button type="button" class="btn btn-outline-danger btn-sm" @click="eliminarTipo(t)">Eliminar</button>
+        </li>
+        <li v-if="!tipos.length" class="list-group-item bg-dark text-secondary px-0">Sin tipos todavía.</li>
+      </ul>
+      <div class="input-group input-group-sm">
+        <input v-model="nuevoTipoNombre" type="text" class="form-control" placeholder="Nuevo tipo..."
+          @keyup.enter="agregarTipo" />
+        <button type="button" class="btn btn-outline-light" @click="agregarTipo">Agregar</button>
+      </div>
+    </div>
+  </div>
+
+  <div v-if="mostrarForm" class="card bg-dark border-secondary p-4 mb-4">
     <form class="row g-3" @submit.prevent="guardar">
       <div class="col-md-6">
         <label class="form-label">Nombre *</label>
@@ -242,32 +284,22 @@ const eliminarFoto = async (foto: FotoEvento) => {
     </form>
   </div>
 
-  <table class="table table-dark table-sm align-middle">
-    <thead>
-      <tr>
-        <th></th>
-        <th>Nombre</th>
-        <th>Tipo</th>
-        <th>Fecha</th>
-        <th>Publicado</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="ev in eventos" :key="ev.id">
-        <td style="width: 60px">
-          <div v-if="ev.imagen_url" class="card-cover rounded" style="height: 2.5rem; width: 2.5rem"
-            :style="{ backgroundImage: `url('${ev.imagen_url}')` }"></div>
-        </td>
-        <td>{{ ev.nombre }}</td>
-        <td>{{ ev.tipo_slug || '-' }}</td>
-        <td>{{ ev.fecha_realizacion }}</td>
-        <td>{{ ev.publicado ? 'Sí' : 'No' }}</td>
-        <td class="text-end">
-          <button type="button" class="btn btn-outline-light btn-sm me-2" @click="editar(ev)">Editar</button>
-          <button type="button" class="btn btn-outline-danger btn-sm" @click="eliminar(ev)">Eliminar</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="row g-3">
+    <div v-for="ev in eventos" :key="ev.id" class="col-sm-6 col-lg-4 col-xl-3">
+      <div class="card h-100 bg-dark border-secondary hover-scale" role="button" @click="editar(ev)">
+        <div class="card-cover rounded-top" style="height: 8rem"
+          :style="ev.imagen_url ? { backgroundImage: `url('${ev.imagen_url}')` } : {}"></div>
+        <div class="card-body">
+          <h6 class="card-title mb-1">{{ ev.nombre }}</h6>
+          <div class="small text-secondary">{{ ev.tipo_slug || 'sin tipo' }} · {{ ev.fecha_realizacion }}</div>
+          <div class="small text-secondary">{{ ev.publicado ? 'Publicado' : 'Sin publicar' }}</div>
+        </div>
+        <div class="card-footer bg-dark border-secondary d-flex justify-content-between">
+          <button type="button" class="btn btn-outline-light btn-sm" @click.stop="editar(ev)">Editar</button>
+          <button type="button" class="btn btn-outline-danger btn-sm" @click.stop="eliminar(ev)">Eliminar</button>
+        </div>
+      </div>
+    </div>
+    <div v-if="!eventos.length" class="col-12 text-secondary">Sin eventos todavía.</div>
+  </div>
 </template>

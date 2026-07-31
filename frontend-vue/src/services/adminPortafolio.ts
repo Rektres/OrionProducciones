@@ -7,6 +7,15 @@ export const adminPortafolioService = {
     return data;
   },
 
+  async crearTipo(nombre: string, slug: string): Promise<EventoTipo> {
+    const { data } = await api.post('/admin/evento-tipos/', { nombre, slug });
+    return data;
+  },
+
+  async eliminarTipo(id: string): Promise<void> {
+    await api.delete(`/admin/evento-tipos/${id}/`);
+  },
+
   async listar(): Promise<Evento[]> {
     const { data } = await api.get('/admin/eventos/');
     return data;

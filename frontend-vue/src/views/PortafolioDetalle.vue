@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { Modal } from 'bootstrap';
 import { portafolioService } from '@/services/portafolio';
 import type { Evento } from '@/types';
 
@@ -8,6 +9,33 @@ const route = useRoute();
 const router = useRouter();
 const evento = ref<Evento | null>(null);
 const loading = ref(true);
+
+const fotoIndex = ref(0);
+const modalGaleriaEl = ref<HTMLElement | null>(null);
+let modalGaleriaInstance: Modal | null = null;
+
+const fotoActual = computed(() => evento.value?.fotos?.[fotoIndex.value] ?? null);
+const totalFotos = computed(() => evento.value?.fotos?.length ?? 0);
+
+const abrirFoto = (idx: number) => {
+  fotoIndex.value = idx;
+  if (!modalGaleriaInstance && modalGaleriaEl.value) {
+    modalGaleriaInstance = new Modal(modalGaleriaEl.value);
+  }
+  modalGaleriaInstance?.show();
+};
+
+const fotoAnterior = () => {
+  const total = evento.value?.fotos?.length ?? 0;
+  if (!total) return;
+  fotoIndex.value = (fotoIndex.value - 1 + total) % total;
+};
+
+const fotoSiguiente = () => {
+  const total = evento.value?.fotos?.length ?? 0;
+  if (!total) return;
+  fotoIndex.value = (fotoIndex.value + 1) % total;
+};
 
 onMounted(async () => {
   try {
@@ -45,17 +73,40 @@ onMounted(async () => {
       <div v-if="evento.fotos && evento.fotos.length" class="mt-4">
         <h2 class="text-orion-primary">Galería</h2>
         <div class="row g-3">
-          <div v-for="f in evento.fotos" :key="f.id" class="col-6 col-md-4">
-            <a :href="f.imagen_url ?? undefined" target="_blank" rel="noopener noreferrer">
-              <div class="card-cover rounded" style="height: 12rem"
-                :style="f.imagen_url ? { backgroundImage: `url('${f.imagen_url}')` } : {}"></div>
-            </a>
+          <div v-for="(f, idx) in evento.fotos" :key="f.id" class="col-6 col-md-4">
+            <div class="card-cover rounded" style="height: 12rem; cursor: pointer"
+              :style="f.imagen_url ? { backgroundImage: `url('${f.imagen_url}')` } : {}"
+              role="button" @click="abrirFoto(idx)"></div>
           </div>
         </div>
       </div>
 
       <div class="text-center mt-5">
         <button class="btn btn-orion" @click="router.push({ path: '/', hash: '#cotizacion' })">Solicitar cotización</button>
+      </div>
+    </div>
+
+    <div ref="modalGaleriaEl" class="modal fade" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-dark border-secondary text-white">
+          <div class="modal-header border-secondary">
+            <h5 class="modal-title mb-0">{{ fotoActual?.descripcion || 'Foto del evento' }}</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body position-relative">
+            <div v-if="fotoActual?.imagen_url" class="card-cover rounded" style="height: 26rem"
+              :style="{ backgroundImage: `url('${fotoActual.imagen_url}')` }"></div>
+            <button v-if="totalFotos > 1" type="button"
+              class="btn btn-outline-light position-absolute top-50 start-0 translate-middle-y ms-2"
+              @click="fotoAnterior">‹</button>
+            <button v-if="totalFotos > 1" type="button"
+              class="btn btn-outline-light position-absolute top-50 end-0 translate-middle-y me-2"
+              @click="fotoSiguiente">›</button>
+          </div>
+          <div v-if="totalFotos > 1" class="modal-footer border-secondary justify-content-center">
+            <small class="text-secondary">{{ fotoIndex + 1 }} / {{ totalFotos }}</small>
+          </div>
+        </div>
       </div>
     </div>
   </template>

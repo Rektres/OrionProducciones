@@ -11,6 +11,9 @@ const editandoId = ref<string | null>(null);
 const guardando = ref(false);
 const error = ref('');
 
+const mostrarCategorias = ref(false);
+const nuevaCategoriaNombre = ref('');
+
 const formVacio = (): ServicioInput => ({
   nombre: '',
   categoria: null,
@@ -104,6 +107,23 @@ const quitarImagen = async () => {
 };
 
 const servicioActual = () => servicios.value.find((s) => s.id === editandoId.value) || null;
+
+const slugify = (texto: string) =>
+  texto.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+const agregarCategoria = async () => {
+  const nombre = nuevaCategoriaNombre.value.trim();
+  if (!nombre) return;
+  await adminServiciosService.crearCategoria(nombre, slugify(nombre));
+  nuevaCategoriaNombre.value = '';
+  categorias.value = await adminServiciosService.listarCategorias();
+};
+
+const eliminarCategoria = async (c: CategoriaServicio) => {
+  if (!confirm(`¿Eliminar la categoría "${c.nombre}"? Los servicios que la usen quedarán sin categoría.`)) return;
+  await adminServiciosService.eliminarCategoria(c.id);
+  await cargar();
+};
 </script>
 
 <template>
@@ -112,7 +132,29 @@ const servicioActual = () => servicios.value.find((s) => s.id === editandoId.val
     <button type="button" class="btn btn-orion btn-sm" @click="nuevo">Nuevo servicio</button>
   </div>
 
-  <div v-if="mostrarForm" class="card bg-dark border-secondary p-3 mb-4">
+  <div class="card bg-dark border-secondary p-3 mb-4">
+    <div class="d-flex justify-content-between align-items-center" style="cursor: pointer" @click="mostrarCategorias = !mostrarCategorias">
+      <h6 class="mb-0">Categorías</h6>
+      <span class="text-secondary">{{ mostrarCategorias ? '▲' : '▼' }}</span>
+    </div>
+    <div v-if="mostrarCategorias" class="mt-3">
+      <ul class="list-group list-group-flush mb-2">
+        <li v-for="c in categorias" :key="c.id"
+          class="list-group-item bg-dark text-white d-flex justify-content-between align-items-center px-0">
+          {{ c.nombre }}
+          <button type="button" class="btn btn-outline-danger btn-sm" @click="eliminarCategoria(c)">Eliminar</button>
+        </li>
+        <li v-if="!categorias.length" class="list-group-item bg-dark text-secondary px-0">Sin categorías todavía.</li>
+      </ul>
+      <div class="input-group input-group-sm">
+        <input v-model="nuevaCategoriaNombre" type="text" class="form-control" placeholder="Nueva categoría..."
+          @keyup.enter="agregarCategoria" />
+        <button type="button" class="btn btn-outline-light" @click="agregarCategoria">Agregar</button>
+      </div>
+    </div>
+  </div>
+
+  <div v-if="mostrarForm" class="card bg-dark border-secondary p-4 mb-4">
     <form class="row g-3" @submit.prevent="guardar">
       <div class="col-md-6">
         <label class="form-label">Nombre *</label>
@@ -163,32 +205,21 @@ const servicioActual = () => servicios.value.find((s) => s.id === editandoId.val
     </form>
   </div>
 
-  <table class="table table-dark table-sm align-middle">
-    <thead>
-      <tr>
-        <th></th>
-        <th>Nombre</th>
-        <th>Categoría</th>
-        <th>Activo</th>
-        <th>Orden</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="s in servicios" :key="s.id">
-        <td style="width: 60px">
-          <div v-if="s.imagen_url" class="card-cover rounded" style="height: 2.5rem; width: 2.5rem"
-            :style="{ backgroundImage: `url('${s.imagen_url}')` }"></div>
-        </td>
-        <td>{{ s.nombre }}</td>
-        <td>{{ s.categoria_slug || '-' }}</td>
-        <td>{{ s.activo ? 'Sí' : 'No' }}</td>
-        <td>{{ s.orden }}</td>
-        <td class="text-end">
-          <button type="button" class="btn btn-outline-light btn-sm me-2" @click="editar(s)">Editar</button>
-          <button type="button" class="btn btn-outline-danger btn-sm" @click="eliminar(s)">Eliminar</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="row g-3">
+    <div v-for="s in servicios" :key="s.id" class="col-sm-6 col-lg-4 col-xl-3">
+      <div class="card h-100 bg-dark border-secondary hover-scale" role="button" @click="editar(s)">
+        <div class="card-cover rounded-top" style="height: 8rem"
+          :style="s.imagen_url ? { backgroundImage: `url('${s.imagen_url}')` } : {}"></div>
+        <div class="card-body">
+          <h6 class="card-title mb-1">{{ s.nombre }}</h6>
+          <div class="small text-secondary">{{ s.categoria_slug || 'sin categoría' }} · {{ s.activo ? 'Activo' : 'Inactivo' }}</div>
+        </div>
+        <div class="card-footer bg-dark border-secondary d-flex justify-content-between">
+          <button type="button" class="btn btn-outline-light btn-sm" @click.stop="editar(s)">Editar</button>
+          <button type="button" class="btn btn-outline-danger btn-sm" @click.stop="eliminar(s)">Eliminar</button>
+        </div>
+      </div>
+    </div>
+    <div v-if="!servicios.length" class="col-12 text-secondary">Sin servicios todavía.</div>
+  </div>
 </template>
