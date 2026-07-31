@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import ContactForm from '@/components/ContactForm.vue';
 import ServicioModal from '@/components/ServicioModal.vue';
@@ -9,21 +9,76 @@ import { useReducedMotion } from '@/composables/useReducedMotion';
 import { serviciosService } from '@/services/servicios';
 import { portafolioService } from '@/services/portafolio';
 import { blogService } from '@/services/blog';
-import type { Servicio, Evento, Post } from '@/types';
+import type { Servicio, Evento, Post, FotoEvento } from '@/types';
 
 const servicios = ref<Servicio[]>([]);
-const eventos = ref<Evento[]>([]);
+const eventosDestacados = ref<Evento[]>([]);
 const posts = ref<Post[]>([]);
 
 const servicioModalRef = ref<InstanceType<typeof ServicioModal> | null>(null);
 const abrirServicio = (svc: Servicio) => servicioModalRef.value?.abrir(svc);
 
 const prefersReducedMotion = useReducedMotion();
-// Se duplica la lista para que la animacion translateX(-50%) cierre el loop
-// sin salto visible. Con reduced-motion se muestra una sola vez, sin animar.
-const serviciosMarquee = computed(() =>
-  prefersReducedMotion.value ? servicios.value : [...servicios.value, ...servicios.value],
-);
+
+// Carrusel de servicios: ventana de N items visibles calculada por indice
+// (modulo), sin duplicar el arreglo — evita que un mismo servicio aparezca
+// repetido en pantalla. Avanzar mueve el indice +1; al pasar el ultimo
+// vuelve a 0 (el "final a la izquierda reaparece a la derecha").
+const SERVICIOS_VISIBLES = 4;
+const servicioInicio = ref(0);
+let servicioAutoTimer: ReturnType<typeof setInterval> | undefined;
+
+const serviciosVisibles = computed(() => {
+  const total = servicios.value.length;
+  if (!total) return [];
+  const n = Math.min(SERVICIOS_VISIBLES, total);
+  return Array.from({ length: n }, (_, i) => servicios.value[(servicioInicio.value + i) % total]);
+});
+
+const servicioSiguiente = () => {
+  if (!servicios.value.length) return;
+  servicioInicio.value = (servicioInicio.value + 1) % servicios.value.length;
+};
+const servicioAnterior = () => {
+  if (!servicios.value.length) return;
+  servicioInicio.value = (servicioInicio.value - 1 + servicios.value.length) % servicios.value.length;
+};
+
+const detenerAutoServicios = () => {
+  if (servicioAutoTimer) {
+    clearInterval(servicioAutoTimer);
+    servicioAutoTimer = undefined;
+  }
+};
+const iniciarAutoServicios = () => {
+  detenerAutoServicios();
+  if (prefersReducedMotion.value || servicios.value.length <= SERVICIOS_VISIBLES) return;
+  servicioAutoTimer = setInterval(servicioSiguiente, 3500);
+};
+const avanzarManual = (fn: () => void) => {
+  fn();
+  iniciarAutoServicios();
+};
+
+// Empresas "que confian en nosotros" — placeholder por ahora, reemplazar
+// por logos reales (misma clase .empresa-logo funciona igual con <img>).
+const empresasConfianza = [
+  { nombre: 'Aurora Corp', color: '#e63946' },
+  { nombre: 'Nimbus Group', color: '#2a9d8f' },
+  { nombre: 'Vértice SA', color: '#e9c46a' },
+  { nombre: 'Solaris Ltda', color: '#f4a261' },
+  { nombre: 'Prisma Eventos', color: '#457b9d' },
+  { nombre: 'Zenith Co', color: '#8338ec' },
+];
+
+// Galeria de fotos de eventos: mosaico aleatorio con tamaños variados.
+interface FotoGaleria extends FotoEvento {
+  eventoNombre: string;
+}
+const fotosGaleria = ref<FotoGaleria[]>([]);
+const fotoGaleriaActiva = ref<string | null>(null);
+const TAMANOS_MOSAICO = ['', 'tam-ancho', 'tam-alto', '', 'tam-grande', '', 'tam-alto', 'tam-ancho', '', '', 'tam-ancho', 'tam-alto'];
+const tamanoMosaico = (idx: number) => TAMANOS_MOSAICO[idx % TAMANOS_MOSAICO.length];
 
 const stats = [
   { n: '+150', l: 'Eventos realizados' },
@@ -34,15 +89,34 @@ const stats = [
 
 onMounted(async () => {
   try {
-    [servicios.value, eventos.value, posts.value] = await Promise.all([
+    const [todosServicios, todosEventos, todosPosts] = await Promise.all([
       serviciosService.getServicios(),
-      portafolioService.getEventos(undefined, true),
+      portafolioService.getEventos(),
       blogService.getPosts(3),
     ]);
+    servicios.value = todosServicios;
+    eventosDestacados.value = todosEventos.filter((e) => e.destacado).slice(0, 4);
+    posts.value = todosPosts;
+
+    const pool: FotoGaleria[] = [];
+    for (const ev of todosEventos) {
+      for (const f of ev.fotos ?? []) {
+        if (f.imagen_url) pool.push({ ...f, eventoNombre: ev.nombre });
+      }
+    }
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    fotosGaleria.value = pool.slice(0, 16);
+
+    iniciarAutoServicios();
   } catch (e) {
     console.error('Error cargando landing:', e);
   }
 });
+
+onBeforeUnmount(detenerAutoServicios);
 </script>
 
 <template>
@@ -79,23 +153,41 @@ onMounted(async () => {
     </div>
   </section>
 
+  <section class="py-4">
+    <div class="container">
+      <p class="text-center text-secondary small text-uppercase mb-4">Confían en nosotros</p>
+      <div class="d-flex flex-wrap justify-content-center align-items-center gap-4 gap-md-5">
+        <div v-for="e in empresasConfianza" :key="e.nombre" class="empresa-logo" :style="{ color: e.color }">
+          {{ e.nombre }}
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="py-5 overflow-hidden">
     <div class="container">
       <h2 class="text-center fw-bold mb-5">LO QUE HACEMOS</h2>
-    </div>
-    <div v-if="servicios.length" class="servicios-marquee-wrap">
-      <div class="servicios-marquee-track" :class="{ 'marquee-static': prefersReducedMotion }">
-        <div v-for="(svc, idx) in serviciosMarquee" :key="`${svc.id}-${idx}`" class="servicio-marquee-item">
-          <div class="card bg-dark border-secondary hover-scale" style="width: 16rem; cursor: pointer"
-            @click="abrirServicio(svc)">
-            <div class="card-cover rounded-top" style="height: 10rem"
-              :style="svc.imagen_url ? { backgroundImage: `url('${svc.imagen_url}')` } : {}"></div>
-            <div class="card-body text-center">
-              <span class="badge text-bg-warning mb-2">{{ svc.nombre.split(' ')[0] }}</span>
-              <h6 class="card-title mb-0">{{ svc.nombre }}</h6>
+      <div v-if="servicios.length" class="d-flex align-items-center justify-content-center gap-2"
+        @mouseenter="detenerAutoServicios" @mouseleave="iniciarAutoServicios">
+        <button v-if="servicios.length > SERVICIOS_VISIBLES" type="button" class="btn btn-outline-light btn-sm flex-shrink-0"
+          @click="avanzarManual(servicioAnterior)">‹</button>
+        <div class="servicios-carousel-viewport">
+          <TransitionGroup name="servicio-slide" tag="div" class="d-flex gap-3 justify-content-center">
+            <div v-for="svc in serviciosVisibles" :key="svc.id" class="servicio-carousel-item">
+              <div class="card bg-dark border-secondary hover-scale" style="width: 15rem; cursor: pointer"
+                @click="abrirServicio(svc)">
+                <div class="card-cover rounded-top" style="height: 10rem"
+                  :style="svc.imagen_url ? { backgroundImage: `url('${svc.imagen_url}')` } : {}"></div>
+                <div class="card-body text-center">
+                  <span class="badge text-bg-warning mb-2">{{ svc.nombre.split(' ')[0] }}</span>
+                  <h6 class="card-title mb-0">{{ svc.nombre }}</h6>
+                </div>
+              </div>
             </div>
-          </div>
+          </TransitionGroup>
         </div>
+        <button v-if="servicios.length > SERVICIOS_VISIBLES" type="button" class="btn btn-outline-light btn-sm flex-shrink-0"
+          @click="avanzarManual(servicioSiguiente)">›</button>
       </div>
     </div>
   </section>
@@ -104,7 +196,7 @@ onMounted(async () => {
     <div class="container">
       <h2 class="text-center fw-bold mb-5">NUESTRO TRABAJO</h2>
       <div class="row g-4">
-        <div v-for="ev in eventos.slice(0, 4)" :key="ev.id" class="col-md-6">
+        <div v-for="ev in eventosDestacados" :key="ev.id" class="col-md-6">
           <RouterLink :to="`/portafolio/${ev.slug}`" class="text-decoration-none">
             <div class="card border-0 card-cover d-flex justify-content-end"
               :style="ev.imagen_url ? { backgroundImage: `url('${ev.imagen_url}')` } : {}">
@@ -137,6 +229,20 @@ onMounted(async () => {
               </div>
             </div>
           </RouterLink>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section v-if="fotosGaleria.length" class="py-5 bg-black bg-opacity-25">
+    <div class="container">
+      <h2 class="text-center fw-bold mb-5">MOMENTOS QUE CREAMOS</h2>
+      <div class="galeria-mosaico">
+        <div v-for="(f, idx) in fotosGaleria" :key="f.id"
+          class="galeria-item" :class="[tamanoMosaico(idx), { 'galeria-item-activa': fotoGaleriaActiva === f.id }]"
+          @click="fotoGaleriaActiva = fotoGaleriaActiva === f.id ? null : f.id">
+          <div class="galeria-item-img" :style="{ backgroundImage: `url('${f.imagen_url}')` }"></div>
+          <div class="galeria-item-leyenda">{{ f.eventoNombre }}</div>
         </div>
       </div>
     </div>
