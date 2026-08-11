@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import ParticleBackground from '@/components/animations/ParticleBackground.vue';
 
 const equipo = [
   { rol: 'Dirección Creativa', descripcion: 'Da forma al concepto y la estética de cada evento, de principio a fin.' },
@@ -11,7 +10,6 @@ const equipo = [
 
 <template>
   <section class="py-5 text-center position-relative overflow-hidden">
-    <ParticleBackground />
     <div class="container position-relative" style="z-index: 1">
       <h1 class="display-4 fw-bold">QUIÉNES SOMOS</h1>
       <p class="text-secondary">El equipo detrás de cada evento que creamos</p>

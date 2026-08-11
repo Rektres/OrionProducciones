@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Modal } from 'bootstrap';
+import GaleriaFotosModal from '@/components/GaleriaFotosModal.vue';
 import { portafolioService } from '@/services/portafolio';
 import type { Evento } from '@/types';
 
@@ -9,38 +9,16 @@ const route = useRoute();
 const router = useRouter();
 const evento = ref<Evento | null>(null);
 const loading = ref(true);
-
-const fotoIndex = ref(0);
-const modalGaleriaEl = ref<HTMLElement | null>(null);
-let modalGaleriaInstance: Modal | null = null;
-
-const fotoActual = computed(() => evento.value?.fotos?.[fotoIndex.value] ?? null);
-const totalFotos = computed(() => evento.value?.fotos?.length ?? 0);
+const galeriaModalRef = ref<InstanceType<typeof GaleriaFotosModal> | null>(null);
 
 const abrirFoto = (idx: number) => {
-  fotoIndex.value = idx;
-  if (!modalGaleriaInstance && modalGaleriaEl.value) {
-    modalGaleriaInstance = new Modal(modalGaleriaEl.value);
-  }
-  modalGaleriaInstance?.show();
-};
-
-const fotoAnterior = () => {
-  const total = evento.value?.fotos?.length ?? 0;
-  if (!total) return;
-  fotoIndex.value = (fotoIndex.value - 1 + total) % total;
-};
-
-const fotoSiguiente = () => {
-  const total = evento.value?.fotos?.length ?? 0;
-  if (!total) return;
-  fotoIndex.value = (fotoIndex.value + 1) % total;
+  galeriaModalRef.value?.abrir(evento.value?.fotos ?? [], idx);
 };
 
 onMounted(async () => {
   try {
     evento.value = await portafolioService.getEventoBySlug(String(route.params.slug));
-  } catch (e) {
+  } catch {
     evento.value = null;
   } finally {
     loading.value = false;
@@ -76,7 +54,7 @@ onMounted(async () => {
           <div v-for="(f, idx) in evento.fotos" :key="f.id" class="col-6 col-md-4">
             <div class="card-cover rounded" style="height: 12rem; cursor: pointer"
               :style="f.imagen_url ? { backgroundImage: `url('${f.imagen_url}')` } : {}"
-              role="button" @click="abrirFoto(idx)"></div>
+              role="button" tabindex="0" @click="abrirFoto(idx)" @keydown.enter="abrirFoto(idx)"></div>
           </div>
         </div>
       </div>
@@ -86,23 +64,6 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div ref="modalGaleriaEl" class="modal fade" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-xl">
-        <div class="modal-content bg-transparent border-0">
-          <div class="modal-body position-relative p-0 text-center">
-            <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" style="z-index: 2"
-              data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            <img v-if="fotoActual?.imagen_url" :src="fotoActual.imagen_url" alt="" class="img-fluid rounded" style="max-height: 80vh" />
-            <button v-if="totalFotos > 1" type="button"
-              class="btn btn-outline-light position-absolute top-50 start-0 translate-middle-y ms-2"
-              @click="fotoAnterior">‹</button>
-            <button v-if="totalFotos > 1" type="button"
-              class="btn btn-outline-light position-absolute top-50 end-0 translate-middle-y me-2"
-              @click="fotoSiguiente">›</button>
-            <div v-if="totalFotos > 1" class="text-white small mt-2">{{ fotoIndex + 1 }} / {{ totalFotos }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <GaleriaFotosModal ref="galeriaModalRef" />
   </template>
 </template>

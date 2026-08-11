@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { useReducedMotion } from '@/composables/useReducedMotion';
+import { useTheme } from '@/composables/useTheme';
+
+const props = withDefaults(defineProps<{ global?: boolean }>(), { global: false });
 
 const canvas = ref<HTMLCanvasElement | null>(null);
 const reducedMotion = useReducedMotion();
+const { theme } = useTheme();
+const fondoParticulas = computed(() => theme.value === 'light' ? 'rgba(255, 249, 245, 0.055)' : 'rgba(3, 8, 28, 0.09)');
+const colorParticulas = computed(() => theme.value === 'light' ? 'rgba(205, 125, 143, 0.22)' : 'rgba(19, 214, 234, 0.16)');
 
 let rafId = 0;
 
@@ -30,9 +36,9 @@ function start() {
   }));
 
   const draw = () => {
-    ctx.fillStyle = 'rgba(3, 8, 28, 0.1)';
+    ctx.fillStyle = fondoParticulas.value;
     ctx.fillRect(0, 0, c.width, c.height);
-    ctx.fillStyle = 'rgba(19, 214, 234, 0.15)';
+    ctx.fillStyle = colorParticulas.value;
     for (const p of particles) {
       p.x += p.vx;
       p.y += p.vy;
@@ -59,7 +65,7 @@ onBeforeUnmount(() => cancelAnimationFrame(rafId));
 </script>
 
 <template>
-  <canvas v-if="!reducedMotion" ref="canvas" class="particle-bg"></canvas>
+  <canvas v-if="!reducedMotion" ref="canvas" class="particle-bg" :class="{ 'particle-bg-global': props.global }"></canvas>
 </template>
 
 <style scoped>
@@ -69,5 +75,9 @@ onBeforeUnmount(() => cancelAnimationFrame(rafId));
   pointer-events: none;
   width: 100%;
   height: 100%;
+}
+.particle-bg-global {
+  position: fixed;
+  z-index: 0;
 }
 </style>
