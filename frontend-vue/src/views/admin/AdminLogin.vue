@@ -2,6 +2,7 @@
 import { reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { adminAuth } from '@/services/adminAuth';
+import ThemeToggle from '@/components/ThemeToggle.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -30,7 +31,10 @@ const onSubmit = async () => {
 </script>
 
 <template>
-  <div class="admin-shell text-white min-vh-100 d-flex align-items-center justify-content-center" data-bs-theme="dark">
+  <div class="admin-shell min-vh-100 d-flex align-items-center justify-content-center position-relative">
+    <div class="position-absolute top-0 end-0 m-3">
+      <ThemeToggle />
+    </div>
     <div class="card admin-card p-4" style="width: 100%; max-width: 380px">
       <h4 class="text-center mb-4">Administración Orion</h4>
       <form @submit.prevent="onSubmit">

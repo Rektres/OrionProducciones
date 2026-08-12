@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue';
+import { computed, nextTick, onMounted, reactive, ref } from 'vue';
 import { adminServiciosService } from '@/services/adminServicios';
 import ImagenUpload from '@/components/admin/ImagenUpload.vue';
 import type { CategoriaServicio, Servicio, ServicioInput } from '@/types';
@@ -10,9 +10,19 @@ const mostrarForm = ref(false);
 const editandoId = ref<string | null>(null);
 const guardando = ref(false);
 const error = ref('');
+const guardadoOk = ref(false);
+const busqueda = ref('');
+const formEl = ref<HTMLElement | null>(null);
 
 const mostrarCategorias = ref(false);
 const nuevaCategoriaNombre = ref('');
+
+const filtrados = computed(() => {
+  const q = busqueda.value.trim().toLowerCase();
+  if (!q) return servicios.value;
+  return servicios.value.filter((s) =>
+    s.nombre.toLowerCase().includes(q) || (s.categoria_slug || '').toLowerCase().includes(q));
+});
 
 const formVacio = (): ServicioInput => ({
   nombre: '',
@@ -35,14 +45,23 @@ const cargar = async () => {
 
 onMounted(cargar);
 
-const nuevo = () => {
+// Al abrir/editar, el formulario aparece arriba del listado: hacemos scroll
+// para que no quede fuera de vista al hacer click en una tarjeta.
+const enfocarForm = async () => {
+  await nextTick();
+  formEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+const nuevo = async () => {
   Object.assign(form, formVacio());
   editandoId.value = null;
   mostrarForm.value = true;
   error.value = '';
+  guardadoOk.value = false;
+  await enfocarForm();
 };
 
-const editar = (s: Servicio) => {
+const editar = async (s: Servicio) => {
   Object.assign(form, {
     nombre: s.nombre,
     categoria: s.categoria,
@@ -55,11 +74,14 @@ const editar = (s: Servicio) => {
   editandoId.value = s.id;
   mostrarForm.value = true;
   error.value = '';
+  guardadoOk.value = false;
+  await enfocarForm();
 };
 
 const cancelar = () => {
   mostrarForm.value = false;
   editandoId.value = null;
+  guardadoOk.value = false;
 };
 
 const aplanarError = (e: any): string => {
@@ -72,6 +94,7 @@ const aplanarError = (e: any): string => {
 const guardar = async () => {
   guardando.value = true;
   error.value = '';
+  guardadoOk.value = false;
   try {
     if (editandoId.value) {
       await adminServiciosService.actualizar(editandoId.value, form);
@@ -80,6 +103,8 @@ const guardar = async () => {
       editandoId.value = creado.id;
     }
     await cargar();
+    guardadoOk.value = true;
+    setTimeout(() => { guardadoOk.value = false; }, 2500);
   } catch (e) {
     error.value = aplanarError(e);
   } finally {
@@ -88,7 +113,7 @@ const guardar = async () => {
 };
 
 const eliminar = async (s: Servicio) => {
-  if (!confirm(`¿Eliminar el servicio "${s.nombre}"?`)) return;
+  if (!confirm(`¿Eliminar el servicio "${s.nombre}"?\n\nEsta acción no se puede deshacer.`)) return;
   await adminServiciosService.eliminar(s.id);
   if (editandoId.value === s.id) cancelar();
   await cargar();
@@ -109,7 +134,8 @@ const quitarImagen = async () => {
 const servicioActual = () => servicios.value.find((s) => s.id === editandoId.value) || null;
 
 const slugify = (texto: string) =>
-  texto.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  texto.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
 const agregarCategoria = async () => {
   const nombre = nuevaCategoriaNombre.value.trim();
@@ -120,31 +146,39 @@ const agregarCategoria = async () => {
 };
 
 const eliminarCategoria = async (c: CategoriaServicio) => {
-  if (!confirm(`¿Eliminar la categoría "${c.nombre}"? Los servicios que la usen quedarán sin categoría.`)) return;
+  if (!confirm(`¿Eliminar la categoría "${c.nombre}"?\n\nLos servicios que la usen quedarán sin categoría.`)) return;
   await adminServiciosService.eliminarCategoria(c.id);
   await cargar();
 };
 </script>
 
 <template>
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">Servicios</h4>
-    <button type="button" class="btn btn-orion btn-sm" @click="nuevo">Nuevo servicio</button>
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div>
+      <h4 class="mb-0">Servicios</h4>
+      <small class="text-secondary">{{ servicios.length }} en total</small>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <input v-model="busqueda" type="search" class="form-control form-control-sm admin-toolbar-search"
+        placeholder="Buscar por nombre o categoría..." />
+      <button type="button" class="btn btn-orion btn-sm" @click="nuevo">+ Nuevo servicio</button>
+    </div>
   </div>
 
   <div class="card admin-card p-3 mb-4">
-    <div class="d-flex justify-content-between align-items-center" style="cursor: pointer" @click="mostrarCategorias = !mostrarCategorias">
-      <h6 class="mb-0">Categorías</h6>
+    <div class="d-flex justify-content-between align-items-center admin-card-clickable"
+      @click="mostrarCategorias = !mostrarCategorias">
+      <h6 class="mb-0">Categorías <span class="text-secondary fw-normal">({{ categorias.length }})</span></h6>
       <span class="text-secondary">{{ mostrarCategorias ? '▲' : '▼' }}</span>
     </div>
     <div v-if="mostrarCategorias" class="mt-3">
       <ul class="list-group list-group-flush mb-2">
         <li v-for="c in categorias" :key="c.id"
-          class="list-group-item admin-card text-white d-flex justify-content-between align-items-center px-0">
+          class="list-group-item d-flex justify-content-between align-items-center px-0">
           {{ c.nombre }}
           <button type="button" class="btn btn-outline-danger btn-sm" @click="eliminarCategoria(c)">Eliminar</button>
         </li>
-        <li v-if="!categorias.length" class="list-group-item admin-card text-secondary px-0">Sin categorías todavía.</li>
+        <li v-if="!categorias.length" class="list-group-item text-secondary px-0">Sin categorías todavía.</li>
       </ul>
       <div class="input-group input-group-sm">
         <input v-model="nuevaCategoriaNombre" type="text" class="form-control" placeholder="Nueva categoría..."
@@ -154,7 +188,11 @@ const eliminarCategoria = async (c: CategoriaServicio) => {
     </div>
   </div>
 
-  <div v-if="mostrarForm" class="card admin-card p-4 mb-4">
+  <div v-if="mostrarForm" ref="formEl" class="card admin-card p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+      <h5 class="mb-0">{{ editandoId ? 'Editar servicio' : 'Nuevo servicio' }}</h5>
+      <button type="button" class="btn-close" aria-label="Cerrar" @click="cancelar"></button>
+    </div>
     <form class="row g-3" @submit.prevent="guardar">
       <div class="col-md-6">
         <label class="form-label">Nombre *</label>
@@ -170,14 +208,11 @@ const eliminarCategoria = async (c: CategoriaServicio) => {
       <div class="col-12">
         <label class="form-label">Descripción corta *</label>
         <textarea v-model="form.descripcion_corta" required rows="2" class="form-control"></textarea>
+        <div class="form-text">Es la que se muestra en el modal del sitio público.</div>
       </div>
       <div class="col-12">
         <label class="form-label">Descripción larga *</label>
         <textarea v-model="form.descripcion_larga" required rows="4" class="form-control"></textarea>
-      </div>
-      <div class="col-12">
-        <label class="form-label">Ícono (SVG)</label>
-        <textarea v-model="form.icono_svg" rows="2" class="form-control"></textarea>
       </div>
       <div class="col-md-3">
         <label class="form-label">Orden</label>
@@ -186,40 +221,55 @@ const eliminarCategoria = async (c: CategoriaServicio) => {
       <div class="col-md-3 d-flex align-items-end">
         <div class="form-check">
           <input v-model="form.activo" type="checkbox" class="form-check-input" id="servicioActivo" />
-          <label class="form-check-label" for="servicioActivo">Activo</label>
+          <label class="form-check-label" for="servicioActivo">Visible en el sitio</label>
         </div>
       </div>
       <div class="col-12">
+        <label class="form-label">Ícono (SVG)</label>
+        <textarea v-model="form.icono_svg" rows="2" class="form-control"></textarea>
+      </div>
+
+      <div class="col-12">
         <label class="form-label">Imagen</label>
-        <div v-if="!editandoId" class="text-secondary small">Guarda el servicio primero para poder subir una imagen.</div>
+        <div v-if="!editandoId" class="text-secondary small">
+          Guarda el servicio primero y aquí podrás subir su imagen.
+        </div>
         <ImagenUpload v-else :imagen-url="servicioActual()?.imagen_url ?? null"
           @subir="subirImagen" @quitar="quitarImagen" />
       </div>
+
       <div v-if="error" class="col-12"><div class="alert alert-danger py-2 mb-0">{{ error }}</div></div>
-      <div class="col-12 d-flex gap-2">
-        <button type="submit" class="btn btn-orion" :disabled="guardando">
-          {{ guardando ? 'Guardando...' : 'Guardar' }}
-        </button>
-        <button type="button" class="btn btn-outline-light" @click="cancelar">Cerrar</button>
+
+      <div class="col-12">
+        <div class="admin-form-actions d-flex align-items-center gap-2">
+          <button type="submit" class="btn btn-orion" :disabled="guardando">
+            {{ guardando ? 'Guardando...' : 'Guardar' }}
+          </button>
+          <button type="button" class="btn btn-outline-light" @click="cancelar">Cerrar</button>
+          <span v-if="guardadoOk" class="text-success small ms-1">✓ Cambios guardados</span>
+        </div>
       </div>
     </form>
   </div>
 
   <div class="row g-3">
-    <div v-for="s in servicios" :key="s.id" class="col-sm-6 col-lg-4 col-xl-3">
-      <div class="card h-100 admin-card hover-scale" role="button" @click="editar(s)">
-        <div class="card-cover rounded-top" style="height: 8rem"
-          :style="s.imagen_url ? { backgroundImage: `url('${s.imagen_url}')` } : {}"></div>
+    <div v-for="s in filtrados" :key="s.id" class="col-sm-6 col-lg-4 col-xl-3">
+      <div class="card h-100 admin-card admin-card-clickable hover-scale" @click="editar(s)">
+        <div class="admin-thumb" :style="s.imagen_url ? { backgroundImage: `url('${s.imagen_url}')` } : {}"></div>
         <div class="card-body">
           <h6 class="card-title mb-1">{{ s.nombre }}</h6>
-          <div class="small text-secondary">{{ s.categoria_slug || 'sin categoría' }} · {{ s.activo ? 'Activo' : 'Inactivo' }}</div>
+          <div class="small text-secondary mb-2">{{ s.categoria_slug || 'sin categoría' }}</div>
+          <span class="admin-badge-estado" :class="s.activo ? 'text-success' : 'text-secondary'">
+            {{ s.activo ? 'Visible' : 'Oculto' }}
+          </span>
         </div>
-        <div class="card-footer admin-card d-flex justify-content-between">
+        <div class="card-footer bg-transparent d-flex justify-content-between">
           <button type="button" class="btn btn-outline-light btn-sm" @click.stop="editar(s)">Editar</button>
           <button type="button" class="btn btn-outline-danger btn-sm" @click.stop="eliminar(s)">Eliminar</button>
         </div>
       </div>
     </div>
-    <div v-if="!servicios.length" class="col-12 text-secondary">Sin servicios todavía.</div>
+    <div v-if="!servicios.length" class="col-12 text-secondary">Sin servicios todavía. Crea el primero con “+ Nuevo servicio”.</div>
+    <div v-else-if="!filtrados.length" class="col-12 text-secondary">Ningún servicio coincide con “{{ busqueda }}”.</div>
   </div>
 </template>
