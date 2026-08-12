@@ -23,7 +23,7 @@ const prefersReducedMotion = useReducedMotion();
 // (modulo), sin duplicar el arreglo — evita que un mismo servicio aparezca
 // repetido en pantalla. Avanzar mueve el indice +1; al pasar el ultimo
 // vuelve a 0 (el "final a la izquierda reaparece a la derecha").
-const SERVICIOS_VISIBLES = 3;
+const SERVICIOS_VISIBLES = 4;
 const servicioInicio = ref(0);
 let servicioAutoTimer: ReturnType<typeof setInterval> | undefined;
 
