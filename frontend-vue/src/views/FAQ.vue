@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import DOMPurify from 'dompurify';
-import ParticleBackground from '@/components/animations/ParticleBackground.vue';
 import { blogService } from '@/services/blog';
 import type { Post } from '@/types';
 
@@ -23,7 +22,6 @@ onMounted(async () => {
 
 <template>
   <section class="py-5 text-center position-relative overflow-hidden">
-    <ParticleBackground />
     <div class="container position-relative" style="z-index: 1">
       <h1 class="display-4 fw-bold">PREGUNTAS FRECUENTES</h1>
       <p class="text-secondary">Todo lo que necesitas saber antes de cotizar tu evento</p>
