@@ -13,11 +13,60 @@
    la pagina y el de las cards usan tonos distintos a proposito — antes
    ambos eran bg-dark y las cards se perdian contra el fondo. */
 .admin-shell {
-  background-color: #05070f;
+  background-color: var(--admin-shell-bg);
+  color: var(--bs-body-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 .admin-card {
-  background-color: #1b2333;
-  border-color: rgba(255, 255, 255, 0.09) !important;
+  background-color: var(--admin-card-bg) !important;
+  border-color: var(--admin-card-border) !important;
+  border-radius: 0.85rem;
+  box-shadow: var(--admin-card-shadow);
+}
+/* Las filas de categorias/tipos van dentro de una .admin-card: deben ser
+   transparentes para no dibujar un bloque sobre su contenedor. */
+.admin-card .list-group-item {
+  background-color: transparent !important;
+  border-color: var(--admin-card-border) !important;
+  color: inherit;
+}
+
+.admin-topbar {
+  background: var(--admin-topbar-bg);
+  border-bottom: 1px solid var(--admin-card-border);
+  backdrop-filter: blur(6px);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+/* Barra de acciones del formulario: queda fija al pie del panel para poder
+   guardar sin volver a hacer scroll en formularios largos. */
+.admin-form-actions {
+  position: sticky;
+  bottom: 0;
+  background: var(--admin-card-bg);
+  border-top: 1px solid var(--admin-card-border);
+  margin: 0 -1.5rem -1.5rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: 0 0 0.85rem 0.85rem;
+}
+
+.admin-thumb {
+  height: 8rem;
+  background-size: cover;
+  background-position: center;
+  border-radius: 0.85rem 0.85rem 0 0;
+  background-color: rgba(127, 127, 127, 0.14);
+}
+.admin-card-clickable { cursor: pointer; }
+.admin-toolbar-search { max-width: 22rem; }
+.admin-badge-estado {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--admin-card-border);
 }
 
 /* Acordeon de FAQ: hereda el color de superficie theme-aware (el mismo
@@ -47,6 +96,13 @@
   --orion-surface-shadow: 0 16px 38px rgba(0, 0, 0, 0.2);
   --carousel-arrow: rgba(255, 255, 255, 0.35);
   --carousel-arrow-hover: rgba(255, 255, 255, 0.85);
+  /* Admin: el fondo del panel y el de las tarjetas deben ser tonos
+     distintos, o las tarjetas se pierden contra el fondo. */
+  --admin-shell-bg: #05070f;
+  --admin-card-bg: #1b2333;
+  --admin-card-border: rgba(255, 255, 255, 0.09);
+  --admin-topbar-bg: rgba(12, 18, 33, 0.94);
+  --admin-card-shadow: 0 12px 26px rgba(0, 0, 0, 0.28);
 }
 
 /* Tema claro — paleta pastel suave (peach #FFDFD3, amarillo #FFF1B0,
@@ -73,6 +129,13 @@
   /* Sobre el fondo pastel claro un blanco translucido seria invisible. */
   --carousel-arrow: rgba(150, 86, 105, 0.45);
   --carousel-arrow-hover: rgba(150, 86, 105, 0.95);
+  /* Admin en claro: fondo con tinte durazno y tarjetas en blanco, para
+     mantener el contraste entre superficie y fondo. */
+  --admin-shell-bg: #fbf1ec;
+  --admin-card-bg: #ffffff;
+  --admin-card-border: rgba(184, 107, 130, 0.20);
+  --admin-topbar-bg: rgba(255, 250, 247, 0.94);
+  --admin-card-shadow: 0 12px 26px rgba(173, 104, 117, 0.12);
 }
 
 body {
