@@ -32,6 +32,11 @@ defineExpose({ abrir });
 </script>
 
 <template>
+  <!-- Teleport a body: el modal vive dentro de .site-content, que crea un
+       stacking context (position:relative + z-index:1). Bootstrap inserta el
+       backdrop (z-index 1050) en <body>, asi que sin esto el backdrop tapa el
+       modal: la pantalla queda bloqueada y no se puede cerrar. -->
+  <Teleport to="body">
   <div ref="modalEl" class="modal fade galeria-modal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
       <div class="modal-content bg-transparent border-0">
@@ -48,4 +53,5 @@ defineExpose({ abrir });
       </div>
     </div>
   </div>
+  </Teleport>
 </template>
