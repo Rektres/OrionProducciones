@@ -2,7 +2,6 @@
 import { onMounted, ref, computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import FadeInUp from '@/components/animations/FadeInUp.vue';
-import ParticleBackground from '@/components/animations/ParticleBackground.vue';
 import { portafolioService } from '@/services/portafolio';
 import type { Evento, EventoTipo } from '@/types';
 
@@ -33,7 +32,6 @@ onMounted(async () => {
 
 <template>
   <section class="py-5 text-center position-relative overflow-hidden">
-    <ParticleBackground />
     <div class="container position-relative" style="z-index: 1">
       <h1 class="display-4 fw-bold">PORTAFOLIO</h1>
       <p class="text-secondary">{{ eventos.length }} eventos realizados con pasión</p>

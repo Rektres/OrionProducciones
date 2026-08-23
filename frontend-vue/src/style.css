@@ -13,11 +13,60 @@
    la pagina y el de las cards usan tonos distintos a proposito — antes
    ambos eran bg-dark y las cards se perdian contra el fondo. */
 .admin-shell {
-  background-color: #05070f;
+  background-color: var(--admin-shell-bg);
+  color: var(--bs-body-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 .admin-card {
-  background-color: #1b2333;
-  border-color: rgba(255, 255, 255, 0.09) !important;
+  background-color: var(--admin-card-bg) !important;
+  border-color: var(--admin-card-border) !important;
+  border-radius: 0.85rem;
+  box-shadow: var(--admin-card-shadow);
+}
+/* Las filas de categorias/tipos van dentro de una .admin-card: deben ser
+   transparentes para no dibujar un bloque sobre su contenedor. */
+.admin-card .list-group-item {
+  background-color: transparent !important;
+  border-color: var(--admin-card-border) !important;
+  color: inherit;
+}
+
+.admin-topbar {
+  background: var(--admin-topbar-bg);
+  border-bottom: 1px solid var(--admin-card-border);
+  backdrop-filter: blur(6px);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+/* Barra de acciones del formulario: queda fija al pie del panel para poder
+   guardar sin volver a hacer scroll en formularios largos. */
+.admin-form-actions {
+  position: sticky;
+  bottom: 0;
+  background: var(--admin-card-bg);
+  border-top: 1px solid var(--admin-card-border);
+  margin: 0 -1.5rem -1.5rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: 0 0 0.85rem 0.85rem;
+}
+
+.admin-thumb {
+  height: 8rem;
+  background-size: cover;
+  background-position: center;
+  border-radius: 0.85rem 0.85rem 0 0;
+  background-color: rgba(127, 127, 127, 0.14);
+}
+.admin-card-clickable { cursor: pointer; }
+.admin-toolbar-search { max-width: 22rem; }
+.admin-badge-estado {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--admin-card-border);
 }
 
 /* Acordeon de FAQ: hereda el color de superficie theme-aware (el mismo
@@ -36,27 +85,57 @@
 [data-bs-theme='dark'] {
   --bs-body-bg: #03081c;
   --bs-body-color: #f8f8ff;
+  --bs-dark-rgb: 17, 27, 52;
+  --bs-secondary-color: rgba(207, 220, 235, 0.72);
+  --bs-border-color: rgba(160, 191, 224, 0.18);
   --navbar-bg: rgba(3, 8, 28, 0.4);
   --navbar-bg-scrolled: rgba(3, 8, 28, 0.95);
   --section-alt-bg: rgba(0, 0, 0, 0.25);
   --cotiza-gradient: linear-gradient(180deg, #03081c, rgba(19, 214, 234, 0.12), #03081c);
+  --ambient-gradient: radial-gradient(circle at 10% 5%, rgba(19, 214, 234, 0.11), transparent 30%), radial-gradient(circle at 88% 30%, rgba(208, 108, 38, 0.10), transparent 32%), #03081c;
+  --orion-surface-shadow: 0 16px 38px rgba(0, 0, 0, 0.2);
+  --carousel-arrow: rgba(255, 255, 255, 0.35);
+  --carousel-arrow-hover: rgba(255, 255, 255, 0.85);
+  /* Admin: el fondo del panel y el de las tarjetas deben ser tonos
+     distintos, o las tarjetas se pierden contra el fondo. */
+  --admin-shell-bg: #05070f;
+  --admin-card-bg: #1b2333;
+  --admin-card-border: rgba(255, 255, 255, 0.09);
+  --admin-topbar-bg: rgba(12, 18, 33, 0.94);
+  --admin-card-shadow: 0 12px 26px rgba(0, 0, 0, 0.28);
 }
 
 /* Tema claro — paleta pastel suave (peach #FFDFD3, amarillo #FFF1B0,
    rosa #FFB7B2). Las cards usan un peach mas claro que el fondo de
    pagina para no perderse contra el (mismo criterio que el admin). */
 [data-bs-theme='light'] {
-  --bs-body-bg: #fff9f5;
-  --bs-body-color: #4a3327;
-  --bs-dark-rgb: 255, 226, 217;
-  --bs-secondary-rgb: 209, 140, 132;
-  --bs-secondary-color: rgba(209, 140, 132, 1);
-  --bs-border-color: rgba(209, 140, 132, 0.35);
+  --orion-primary: #b65e79;
+  --orion-secondary: #c98261;
+  --orion-tertiary: #9b6b90;
+  --orion-star-light: #d59c49;
+  --bs-body-bg: #fffaf7;
+  --bs-body-color: #493744;
+  --bs-dark-rgb: 255, 244, 239;
+  --bs-secondary-rgb: 129, 94, 108;
+  --bs-secondary-color: rgba(105, 76, 89, 0.82);
+  --bs-border-color: rgba(184, 107, 130, 0.22);
   --bs-tertiary-bg: #fff1b0;
-  --navbar-bg: rgba(255, 249, 245, 0.8);
-  --navbar-bg-scrolled: rgba(255, 249, 245, 0.97);
-  --section-alt-bg: rgba(255, 183, 178, 0.22);
-  --cotiza-gradient: linear-gradient(135deg, rgba(255, 241, 176, 0.55), rgba(255, 223, 211, 0.55), rgba(255, 183, 178, 0.55));
+  --navbar-bg: rgba(255, 250, 247, 0.76);
+  --navbar-bg-scrolled: rgba(255, 250, 247, 0.96);
+  --section-alt-bg: linear-gradient(120deg, rgba(255, 223, 211, 0.62), rgba(255, 241, 176, 0.42), rgba(255, 183, 178, 0.42));
+  --cotiza-gradient: linear-gradient(135deg, rgba(255, 241, 176, 0.76), rgba(255, 223, 211, 0.88), rgba(255, 183, 178, 0.60));
+  --ambient-gradient: radial-gradient(circle at 8% 5%, rgba(255, 183, 178, 0.58), transparent 31%), radial-gradient(circle at 88% 20%, rgba(255, 241, 176, 0.65), transparent 33%), radial-gradient(circle at 46% 90%, rgba(255, 223, 211, 0.78), transparent 38%), #fffaf7;
+  --orion-surface-shadow: 0 18px 42px rgba(173, 104, 117, 0.13);
+  /* Sobre el fondo pastel claro un blanco translucido seria invisible. */
+  --carousel-arrow: rgba(150, 86, 105, 0.45);
+  --carousel-arrow-hover: rgba(150, 86, 105, 0.95);
+  /* Admin en claro: fondo con tinte durazno y tarjetas en blanco, para
+     mantener el contraste entre superficie y fondo. */
+  --admin-shell-bg: #fbf1ec;
+  --admin-card-bg: #ffffff;
+  --admin-card-border: rgba(184, 107, 130, 0.20);
+  --admin-topbar-bg: rgba(255, 250, 247, 0.94);
+  --admin-card-shadow: 0 12px 26px rgba(173, 104, 117, 0.12);
 }
 
 body {
@@ -64,6 +143,31 @@ body {
   color: var(--bs-body-color);
   font-family: 'Montserrat', sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.site-shell {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+}
+.site-shell::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--ambient-gradient);
+  background-size: 145% 145%;
+  animation: ambient-drift 22s ease-in-out infinite alternate;
+}
+.site-shell-admin::before { display: none; }
+.site-content { position: relative; z-index: 1; }
+.site-shell > .navbar,
+.site-shell > footer,
+.site-shell > .whatsapp-button { position: relative; z-index: 2; }
+@keyframes ambient-drift {
+  from { background-position: 0% 0%; }
+  to { background-position: 100% 100%; }
 }
 
 h1, h2, h3, .navbar-brand {
@@ -77,14 +181,26 @@ h1, h2, h3, .navbar-brand {
   color: #fff;
   border: none;
 }
-.btn-orion:hover { color: #fff; opacity: 0.9; }
+.btn-orion:hover { color: #fff; opacity: 0.94; box-shadow: 0 9px 20px rgba(183, 94, 121, 0.28); }
+
+[data-bs-theme='light'] .btn-outline-light {
+  color: #7c4c60;
+  border-color: rgba(182, 94, 121, 0.55);
+  background: rgba(255, 255, 255, 0.42);
+}
+[data-bs-theme='light'] .btn-outline-light:hover {
+  color: #fff;
+  border-color: var(--orion-primary);
+  background: var(--orion-primary);
+}
 
 .cotiza-section {
   background: var(--cotiza-gradient);
 }
 
 .section-alt {
-  background-color: var(--section-alt-bg);
+  background: var(--section-alt-bg);
+  backdrop-filter: blur(3px);
 }
 
 .theme-toggle-btn {
@@ -104,6 +220,10 @@ h1, h2, h3, .navbar-brand {
 
 .card, .btn, .hover-scale {
   transition: transform 0.2s ease;
+}
+.site-content .card {
+  border-radius: 1rem;
+  box-shadow: var(--orion-surface-shadow);
 }
 .card:hover, .btn:hover, .hover-scale:hover {
   transform: scale(1.02);
@@ -178,14 +298,14 @@ h1, h2, h3, .navbar-brand {
 .carousel-arrow-ghost {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--carousel-arrow);
   font-size: 2.25rem;
   line-height: 1;
   padding: 0 0.5rem;
   transition: color 0.2s ease, transform 0.2s ease;
 }
 .carousel-arrow-ghost:hover {
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--carousel-arrow-hover);
   transform: scale(1.15);
 }
 
@@ -205,16 +325,18 @@ h1, h2, h3, .navbar-brand {
 .galeria-mosaico {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 7rem;
+  grid-auto-rows: 11rem;
   grid-auto-flow: dense;
-  gap: 0.75rem;
+  gap: 1rem;
 }
+.galeria-home-container { max-width: 1320px; }
 .galeria-item {
   position: relative;
   overflow: hidden;
-  border-radius: 0.5rem;
+  border-radius: 1rem;
   cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: var(--orion-surface-shadow);
+  transition: transform 0.28s ease, box-shadow 0.28s ease, filter 0.28s ease;
 }
 .galeria-item.tam-alto { grid-row: span 2; }
 .galeria-item.tam-ancho { grid-column: span 2; }
@@ -230,15 +352,48 @@ h1, h2, h3, .navbar-brand {
   inset: 0;
   display: flex;
   align-items: flex-end;
-  padding: 0.6rem;
+  padding: 1rem;
   background: linear-gradient(0deg, rgba(0, 0, 0, 0.85), transparent 45%);
   color: #fff;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-weight: 700;
   pointer-events: none;
 }
-.galeria-item-activa {
+.galeria-item:hover,
+.galeria-item:focus-visible {
   transform: scale(1.06);
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.55);
   z-index: 2;
+  outline: none;
+}
+
+.galeria-modal-imagen {
+  display: block;
+  max-width: 100%;
+  max-height: 82vh;
+  margin: 0 auto;
+  border-radius: 1rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.46);
+}
+.galeria-modal-cerrar { filter: invert(1) grayscale(1) brightness(2); }
+.galeria-modal-flecha {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 3.25rem;
+  line-height: 1;
+  padding: 0.25rem 0.65rem;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.75);
+}
+.galeria-modal-flecha:hover { color: #fff; transform: translateY(-50%) scale(1.12); }
+.galeria-modal-contador { color: #fff; margin-top: 0.75rem; font-size: 0.875rem; font-weight: 700; }
+
+@media (max-width: 767.98px) {
+  .galeria-mosaico { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 10rem; gap: 0.7rem; }
+  .galeria-item.tam-grande { grid-row: span 2; grid-column: span 2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-shell::before { animation: none; }
 }

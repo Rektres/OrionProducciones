@@ -3,8 +3,8 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import ContactForm from '@/components/ContactForm.vue';
 import ServicioModal from '@/components/ServicioModal.vue';
+import GaleriaFotosModal from '@/components/GaleriaFotosModal.vue';
 import FadeInUp from '@/components/animations/FadeInUp.vue';
-import ParticleBackground from '@/components/animations/ParticleBackground.vue';
 import { useReducedMotion } from '@/composables/useReducedMotion';
 import { serviciosService } from '@/services/servicios';
 import { portafolioService } from '@/services/portafolio';
@@ -16,6 +16,7 @@ const cargando = ref(true);
 
 const servicioModalRef = ref<InstanceType<typeof ServicioModal> | null>(null);
 const abrirServicio = (svc: Servicio) => servicioModalRef.value?.abrir(svc);
+const galeriaModalRef = ref<InstanceType<typeof GaleriaFotosModal> | null>(null);
 
 const prefersReducedMotion = useReducedMotion();
 
@@ -23,7 +24,7 @@ const prefersReducedMotion = useReducedMotion();
 // (modulo), sin duplicar el arreglo — evita que un mismo servicio aparezca
 // repetido en pantalla. Avanzar mueve el indice +1; al pasar el ultimo
 // vuelve a 0 (el "final a la izquierda reaparece a la derecha").
-const SERVICIOS_VISIBLES = 3;
+const SERVICIOS_VISIBLES = 4;
 const servicioInicio = ref(0);
 let servicioAutoTimer: ReturnType<typeof setInterval> | undefined;
 
@@ -77,9 +78,9 @@ interface FotoGaleria extends Omit<FotoEvento, 'imagen_url'> {
   eventoNombre: string;
 }
 const fotosGaleria = ref<FotoGaleria[]>([]);
-const fotoGaleriaActiva = ref<string | null>(null);
 const TAMANOS_MOSAICO = ['', 'tam-ancho', 'tam-alto', '', 'tam-grande', '', 'tam-alto', 'tam-ancho', '', '', 'tam-ancho', 'tam-alto'];
 const tamanoMosaico = (idx: number) => TAMANOS_MOSAICO[idx % TAMANOS_MOSAICO.length];
+const abrirGaleria = (idx: number) => galeriaModalRef.value?.abrir(fotosGaleria.value, idx);
 
 const stats = [
   { n: '+150', l: 'Eventos realizados' },
@@ -122,7 +123,6 @@ onBeforeUnmount(detenerAutoServicios);
 
 <template>
   <section class="py-5 text-center position-relative overflow-hidden">
-    <ParticleBackground />
     <div class="container py-5 position-relative" style="z-index: 1">
       <FadeInUp>
         <h1 class="display-3 fw-bold">CREAMOS EXPERIENCIAS<br /><span class="text-orion-primary">INOLVIDABLES</span></h1>
@@ -228,12 +228,12 @@ onBeforeUnmount(detenerAutoServicios);
   </section>
 
   <section v-if="fotosGaleria.length" class="py-5 section-alt">
-    <div class="container">
+    <div class="container galeria-home-container">
       <h2 class="text-center fw-bold mb-5">MOMENTOS QUE CREAMOS</h2>
       <div class="galeria-mosaico">
         <div v-for="(f, idx) in fotosGaleria" :key="f.id"
-          class="galeria-item" :class="[tamanoMosaico(idx), { 'galeria-item-activa': fotoGaleriaActiva === f.id }]"
-          @click="fotoGaleriaActiva = fotoGaleriaActiva === f.id ? null : f.id">
+          class="galeria-item" :class="tamanoMosaico(idx)" role="button" tabindex="0"
+          @click="abrirGaleria(idx)" @keydown.enter="abrirGaleria(idx)">
           <div class="galeria-item-img">
             <img :src="f.imagen_url" :alt="`Foto del evento ${f.eventoNombre}`" class="img-cover"
               loading="lazy" decoding="async" />
@@ -253,4 +253,5 @@ onBeforeUnmount(detenerAutoServicios);
   </section>
 
   <ServicioModal ref="servicioModalRef" />
+  <GaleriaFotosModal ref="galeriaModalRef" />
 </template>

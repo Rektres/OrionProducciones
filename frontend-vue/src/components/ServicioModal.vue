@@ -19,6 +19,10 @@ defineExpose({ abrir });
 </script>
 
 <template>
+  <!-- Teleport a body: ver nota en GaleriaFotosModal.vue. Sin esto el modal
+       queda dentro del stacking context de .site-content y el backdrop de
+       Bootstrap (en <body>, z-index 1050) lo tapa por completo. -->
+  <Teleport to="body">
   <div ref="modalEl" class="modal fade" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content bg-dark border-secondary">
@@ -37,4 +41,5 @@ defineExpose({ abrir });
       </div>
     </div>
   </div>
+  </Teleport>
 </template>

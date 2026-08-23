@@ -36,7 +36,15 @@ app.use(
     on: {
       // express.json() ya consumio el stream en los requests JSON:
       // fixRequestBody lo reescribe y recalcula Content-Length.
-      proxyReq: fixRequestBody,
+      proxyReq: (proxyReq, req) => {
+        // GET/HEAD no llevan body. express.json() deja req.body = {} y
+        // fixRequestBody lo serializaria como "{}", desincronizando el
+        // framing de la respuesta upstream: Node abortaba el HEAD con
+        // "Parse Error: Data after `Connection: close`" -> 502.
+        const metodo = (req.method || '').toUpperCase();
+        if (metodo === 'GET' || metodo === 'HEAD') return;
+        fixRequestBody(proxyReq, req);
+      },
       error: (err, _req, res) => {
         console.error('[bff] error de proxy:', err.message);
         const response = res as ServerResponse;

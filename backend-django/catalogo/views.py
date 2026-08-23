@@ -117,7 +117,15 @@ def imagen_archivo_raw(request, pk):
         ImagenArchivo.objects.only('contenido', 'content_type', 'nombre_original'), pk=pk,
     )
     content_type = imagen.content_type if imagen.content_type in TIPOS_IMAGEN_PERMITIDOS else 'application/octet-stream'
-    response = HttpResponse(bytes(imagen.contenido), content_type=content_type)
+    contenido = bytes(imagen.contenido)
+    if request.method == 'HEAD':
+        # Un HEAD no debe llevar body (RFC 9110). Sin esto gunicorn enviaba
+        # igual los bytes de la imagen y el parser estricto de Node (BFF)
+        # abortaba con "Parse Error: Data after `Connection: close`" -> 502.
+        response = HttpResponse(b'', content_type=content_type)
+        response['Content-Length'] = str(len(contenido))
+    else:
+        response = HttpResponse(contenido, content_type=content_type)
     response['Content-Disposition'] = 'inline'
     response['X-Content-Type-Options'] = 'nosniff'
     response['Cache-Control'] = 'public, max-age=31536000, immutable'

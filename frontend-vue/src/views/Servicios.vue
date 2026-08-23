@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
 import FadeInUp from '@/components/animations/FadeInUp.vue';
-import ParticleBackground from '@/components/animations/ParticleBackground.vue';
 import ServicioModal from '@/components/ServicioModal.vue';
 import { serviciosService } from '@/services/servicios';
 import type { Servicio, CategoriaServicio } from '@/types';
@@ -36,7 +35,6 @@ onMounted(async () => {
 
 <template>
   <section class="py-5 text-center position-relative overflow-hidden">
-    <ParticleBackground />
     <div class="container position-relative" style="z-index: 1">
       <h1 class="display-4 fw-bold">SERVICIOS</h1>
       <p class="text-secondary">Lo que hacemos para tu evento</p>
