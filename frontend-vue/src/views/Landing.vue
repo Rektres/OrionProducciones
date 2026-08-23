@@ -12,6 +12,7 @@ import type { Servicio, Evento, FotoEvento } from '@/types';
 
 const servicios = ref<Servicio[]>([]);
 const eventosDestacados = ref<Evento[]>([]);
+const cargando = ref(true);
 
 const servicioModalRef = ref<InstanceType<typeof ServicioModal> | null>(null);
 const abrirServicio = (svc: Servicio) => servicioModalRef.value?.abrir(svc);
@@ -70,7 +71,9 @@ const empresasConfianza = [
 ];
 
 // Galeria de fotos de eventos: mosaico aleatorio con tamaños variados.
-interface FotoGaleria extends FotoEvento {
+// Al armar el pool solo entran fotos con imagen, asi que aqui imagen_url nunca es null.
+interface FotoGaleria extends Omit<FotoEvento, 'imagen_url'> {
+  imagen_url: string;
   eventoNombre: string;
 }
 const fotosGaleria = ref<FotoGaleria[]>([]);
@@ -97,7 +100,7 @@ onMounted(async () => {
     const pool: FotoGaleria[] = [];
     for (const ev of todosEventos) {
       for (const f of ev.fotos ?? []) {
-        if (f.imagen_url) pool.push({ ...f, eventoNombre: ev.nombre });
+        if (f.imagen_url) pool.push({ ...f, imagen_url: f.imagen_url, eventoNombre: ev.nombre });
       }
     }
     for (let i = pool.length - 1; i > 0; i--) {
@@ -109,6 +112,8 @@ onMounted(async () => {
     iniciarAutoServicios();
   } catch (e) {
     console.error('Error cargando landing:', e);
+  } finally {
+    cargando.value = false;
   }
 });
 
@@ -163,7 +168,11 @@ onBeforeUnmount(detenerAutoServicios);
   <section class="py-5 overflow-hidden">
     <div class="container">
       <h2 class="text-center fw-bold mb-5">LO QUE HACEMOS</h2>
-      <div v-if="servicios.length" class="d-flex align-items-center justify-content-center gap-2"
+      <div v-if="cargando" class="text-center text-secondary py-4" aria-live="polite">
+        <div class="spinner-border text-orion-primary" role="status" aria-hidden="true"></div>
+        <p class="mt-3 mb-0">Cargando servicios...</p>
+      </div>
+      <div v-else-if="servicios.length" class="d-flex align-items-center justify-content-center gap-2"
         @mouseenter="detenerAutoServicios" @mouseleave="iniciarAutoServicios">
         <button v-if="servicios.length > 1" type="button" class="carousel-arrow-ghost flex-shrink-0"
           aria-label="Servicio anterior" @click="avanzarManual(servicioAnterior)">‹</button>
@@ -172,8 +181,10 @@ onBeforeUnmount(detenerAutoServicios);
             <div v-for="svc in serviciosVisibles" :key="svc.id" class="servicio-carousel-item">
               <div class="card bg-dark border-secondary hover-scale" style="width: 15rem; cursor: pointer"
                 @click="abrirServicio(svc)">
-                <div class="card-cover rounded-top" style="height: 10rem"
-                  :style="svc.imagen_url ? { backgroundImage: `url('${svc.imagen_url}')` } : {}"></div>
+                <div class="card-cover rounded-top overflow-hidden" style="height: 10rem">
+                  <img v-if="svc.imagen_url" :src="svc.imagen_url" :alt="`Servicio de ${svc.nombre}`"
+                    class="img-cover" loading="lazy" decoding="async" />
+                </div>
                 <div class="card-body text-center">
                   <span class="badge text-bg-warning mb-2">{{ svc.nombre.split(' ')[0] }}</span>
                   <h6 class="card-title mb-0">{{ svc.nombre }}</h6>
@@ -191,12 +202,18 @@ onBeforeUnmount(detenerAutoServicios);
   <section class="py-5 section-alt">
     <div class="container">
       <h2 class="text-center fw-bold mb-5">NUESTRO TRABAJO</h2>
-      <div class="row g-4">
+      <div v-if="cargando" class="text-center text-secondary py-4" aria-live="polite">
+        <div class="spinner-border text-orion-primary" role="status" aria-hidden="true"></div>
+        <p class="mt-3 mb-0">Cargando eventos...</p>
+      </div>
+      <div v-else class="row g-4">
         <div v-for="ev in eventosDestacados" :key="ev.id" class="col-md-6">
           <RouterLink :to="`/portafolio/${ev.slug}`" class="text-decoration-none">
-            <div class="card border-0 card-cover d-flex justify-content-end"
-              :style="ev.imagen_url ? { backgroundImage: `url('${ev.imagen_url}')` } : {}">
-              <div class="p-3" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent)">
+            <div class="card border-0 card-cover d-flex justify-content-end position-relative overflow-hidden">
+              <img v-if="ev.imagen_url" :src="ev.imagen_url"
+                :alt="`${ev.nombre} — evento producido por Orion en ${ev.lugar}`"
+                class="img-cover position-absolute top-0 start-0" loading="lazy" decoding="async" />
+              <div class="p-3 position-relative" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent)">
                 <h5 class="text-white mb-0">{{ ev.nombre }}</h5>
                 <small class="text-secondary">{{ ev.lugar }}</small>
               </div>
@@ -217,7 +234,10 @@ onBeforeUnmount(detenerAutoServicios);
         <div v-for="(f, idx) in fotosGaleria" :key="f.id"
           class="galeria-item" :class="[tamanoMosaico(idx), { 'galeria-item-activa': fotoGaleriaActiva === f.id }]"
           @click="fotoGaleriaActiva = fotoGaleriaActiva === f.id ? null : f.id">
-          <div class="galeria-item-img" :style="{ backgroundImage: `url('${f.imagen_url}')` }"></div>
+          <div class="galeria-item-img">
+            <img :src="f.imagen_url" :alt="`Foto del evento ${f.eventoNombre}`" class="img-cover"
+              loading="lazy" decoding="async" />
+          </div>
           <div class="galeria-item-leyenda">{{ f.eventoNombre }}</div>
         </div>
       </div>

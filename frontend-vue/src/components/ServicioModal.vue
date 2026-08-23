@@ -28,8 +28,10 @@ defineExpose({ abrir });
             data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body">
-          <div v-if="servicio?.imagen_url" class="card-cover rounded mb-3" style="height: 14rem"
-            :style="{ backgroundImage: `url('${servicio.imagen_url}')` }"></div>
+          <div v-if="servicio?.imagen_url" class="card-cover rounded mb-3 overflow-hidden" style="height: 14rem">
+            <img :src="servicio.imagen_url" :alt="`Servicio de ${servicio.nombre}`" class="img-cover"
+              loading="lazy" decoding="async" />
+          </div>
           <p class="text-secondary mb-0">{{ servicio?.descripcion_corta }}</p>
         </div>
       </div>

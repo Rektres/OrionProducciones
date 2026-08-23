@@ -26,3 +26,18 @@ dist-ssr
 certs/
 backups/
 postgres_data/
+
+# Material de trabajo que no forma parte del despliegue: stack anterior
+# (React + Supabase), documentos, diagramas y binarios. No se borra, se archiva.
+Archivos/
+
+# Documentacion de indicaciones del proyecto: se mantiene en local, no viaja al
+# repo. El README si, que es la puerta de entrada y debe estar siempre al dia.
+/*.md
+!/README.md
+
+# Entornos virtuales de Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]

@@ -1,0 +1,16 @@
+{
+  "name": "Orion — Productora de Eventos",
+  "short_name": "Orion",
+  "description": "Productora de eventos corporativos, sociales y festivales en Chile.",
+  "lang": "es-CL",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#03081c",
+  "theme_color": "#03081c",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

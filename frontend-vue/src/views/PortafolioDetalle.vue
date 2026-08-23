@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Modal } from 'bootstrap';
 import { portafolioService } from '@/services/portafolio';
+import { aplicarSeo } from '@/composables/useSeo';
 import type { Evento } from '@/types';
 
 const route = useRoute();
@@ -40,8 +41,16 @@ const fotoSiguiente = () => {
 onMounted(async () => {
   try {
     evento.value = await portafolioService.getEventoBySlug(String(route.params.slug));
+    if (evento.value) {
+      aplicarSeo({
+        titulo: evento.value.nombre,
+        descripcion: evento.value.descripcion_corta,
+        imagen: evento.value.imagen_url || undefined,
+      });
+    }
   } catch (e) {
     evento.value = null;
+    aplicarSeo({ titulo: 'Evento no encontrado', noindex: true });
   } finally {
     loading.value = false;
   }
@@ -52,9 +61,12 @@ onMounted(async () => {
   <div v-if="loading" class="container py-5 text-center text-secondary">Cargando evento...</div>
   <div v-else-if="!evento" class="container py-5 text-center text-secondary">Evento no encontrado</div>
   <template v-else>
-    <div class="card-cover d-flex align-items-end" style="height: 24rem"
-      :style="evento.imagen_url ? { backgroundImage: `url('${evento.imagen_url}')` } : {}">
-      <div class="container p-4" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent)">
+    <div class="card-cover d-flex align-items-end position-relative overflow-hidden" style="height: 24rem">
+      <!-- Imagen principal: sin lazy, es el LCP de la página. -->
+      <img v-if="evento.imagen_url" :src="evento.imagen_url"
+        :alt="`${evento.nombre} — evento producido por Orion en ${evento.lugar}`"
+        class="img-cover position-absolute top-0 start-0" fetchpriority="high" decoding="async" />
+      <div class="container p-4 position-relative" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent)">
         <span class="badge text-bg-warning mb-2">{{ evento.tipo_slug }}</span>
         <h1 class="text-white">{{ evento.nombre }}</h1>
       </div>
@@ -74,9 +86,12 @@ onMounted(async () => {
         <h2 class="text-orion-primary">Galería</h2>
         <div class="row g-3">
           <div v-for="(f, idx) in evento.fotos" :key="f.id" class="col-6 col-md-4">
-            <div class="card-cover rounded" style="height: 12rem; cursor: pointer"
-              :style="f.imagen_url ? { backgroundImage: `url('${f.imagen_url}')` } : {}"
-              role="button" @click="abrirFoto(idx)"></div>
+            <div class="card-cover rounded overflow-hidden" style="height: 12rem; cursor: pointer"
+              role="button" @click="abrirFoto(idx)">
+              <img v-if="f.imagen_url" :src="f.imagen_url"
+                :alt="f.descripcion || `Foto ${idx + 1} del evento ${evento.nombre}`"
+                class="img-cover" loading="lazy" decoding="async" />
+            </div>
           </div>
         </div>
       </div>
@@ -92,7 +107,9 @@ onMounted(async () => {
           <div class="modal-body position-relative p-0 text-center">
             <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" style="z-index: 2"
               data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            <img v-if="fotoActual?.imagen_url" :src="fotoActual.imagen_url" alt="" class="img-fluid rounded" style="max-height: 80vh" />
+            <img v-if="fotoActual?.imagen_url" :src="fotoActual.imagen_url"
+              :alt="fotoActual.descripcion || `Foto ${fotoIndex + 1} del evento ${evento.nombre}`"
+              class="img-fluid rounded" style="max-height: 80vh" />
             <button v-if="totalFotos > 1" type="button"
               class="btn btn-outline-light position-absolute top-50 start-0 translate-middle-y ms-2"
               @click="fotoAnterior">‹</button>

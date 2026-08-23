@@ -4,6 +4,9 @@ const numero = import.meta.env.VITE_WHATSAPP_NUMBER || '56944830378';
 const whatsappUrl = `https://wa.me/${numero}`;
 const instagramUrl = import.meta.env.VITE_INSTAGRAM_URL || '#';
 const linkedinUrl = import.meta.env.VITE_LINKEDIN_URL || '#';
+// Si no estan configurados no se muestran: mejor omitir el dato que publicar uno falso.
+const email = import.meta.env.VITE_CONTACT_EMAIL || '';
+const direccion = import.meta.env.VITE_CONTACT_DIRECCION || 'Santiago, Chile';
 </script>
 
 <template>
@@ -34,7 +37,10 @@ const linkedinUrl = import.meta.env.VITE_LINKEDIN_URL || '#';
                 +{{ numero }}
               </a>
             </li>
-            <li>Santiago, Chile</li>
+            <li v-if="email">
+              <a class="link-secondary text-decoration-none" :href="`mailto:${email}`">{{ email }}</a>
+            </li>
+            <li>{{ direccion }}</li>
           </ul>
           <div class="d-flex gap-3 mt-3">
             <a :href="instagramUrl" target="_blank" rel="noopener noreferrer" class="link-secondary" aria-label="Instagram">
@@ -59,6 +65,7 @@ const linkedinUrl = import.meta.env.VITE_LINKEDIN_URL || '#';
       <p class="text-center text-secondary small mb-0">
         © 2026 Todos los derechos reservados | Desarrollado por Mateo Araneda Medina
         · <RouterLink class="link-secondary" to="/terminos-y-condiciones">Términos y condiciones</RouterLink>
+        · <RouterLink class="link-secondary" to="/politica-de-privacidad">Política de privacidad</RouterLink>
       </p>
     </div>
   </footer>

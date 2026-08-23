@@ -2,7 +2,7 @@ name: Deploy Docker Stack (Django + Express + Vue)
 
 on:
   push:
-    branches: [migracion-django-vue]
+    branches: [main, migracion-django-vue]
   workflow_dispatch:
 
 concurrency:
@@ -51,10 +51,13 @@ jobs:
     runs-on: [self-hosted, orion-prod]
     steps:
       - name: Actualizar código y reconstruir imágenes
+        env:
+          RAMA: ${{ github.ref_name }}
         run: |
           cd /opt/orion/OrionProducciones
-          git fetch origin migracion-django-vue
-          git reset --hard origin/migracion-django-vue
+          git fetch origin "$RAMA"
+          git checkout -B "$RAMA" "origin/$RAMA"
+          git reset --hard "origin/$RAMA"
           docker compose build
           docker compose up -d --remove-orphans
 

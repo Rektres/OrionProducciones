@@ -84,6 +84,10 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 class CotizacionSerializer(serializers.ModelSerializer):
+    # El modelo guarda el email como TextField, asi que sin esto DRF no valida el
+    # formato y entraria cualquier string al buzon de cotizaciones.
+    email = serializers.EmailField()
+
     class Meta:
         model = Cotizacion
         fields = '__all__'

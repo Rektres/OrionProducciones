@@ -2,7 +2,7 @@ from django.urls import include, path
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.routers import SimpleRouter
 
-from . import views
+from . import seo, views
 from .admin_views import (
     CategoriaServicioAdminViewSet, EventoAdminViewSet, EventoTipoAdminViewSet,
     FotoEventoAdminViewSet, PostAdminViewSet, ServicioAdminViewSet, TagAdminViewSet,
@@ -31,5 +31,7 @@ urlpatterns = [
     path('cotizaciones/', views.CotizacionCreate.as_view()),
     path('imagenes/<uuid:pk>/', views.imagen_archivo_raw),
     path('auth/token/', obtain_auth_token),
+    path('robots.txt', seo.robots_txt),
+    path('sitemap.xml', seo.sitemap_xml),
     path('admin/', include(admin_router.urls)),
 ]

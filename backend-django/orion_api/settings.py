@@ -74,3 +74,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 USE_TZ = True
 TIME_ZONE = 'UTC'
+
+# Los errores de validacion de DRF viajan al formulario publico: deben ir en espanol.
+LANGUAGE_CODE = 'es'
+USE_I18N = True
