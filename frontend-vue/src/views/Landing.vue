@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import ContactForm from '@/components/ContactForm.vue';
 import ServicioModal from '@/components/ServicioModal.vue';
 import GaleriaFotosModal from '@/components/GaleriaFotosModal.vue';
 import FadeInUp from '@/components/animations/FadeInUp.vue';
-import { useReducedMotion } from '@/composables/useReducedMotion';
 import { serviciosService } from '@/services/servicios';
 import { portafolioService } from '@/services/portafolio';
 import type { Servicio, Evento, FotoEvento } from '@/types';
@@ -13,66 +12,36 @@ import type { Servicio, Evento, FotoEvento } from '@/types';
 const servicios = ref<Servicio[]>([]);
 const eventosDestacados = ref<Evento[]>([]);
 const cargando = ref(true);
+const filtroCategoria = ref<string>('todos');
 
 const servicioModalRef = ref<InstanceType<typeof ServicioModal> | null>(null);
 const abrirServicio = (svc: Servicio) => servicioModalRef.value?.abrir(svc);
 const galeriaModalRef = ref<InstanceType<typeof GaleriaFotosModal> | null>(null);
 
-const prefersReducedMotion = useReducedMotion();
-
-// Carrusel de servicios: ventana de N items visibles calculada por indice
-// (modulo), sin duplicar el arreglo — evita que un mismo servicio aparezca
-// repetido en pantalla. Avanzar mueve el indice +1; al pasar el ultimo
-// vuelve a 0 (el "final a la izquierda reaparece a la derecha").
-const SERVICIOS_VISIBLES = 4;
-const servicioInicio = ref(0);
-let servicioAutoTimer: ReturnType<typeof setInterval> | undefined;
-
-const serviciosVisibles = computed(() => {
-  const total = servicios.value.length;
-  if (!total) return [];
-  const n = Math.min(SERVICIOS_VISIBLES, total);
-  return Array.from({ length: n }, (_, i) => servicios.value[(servicioInicio.value + i) % total]);
+// Categorías dinámicas para los Filter Chips
+const categorias = computed(() => {
+  const cats = new Set<string>();
+  servicios.value.forEach(s => {
+    if (s.categoria_slug) cats.add(s.categoria_slug);
+    else if (s.nombre) cats.add(s.nombre.split(' ')[0].toLowerCase());
+  });
+  return ['todos', ...Array.from(cats)];
 });
 
-const servicioSiguiente = () => {
-  if (!servicios.value.length) return;
-  servicioInicio.value = (servicioInicio.value + 1) % servicios.value.length;
-};
-const servicioAnterior = () => {
-  if (!servicios.value.length) return;
-  servicioInicio.value = (servicioInicio.value - 1 + servicios.value.length) % servicios.value.length;
-};
+const serviciosFiltrados = computed(() => {
+  if (filtroCategoria.value === 'todos') return servicios.value;
+  return servicios.value.filter(s => 
+    s.categoria_slug === filtroCategoria.value ||
+    s.nombre.toLowerCase().includes(filtroCategoria.value)
+  );
+});
 
-const detenerAutoServicios = () => {
-  if (servicioAutoTimer) {
-    clearInterval(servicioAutoTimer);
-    servicioAutoTimer = undefined;
-  }
-};
-const iniciarAutoServicios = () => {
-  detenerAutoServicios();
-  if (prefersReducedMotion.value || servicios.value.length <= 1) return;
-  servicioAutoTimer = setInterval(servicioSiguiente, 5000);
-};
-const avanzarManual = (fn: () => void) => {
-  fn();
-  iniciarAutoServicios();
-};
+// Servicio destacado para la tarjeta flotante del Hero
+const servicioHero = computed(() => {
+  return servicios.value[0] || null;
+});
 
-// Empresas "que confian en nosotros" — placeholder por ahora, reemplazar
-// por logos reales (misma clase .empresa-logo funciona igual con <img>).
-const empresasConfianza = [
-  { nombre: 'Aurora Corp', color: '#e63946' },
-  { nombre: 'Nimbus Group', color: '#2a9d8f' },
-  { nombre: 'Vértice SA', color: '#e9c46a' },
-  { nombre: 'Solaris Ltda', color: '#f4a261' },
-  { nombre: 'Prisma Eventos', color: '#457b9d' },
-  { nombre: 'Zenith Co', color: '#8338ec' },
-];
-
-// Galeria de fotos de eventos: mosaico aleatorio con tamaños variados.
-// Al armar el pool solo entran fotos con imagen, asi que aqui imagen_url nunca es null.
+// Galeria de fotos de eventos: mosaico dinámico
 interface FotoGaleria extends Omit<FotoEvento, 'imagen_url'> {
   imagen_url: string;
   eventoNombre: string;
@@ -83,10 +52,37 @@ const tamanoMosaico = (idx: number) => TAMANOS_MOSAICO[idx % TAMANOS_MOSAICO.len
 const abrirGaleria = (idx: number) => galeriaModalRef.value?.abrir(fotosGaleria.value, idx);
 
 const stats = [
-  { n: '+150', l: 'Eventos realizados' },
-  { n: '+8', l: 'Años de experiencia' },
-  { n: '+80', l: 'Clientes satisfechos' },
-  { n: '+20', l: 'Ciudades alcanzadas' },
+  { n: '100%', l: 'COBERTURA NACIONAL' },
+  { n: 'LINE-ARRAY', l: 'AUDIO DE ALTA POTENCIA' },
+  { n: 'ROBÓTICA', l: 'ILUMINACIÓN DMX & LÁSER' },
+  { n: '360°', l: 'DIRECCIÓN TÉCNICA' },
+];
+
+const paths = [
+  {
+    index: '01 / CORPORATIVO & MARCAS',
+    kicker: 'PRODUCCIÓN EJECUTIVA',
+    title: 'Lanzamientos,<br>Galas & Congresos.',
+    desc: 'Escenografía a medida, pantallas LED de alta definición, microfonía inalámbrica y streaming en directo con estándar broadcast.',
+    cta: 'Cotizar Corporativo',
+    theme: 'path-card--1'
+  },
+  {
+    index: '02 / FESTIVALES & CONCIERTOS',
+    kicker: 'GRAN ESCALA',
+    title: 'Potencia sonora<br>& Efectos Visuales.',
+    desc: 'Sistemas Line Array de alto rendimiento, estructuras Layher y Truss certificadas, show de luces robóticas y mapping visual.',
+    cta: 'Cotizar Festival',
+    theme: 'path-card--2'
+  },
+  {
+    index: '03 / PRIVADOS & BODAS',
+    kicker: 'EXPERIENCIA BOUTIQUE',
+    title: 'Momentos únicos,<br>atmósferas mágicas.',
+    desc: 'Iluminación ambiental arquitectónica, pista de baile interactiva, audio envolvente y personalización escénica total.',
+    cta: 'Cotizar Privado',
+    theme: 'path-card--3'
+  }
 ];
 
 onMounted(async () => {
@@ -109,134 +105,247 @@ onMounted(async () => {
       [pool[i], pool[j]] = [pool[j], pool[i]];
     }
     fotosGaleria.value = pool.slice(0, 16);
-
-    iniciarAutoServicios();
   } catch (e) {
     console.error('Error cargando landing:', e);
   } finally {
     cargando.value = false;
   }
 });
-
-onBeforeUnmount(detenerAutoServicios);
 </script>
 
 <template>
-  <section class="py-5 text-center position-relative overflow-hidden">
-    <div class="container py-5 position-relative" style="z-index: 1">
-      <FadeInUp>
-        <h1 class="display-3 fw-bold">CREAMOS EXPERIENCIAS<br /><span class="text-orion-primary">INOLVIDABLES</span></h1>
-      </FadeInUp>
-      <FadeInUp :delay="0.2">
-        <p class="lead text-secondary mx-auto mt-3" style="max-width: 640px">
-          Desde lo corporativo hasta lo más social. Orion transforma tus ideas en realidad.
-        </p>
-      </FadeInUp>
-      <FadeInUp :delay="0.4">
-        <div class="d-flex gap-3 justify-content-center mt-4">
-          <RouterLink to="/portafolio" class="btn btn-orion btn-lg">Ver Portafolio</RouterLink>
-          <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-outline-light btn-lg">Cotiza tu evento</RouterLink>
-        </div>
-      </FadeInUp>
-    </div>
-  </section>
+  <!-- HERO SECTION ESTILO ARCADIA -->
+  <section class="hero-stage">
+    <div class="hero__veil"></div>
+    <div class="hero__glow hero__glow--violet"></div>
+    <div class="hero__glow hero__glow--cyan"></div>
 
-  <section class="py-5 section-alt">
-    <div class="container">
-      <div class="row text-center">
-        <div v-for="(s, idx) in stats" :key="s.l" class="col-6 col-md-3 mb-3">
-          <FadeInUp :delay="idx * 0.1">
-            <div class="display-5 fw-bold text-orion-primary">{{ s.n }}</div>
-            <div class="text-secondary small">{{ s.l }}</div>
+    <div class="container position-relative" style="z-index: 2;">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-7">
+          <FadeInUp>
+            <p class="eyebrow"><span></span> UNA NUEVA ERA EN EVENTOS & ESCENARIOS</p>
+            <h1 class="hero-title-giant">
+              <span>EL ESCENARIO DE</span><br />
+              <span>TU PRÓXIMO EVENTO</span><br />
+              <em>EMPIEZA AQUÍ.</em>
+            </h1>
+            <p class="lead text-secondary mt-3 mb-4" style="max-width: 580px; font-size: 16px; line-height: 1.7;">
+              Ingeniería de sonido, iluminación escénica robótica, estructuras de escenario y dirección técnica integral en Chile. Creamos experiencias que dejan huella.
+            </p>
+            <div class="d-flex flex-wrap gap-3">
+              <a href="#catalogo" class="btn btn-orion px-4 py-2 d-inline-flex align-items-center gap-2">
+                <span>Explorar Catálogo</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+              <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-outline-light px-4 py-2">
+                Cotizar Proyecto
+              </RouterLink>
+            </div>
+            <ul class="hero-facts-list">
+              <li v-for="st in stats" :key="st.l">
+                <strong>{{ st.n }}</strong>
+                <span>{{ st.l }}</span>
+              </li>
+            </ul>
+          </FadeInUp>
+        </div>
+
+        <div class="col-lg-5 d-none d-lg-flex justify-content-end">
+          <FadeInUp :delay="0.3">
+            <aside v-if="servicioHero" class="hero-feature">
+              <div class="hero-feature__top">
+                <span class="live-dot"></span>
+                <span>DESTACADO ORION</span>
+                <span class="ms-auto" style="color: rgba(255,255,255,0.4);">01 / 04</span>
+              </div>
+              <img
+                :src="servicioHero.imagen_url || '/logo.png'"
+                :alt="servicioHero.nombre"
+                class="hero-feature__img"
+              />
+              <div class="hero-feature__body">
+                <div>
+                  <span class="feature-kicker">{{ servicioHero.categoria_slug || 'PRODUCCIÓN TÉCNICA' }}</span>
+                  <h3 class="text-white">{{ servicioHero.nombre }}</h3>
+                </div>
+                <button
+                  type="button"
+                  class="round-action"
+                  aria-label="Ver detalles"
+                  @click="abrirServicio(servicioHero)"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </aside>
           </FadeInUp>
         </div>
       </div>
     </div>
   </section>
 
+  <!-- CATÁLOGO DE SERVICIOS CON FILTER CHIPS -->
+  <section id="catalogo" class="py-5">
+    <div class="container">
+      <div class="row align-items-end g-4 mb-2">
+        <div class="col-lg-7">
+          <p class="eyebrow"><span></span> EQUIPAMIENTO Y SOLUCIONES</p>
+          <h2 class="display-5 fw-bold mb-0">Tecnología de Escenario de Vanguardia.</h2>
+        </div>
+        <div class="col-lg-5">
+          <p class="text-secondary mb-0" style="font-size: 14px; line-height: 1.7;">
+            Una gama completa de servicios modulares listos para desplegar en conciertos, conferencias, eventos corporativos y bodas en todo el territorio nacional.
+          </p>
+        </div>
+      </div>
+
+      <!-- Barra de Filtros Chips -->
+      <div class="catalog-toolbar">
+        <div class="filter-chips">
+          <button
+            v-for="cat in categorias"
+            :key="cat"
+            type="button"
+            class="filter-chip"
+            :class="{ 'is-active': filtroCategoria === cat }"
+            @click="filtroCategoria = cat"
+          >
+            {{ cat.charAt(0).toUpperCase() + cat.slice(1) }}
+          </button>
+        </div>
+        <span class="catalog-count">
+          <strong>{{ serviciosFiltrados.length }}</strong> SERVICIOS
+        </span>
+      </div>
+
+      <!-- Grid de Servicios -->
+      <div v-if="cargando" class="text-center py-5">
+        <div class="spinner-border text-info" role="status"></div>
+        <p class="text-secondary mt-3">Cargando catálogo técnico...</p>
+      </div>
+      <div v-else-if="serviciosFiltrados.length" class="row g-4">
+        <div
+          v-for="svc in serviciosFiltrados"
+          :key="svc.id"
+          class="col-md-6 col-lg-4"
+        >
+          <article class="stage-card">
+            <div class="stage-card__visual" role="button" tabindex="0" @click="abrirServicio(svc)">
+              <span class="stage-badge">{{ svc.categoria_slug || 'PRODUCCIÓN' }}</span>
+              <img
+                v-if="svc.imagen_url"
+                :src="svc.imagen_url"
+                :alt="svc.nombre"
+                loading="lazy"
+                decoding="async"
+              />
+              <button type="button" class="stage-card__action-btn" @click.stop="abrirServicio(svc)">
+                <span>Ver especificaciones</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+            <div class="stage-card__meta">
+              <div>
+                <span>EQUIPAMIENTO PROFESIONAL</span>
+                <h3 class="text-white">{{ svc.nombre }}</h3>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+      <div v-else class="text-center py-5 text-secondary">
+        No se encontraron servicios para la categoría seleccionada.
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN MANIFIESTO ORION CON ORBE HOLOGRÁFICO -->
   <section class="py-4">
     <div class="container">
-      <p class="text-center text-secondary small text-uppercase mb-4">Confían en nosotros</p>
-      <div class="d-flex flex-wrap justify-content-center align-items-center gap-4 gap-md-5">
-        <div v-for="e in empresasConfianza" :key="e.nombre" class="empresa-logo" :style="{ color: e.color }">
-          {{ e.nombre }}
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="py-5 overflow-hidden">
-    <div class="container">
-      <h2 class="text-center fw-bold mb-5">LO QUE HACEMOS</h2>
-      <div v-if="cargando" class="text-center text-secondary py-4" aria-live="polite">
-        <div class="spinner-border text-orion-primary" role="status" aria-hidden="true"></div>
-        <p class="mt-3 mb-0">Cargando servicios...</p>
-      </div>
-      <div v-else-if="servicios.length" class="d-flex align-items-center justify-content-center gap-2"
-        @mouseenter="detenerAutoServicios" @mouseleave="iniciarAutoServicios">
-        <button v-if="servicios.length > 1" type="button" class="carousel-arrow-ghost flex-shrink-0"
-          aria-label="Servicio anterior" @click="avanzarManual(servicioAnterior)">‹</button>
-        <div class="servicios-carousel-viewport">
-          <TransitionGroup name="servicio-slide" tag="div" class="d-flex gap-3 justify-content-center">
-            <div v-for="svc in serviciosVisibles" :key="svc.id" class="servicio-carousel-item">
-              <div class="card bg-dark border-secondary hover-scale" style="width: 15rem; cursor: pointer"
-                @click="abrirServicio(svc)">
-                <div class="card-cover rounded-top overflow-hidden" style="height: 10rem">
-                  <img v-if="svc.imagen_url" :src="svc.imagen_url" :alt="`Servicio de ${svc.nombre}`"
-                    class="img-cover" loading="lazy" decoding="async" />
-                </div>
-                <div class="card-body text-center">
-                  <span class="badge text-bg-warning mb-2">{{ svc.nombre.split(' ')[0] }}</span>
-                  <h6 class="card-title mb-0">{{ svc.nombre }}</h6>
-                </div>
-              </div>
-            </div>
-          </TransitionGroup>
-        </div>
-        <button v-if="servicios.length > 1" type="button" class="carousel-arrow-ghost flex-shrink-0"
-          aria-label="Servicio siguiente" @click="avanzarManual(servicioSiguiente)">›</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="py-5 section-alt">
-    <div class="container">
-      <h2 class="text-center fw-bold mb-5">NUESTRO TRABAJO</h2>
-      <div v-if="cargando" class="text-center text-secondary py-4" aria-live="polite">
-        <div class="spinner-border text-orion-primary" role="status" aria-hidden="true"></div>
-        <p class="mt-3 mb-0">Cargando eventos...</p>
-      </div>
-      <div v-else class="row g-4">
-        <div v-for="ev in eventosDestacados" :key="ev.id" class="col-md-6">
-          <RouterLink :to="`/portafolio/${ev.slug}`" class="text-decoration-none">
-            <div class="card border-0 card-cover d-flex justify-content-end position-relative overflow-hidden">
-              <img v-if="ev.imagen_url" :src="ev.imagen_url"
-                :alt="`${ev.nombre} — evento producido por Orion en ${ev.lugar}`"
-                class="img-cover position-absolute top-0 start-0" loading="lazy" decoding="async" />
-              <div class="p-3 position-relative" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent)">
-                <h5 class="text-white mb-0">{{ ev.nombre }}</h5>
-                <small class="text-secondary">{{ ev.lugar }}</small>
-              </div>
-            </div>
+      <div class="manifesto">
+        <div class="manifesto__index">ORION / 01</div>
+        <div class="manifesto__content">
+          <p class="eyebrow" style="color: var(--cyan);"><span></span> NUESTRA VISIÓN</p>
+          <h2 class="text-white">Potencia Sonora.<br>Impacto Visual Inolvidable.</h2>
+          <p>
+            En Orion Stage fusionamos la precisión técnica del audio profesional con el arte de la iluminación arquitectónica y robótica. Cada evento es diseñado como un espectáculo único.
+          </p>
+          <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-outline-light px-4 py-2 d-inline-flex align-items-center gap-2">
+            <span>Conversar con un Ingeniero</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </RouterLink>
         </div>
-      </div>
-      <div class="text-center mt-4">
-        <RouterLink to="/portafolio" class="btn btn-outline-light">Ver todo el portafolio</RouterLink>
+        <div class="manifesto__orb" aria-hidden="true">
+          <span></span>
+        </div>
       </div>
     </div>
   </section>
 
-  <section v-if="fotosGaleria.length" class="py-5 section-alt">
+  <!-- PLATFORM PATHS: RECORRIDOS POR TIPO DE EVENTO -->
+  <section class="py-5">
+    <div class="container">
+      <div class="row align-items-end g-4 mb-4">
+        <div class="col-lg-7">
+          <p class="eyebrow"><span></span> SOLUCIONES A TU MEDIDA</p>
+          <h2 class="display-5 fw-bold mb-0">Cada Escenario Tiene su Identidad.</h2>
+        </div>
+        <div class="col-lg-5">
+          <p class="text-secondary mb-0" style="font-size: 14px; line-height: 1.7;">
+            Diseñamos paquetes llave en mano adaptados al tamaño de la audiencia, la acústica del recinto y los objetivos de tu producción.
+          </p>
+        </div>
+      </div>
+
+      <div class="platform-path-grid">
+        <article
+          v-for="p in paths"
+          :key="p.index"
+          class="path-card"
+          :class="p.theme"
+        >
+          <span class="path-card__index">{{ p.index }}</span>
+          <strong>{{ p.kicker }}</strong>
+          <h3 class="text-white" v-html="p.title"></h3>
+          <p>{{ p.desc }}</p>
+          <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="path-card__cta">
+            <span>{{ p.cta }}</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </RouterLink>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALERÍA MOSAICO DE EVENTOS REALES -->
+  <section v-if="fotosGaleria.length" class="py-5">
     <div class="container galeria-home-container">
-      <h2 class="text-center fw-bold mb-5">MOMENTOS QUE CREAMOS</h2>
+      <div class="text-center mb-5">
+        <p class="eyebrow justify-content-center"><span></span> PORTAFOLIO EN ACCIÓN</p>
+        <h2 class="display-5 fw-bold">Momentos en Vivo</h2>
+        <p class="text-secondary small mt-2">Fotografías reales capturadas en eventos producidos por Orion Stage</p>
+      </div>
+
       <div class="galeria-mosaico">
-        <div v-for="(f, idx) in fotosGaleria" :key="f.id"
-          class="galeria-item" :class="tamanoMosaico(idx)" role="button" tabindex="0"
-          @click="abrirGaleria(idx)" @keydown.enter="abrirGaleria(idx)">
+        <div
+          v-for="(f, idx) in fotosGaleria"
+          :key="f.id"
+          class="galeria-item"
+          :class="tamanoMosaico(idx)"
+          role="button"
+          tabindex="0"
+          @click="abrirGaleria(idx)"
+          @keydown.enter="abrirGaleria(idx)"
+        >
           <div class="galeria-item-img">
-            <img :src="f.imagen_url" :alt="`Foto del evento ${f.eventoNombre}`" class="img-cover"
-              loading="lazy" decoding="async" />
+            <img
+              :src="f.imagen_url"
+              :alt="`Foto de ${f.eventoNombre}`"
+              class="img-cover"
+              loading="lazy"
+              decoding="async"
+            />
           </div>
           <div class="galeria-item-leyenda">{{ f.eventoNombre }}</div>
         </div>
@@ -244,10 +353,14 @@ onBeforeUnmount(detenerAutoServicios);
     </div>
   </section>
 
+  <!-- FORMULARIO DE COTIZACIÓN -->
   <section id="cotizacion" class="py-5 cotiza-section">
-    <div class="container" style="max-width: 720px">
-      <h2 class="text-center fw-bold mb-2">¿TIENES UN EVENTO EN MENTE?</h2>
-      <p class="text-center text-secondary mb-4">Cuéntanos tu idea y te contactamos en menos de 24 horas</p>
+    <div class="container" style="max-width: 760px">
+      <div class="text-center mb-4">
+        <p class="eyebrow justify-content-center"><span></span> COTIZACIÓN SIN COMPROMISO</p>
+        <h2 class="display-5 fw-bold mb-2">¿Tienes un Evento en Mente?</h2>
+        <p class="text-secondary">Cuéntanos sobre tu fecha, recinto y requerimientos. Te responderemos en menos de 24 horas.</p>
+      </div>
       <ContactForm />
     </div>
   </section>
@@ -255,3 +368,4 @@ onBeforeUnmount(detenerAutoServicios);
   <ServicioModal ref="servicioModalRef" />
   <GaleriaFotosModal ref="galeriaModalRef" />
 </template>
+
