@@ -86,6 +86,36 @@ body {
   overflow-x: hidden;
 }
 
+/* Justificación pulcra de párrafos y cuerpos de texto */
+p, .lead, .pillar-card p, .path-card p, .cultural-law-card p, .manifesto__content p, .testimonial-quote, .card-body p, .modal-body p, .faq-item p, .post-content p {
+  text-align: justify;
+  text-justify: inter-word;
+  text-align-last: left;
+  hyphens: auto;
+}
+
+.text-center, .text-center p, .text-center .lead, .text-center .eyebrow-luxury, .text-center .brand-title {
+  text-align: center !important;
+  text-align-last: center !important;
+}
+
+.text-start, .text-start p {
+  text-align: left !important;
+  text-align-last: left !important;
+}
+
+.text-end, .text-end p {
+  text-align: right !important;
+  text-align-last: right !important;
+}
+
+.text-justify {
+  text-align: justify !important;
+  text-justify: inter-word !important;
+  text-align-last: left !important;
+  hyphens: auto;
+}
+
 h1, h2, h3, h4, h5, .display-1, .display-2, .display-3, .display-4, .display-5, .navbar-brand {
   font-family: var(--shell-display);
   letter-spacing: -0.035em;
