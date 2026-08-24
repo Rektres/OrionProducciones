@@ -355,13 +355,15 @@ onMounted(async () => {
 
   <!-- FORMULARIO DE COTIZACIÓN -->
   <section id="cotizacion" class="py-5 cotiza-section">
-    <div class="container" style="max-width: 760px">
-      <div class="text-center mb-4">
-        <p class="eyebrow justify-content-center"><span></span> COTIZACIÓN SIN COMPROMISO</p>
-        <h2 class="display-5 fw-bold mb-2">¿Tienes un Evento en Mente?</h2>
-        <p class="text-secondary">Cuéntanos sobre tu fecha, recinto y requerimientos. Te responderemos en menos de 24 horas.</p>
+    <div class="container" style="max-width: 780px">
+      <div class="cotiza-box">
+        <div class="text-center mb-4">
+          <p class="eyebrow justify-content-center"><span></span> COTIZACIÓN SIN COMPROMISO</p>
+          <h2 class="display-5 fw-bold mb-2">¿Tienes un Evento en Mente?</h2>
+          <p class="text-secondary">Cuéntanos sobre tu fecha, recinto y requerimientos. Te responderemos en menos de 24 horas.</p>
+        </div>
+        <ContactForm />
       </div>
-      <ContactForm />
     </div>
   </section>
 

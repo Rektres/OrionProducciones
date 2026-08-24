@@ -16,19 +16,19 @@ const direccion = import.meta.env.VITE_CONTACT_DIRECCION || 'Santiago, Chile';
           <div class="d-flex align-items-center gap-2 mb-3">
             <img src="/logo.png" alt="Orion Stage" height="42" class="brand-logo-glow" />
             <div class="d-flex flex-column lh-1">
-              <strong style="font-family: var(--shell-display); font-size: 18px; color: #fff;">ORION STAGE</strong>
-              <small style="font-size: 9px; font-weight: 800; letter-spacing: 0.16em; color: var(--cyan);">PRODUCCIONES</small>
+              <strong class="footer-brand-title">ORION STAGE</strong>
+              <small class="footer-brand-sub">PRODUCCIONES</small>
             </div>
           </div>
-          <p class="text-secondary small pe-lg-4">
+          <p class="footer-desc small pe-lg-4">
             Diseñamos y producimos experiencias escénicas de alto impacto. Escenarios, sonido line-array, iluminación robótica y ambientación integral para eventos en todo Chile.
           </p>
           <div class="footer-status-card mt-3">
-            <div class="d-flex align-items-center gap-2 text-white small fw-bold">
+            <div class="d-flex align-items-center gap-2 small fw-bold status-title">
               <span class="live-dot"></span>
               <span>Disponibilidad 2026 Activa</span>
             </div>
-            <p class="text-secondary small mb-0 mt-1" style="font-size: 11px;">
+            <p class="status-desc small mb-0 mt-1">
               Agenda abierta para producción de eventos corporativos, festivales y bodas.
             </p>
           </div>
@@ -58,16 +58,16 @@ const direccion = import.meta.env.VITE_CONTACT_DIRECCION || 'Santiago, Chile';
 
         <div class="col-lg-3 col-md-6">
           <h6 class="footer-heading">Contacto Directo</h6>
-          <ul class="list-unstyled footer-links small text-secondary">
+          <ul class="list-unstyled footer-links small">
             <li>
-              <a :href="whatsappUrl" target="_blank" rel="noopener noreferrer" class="d-inline-flex align-items-center gap-2 text-white">
+              <a :href="whatsappUrl" target="_blank" rel="noopener noreferrer" class="d-inline-flex align-items-center gap-2 whatsapp-link">
                 <span style="color: var(--lime);">●</span> +{{ numero }}
               </a>
             </li>
             <li v-if="email" class="mt-2">
-              <a :href="`mailto:${email}`" class="text-secondary">{{ email }}</a>
+              <a :href="`mailto:${email}`">{{ email }}</a>
             </li>
-            <li class="mt-2">{{ direccion }}</li>
+            <li class="mt-2 address-text">{{ direccion }}</li>
           </ul>
           <div class="d-flex gap-3 mt-3">
             <a :href="instagramUrl" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Instagram">
@@ -83,12 +83,12 @@ const direccion = import.meta.env.VITE_CONTACT_DIRECCION || 'Santiago, Chile';
         </div>
       </div>
 
-      <div class="footer-bottom pt-4 mt-2 d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 border-top border-secondary border-opacity-25 small text-secondary">
+      <div class="footer-bottom pt-4 mt-2 d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 border-top small">
         <div>© 2026 Orion Stage Producciones · Todos los derechos reservados</div>
         <div class="d-flex gap-3">
-          <RouterLink to="/terminos-y-condiciones" class="text-secondary text-decoration-none">Términos y condiciones</RouterLink>
+          <RouterLink to="/terminos-y-condiciones" class="text-decoration-none">Términos y condiciones</RouterLink>
           <span>·</span>
-          <RouterLink to="/politica-de-privacidad" class="text-secondary text-decoration-none">Privacidad</RouterLink>
+          <RouterLink to="/politica-de-privacidad" class="text-decoration-none">Privacidad</RouterLink>
         </div>
       </div>
     </div>
@@ -96,57 +96,74 @@ const direccion = import.meta.env.VITE_CONTACT_DIRECCION || 'Santiago, Chile';
 </template>
 
 <style scoped>
-.site-footer-stage {
-  background: linear-gradient(180deg, rgba(7,7,17,0.4) 0%, rgba(0,11,33,0.85) 100%), var(--page-bg, #070711);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+.footer-brand-title {
+  font-family: var(--shell-display);
+  font-size: 18px;
+  color: var(--bs-body-color);
 }
-
+.footer-brand-sub {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: var(--orion-primary);
+}
+.footer-desc, .status-desc, .address-text {
+  color: var(--bs-secondary-color);
+}
 .footer-heading {
   font-family: var(--shell-display);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--bs-body-color);
   margin-bottom: 16px;
 }
-
 .footer-links li {
   margin-bottom: 9px;
 }
 .footer-links a {
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--bs-secondary-color);
   text-decoration: none;
   transition: color 0.2s ease;
 }
 .footer-links a:hover {
-  color: var(--cyan);
+  color: var(--orion-primary);
 }
-
+.whatsapp-link {
+  color: var(--bs-body-color) !important;
+  font-weight: 600;
+}
 .footer-status-card {
   padding: 14px 16px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--bs-border-color);
 }
-
+.status-title {
+  color: var(--bs-body-color);
+}
+.status-desc {
+  font-size: 11px;
+}
 .social-btn {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.04);
-  color: #fff;
+  border: 1px solid var(--bs-border-color);
   display: grid;
   place-items: center;
   text-decoration: none;
   transition: all 0.2s ease;
 }
-.social-btn:hover {
-  color: #070711;
-  background: var(--cyan);
-  border-color: var(--cyan);
-  transform: translateY(-2px);
+.footer-bottom {
+  color: var(--bs-secondary-color);
+}
+.footer-bottom a {
+  color: var(--bs-secondary-color);
+}
+.footer-bottom a:hover {
+  color: var(--orion-primary);
 }
 </style>
+
 
