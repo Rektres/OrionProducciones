@@ -61,7 +61,7 @@ const direccion = import.meta.env.VITE_CONTACT_DIRECCION || 'Santiago, Chile';
           <ul class="list-unstyled footer-links small">
             <li>
               <a :href="whatsappUrl" target="_blank" rel="noopener noreferrer" class="d-inline-flex align-items-center gap-2 whatsapp-link">
-                <span style="color: var(--lime);">●</span> +{{ numero }}
+                <span style="color: var(--lime);">●</span> Mensaje vía WhatsApp
               </a>
             </li>
             <li v-if="email" class="mt-2">

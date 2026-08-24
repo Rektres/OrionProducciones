@@ -36,8 +36,12 @@ const serviciosFiltrados = computed(() => {
   );
 });
 
-// Servicio destacado para la tarjeta flotante del Hero
-const servicioHero = computed(() => {
+// Evento o Servicio destacado para la tarjeta flotante del Hero
+const eventoHero = computed(() => {
+  return eventosDestacados.value[0] || null;
+});
+
+const servicioFallback = computed(() => {
   return servicios.value[0] || null;
 });
 
@@ -56,6 +60,21 @@ const stats = [
   { n: '+600', l: 'EVENTOS EXITOSOS' },
   { n: '100%', l: 'COBERTURA EN CHILE' },
   { n: 'LINE-ARRAY', l: 'AUDIO CERTIFICADO' },
+];
+
+const marcas = [
+  { nombre: 'Banco Santander', tag: 'Galas & Convenciones' },
+  { nombre: 'Entel', tag: 'Festivales Masivos' },
+  { nombre: 'Viña Santa Rita', tag: 'Bodas de Alta Gama' },
+  { nombre: 'Mallplaza', tag: 'Activaciones 360' },
+  { nombre: 'BHP Escondida', tag: 'Corporativo Minero' },
+  { nombre: 'Codelco', tag: 'Eventos Masivos' },
+  { nombre: 'Copec', tag: 'Lanzamientos' },
+  { nombre: 'Lotus Producciones', tag: 'Conciertos' },
+  { nombre: 'Universidad de Chile', tag: 'Ceremonias Oficiales' },
+  { nombre: 'Red Bull Chile', tag: 'Escenarios & Shows' },
+  { nombre: 'Gran Arena Monticello', tag: 'Música en Vivo' },
+  { nombre: 'Espacio Riesco', tag: 'Convenciones & Ferias' },
 ];
 
 const pilares = [
@@ -191,29 +210,60 @@ onMounted(async () => {
 
         <div class="col-lg-5 d-none d-lg-flex justify-content-end">
           <FadeInUp :delay="0.3">
-            <aside v-if="servicioHero" class="hero-card-preview">
+            <!-- Tarjeta Flotante Hero (Navega directamente al Evento) -->
+            <aside v-if="eventoHero" class="hero-card-preview">
               <div class="d-flex align-items-center gap-2 mb-2 px-1">
                 <span class="live-dot"></span>
-                <span class="small fw-bold text-uppercase" style="letter-spacing: 0.1em; font-size: 10px;">PRODUCCIÓN EN VIVO</span>
+                <span class="small fw-bold text-uppercase" style="letter-spacing: 0.1em; font-size: 10px;">PRODUCCIÓN DESTACADA</span>
                 <span class="ms-auto small text-secondary" style="font-size: 10px;">TEMPORADA 2026</span>
               </div>
+              <RouterLink :to="`/portafolio/${eventoHero.slug}`" class="d-block text-decoration-none">
+                <img
+                  :src="eventoHero.imagen_destacada || '/logo.png'"
+                  :alt="eventoHero.nombre"
+                  class="hero-card-preview__img"
+                />
+              </RouterLink>
+              <div class="d-flex align-items-end justify-content-between pt-3 px-1">
+                <div>
+                  <span class="small fw-bold text-uppercase text-orion-gold" style="font-size: 10px; letter-spacing: 0.1em;">
+                    {{ eventoHero.tipo_slug || 'PRODUCCIÓN ESCÉNICA' }}
+                  </span>
+                  <RouterLink :to="`/portafolio/${eventoHero.slug}`" class="text-decoration-none d-block">
+                    <h3 class="h5 mb-0 fw-bold mt-1 text-body">{{ eventoHero.nombre }}</h3>
+                  </RouterLink>
+                </div>
+                <RouterLink
+                  :to="`/portafolio/${eventoHero.slug}`"
+                  class="btn btn-sm btn-outline-secondary rounded-circle p-2 d-inline-flex align-items-center justify-content-center"
+                  aria-label="Ir al evento"
+                  title="Ver detalle del evento"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </RouterLink>
+              </div>
+            </aside>
+            <aside v-else-if="servicioFallback" class="hero-card-preview">
+              <div class="d-flex align-items-center gap-2 mb-2 px-1">
+                <span class="live-dot"></span>
+                <span class="small fw-bold text-uppercase" style="letter-spacing: 0.1em; font-size: 10px;">EQUIPAMIENTO DESTACADO</span>
+              </div>
               <img
-                :src="servicioHero.imagen_url || '/logo.png'"
-                :alt="servicioHero.nombre"
+                :src="servicioFallback.imagen_url || '/logo.png'"
+                :alt="servicioFallback.nombre"
                 class="hero-card-preview__img"
               />
               <div class="d-flex align-items-end justify-content-between pt-3 px-1">
                 <div>
-                  <span class="small fw-bold text-uppercase text-orion-gold" style="font-size: 10px; letter-spacing: 0.1em;">
-                    {{ servicioHero.categoria_slug || 'PRODUCCIÓN TÉCNICA' }}
+                  <span class="small fw-bold text-uppercase text-orion-gold" style="font-size: 10px;">
+                    {{ servicioFallback.categoria_slug || 'PRODUCCIÓN TÉCNICA' }}
                   </span>
-                  <h3 class="h5 mb-0 fw-bold mt-1">{{ servicioHero.nombre }}</h3>
+                  <h3 class="h5 mb-0 fw-bold mt-1 text-body">{{ servicioFallback.nombre }}</h3>
                 </div>
                 <button
                   type="button"
                   class="btn btn-sm btn-outline-secondary rounded-circle p-2"
-                  aria-label="Ver detalles"
-                  @click="abrirServicio(servicioHero)"
+                  @click="abrirServicio(servicioFallback)"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </button>
@@ -239,6 +289,31 @@ onMounted(async () => {
     </div>
   </section>
 
+  <!-- CARRUSEL ORGÁNICO: CONFÍAN EN NOSOTROS -->
+  <section class="brand-marquee-section">
+    <div class="container mb-3 text-center">
+      <div class="eyebrow-luxury justify-content-center mb-0" style="font-size: 10px;">
+        <span>★</span> EMPRESAS & PRODUCTORAS QUE CONFÍAN EN ORION
+      </div>
+    </div>
+    <div class="brand-marquee-container">
+      <div class="brand-marquee-track">
+        <div v-for="(m, i) in marcas" :key="`m1-${i}`" class="brand-pill">
+          <span class="brand-pill-icon">★</span>
+          <span>{{ m.nombre }}</span>
+          <small class="text-secondary" style="font-size: 11px; opacity: 0.7;">· {{ m.tag }}</small>
+        </div>
+      </div>
+      <div class="brand-marquee-track" aria-hidden="true">
+        <div v-for="(m, i) in marcas" :key="`m2-${i}`" class="brand-pill">
+          <span class="brand-pill-icon">★</span>
+          <span>{{ m.nombre }}</span>
+          <small class="text-secondary" style="font-size: 11px; opacity: 0.7;">· {{ m.tag }}</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- 4 PILARES: "DONDE CADA DETALLE IMPORTA" (TU DÍA PERFECTO + ORION) -->
   <section class="py-5">
     <div class="container">
@@ -259,6 +334,65 @@ onMounted(async () => {
             <h3>{{ pil.title }}</h3>
             <p>{{ pil.desc }}</p>
           </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN LEY DE DONACIONES CULTURALES (GOBIERNO DE CHILE) -->
+  <section class="py-4">
+    <div class="container">
+      <div class="cultural-law-card">
+        <div class="row align-items-center g-4">
+          <div class="col-lg-8">
+            <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+              <div class="gob-badge">
+                <span class="live-dot" style="background: #0039a6; box-shadow: 0 0 8px #0039a6;"></span>
+                <span>LEY N° 18.985 / LEY VALDÉS</span>
+              </div>
+              <span class="badge bg-orion-gold text-dark fw-bold px-3 py-2" style="font-size: 11px; border-radius: 6px;">
+                50% CRÉDITO TRIBUTARIO
+              </span>
+            </div>
+            <h2 class="display-6 fw-bold mb-3 text-body">
+              Proyectos & Festivales Acogidos a la Ley de Donaciones Culturales
+            </h2>
+            <p class="text-secondary mb-4" style="font-size: 15px; line-height: 1.75;">
+              En Orion Stage contamos con proyectos de música en vivo, festivales y montajes escénicos adjudicados y respaldados bajo la <strong>Ley de Donaciones Culturales del Ministerio de las Culturas, las Artes y el Patrimonio de Chile</strong>. Empresas y personas jurídicas de primera categoría pueden financiar eventos culturales obteniendo una <strong>rebaja y crédito fiscal directo del 50%</strong> del aporte realizado.
+            </p>
+            <div class="d-flex flex-wrap gap-3">
+              <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-orion d-inline-flex align-items-center gap-2">
+                <span>Consultar por Ley de Donaciones</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </RouterLink>
+              <a href="https://wa.me/56944830378?text=Hola,%20quisiera%20información%20sobre%20la%20Ley%20de%20Donaciones%20Culturales%20para%20eventos" target="_blank" rel="noopener noreferrer" class="btn-glass">
+                <span>Asesoría Directa por WhatsApp</span>
+              </a>
+            </div>
+          </div>
+          <div class="col-lg-4 text-center text-lg-end">
+            <div class="d-inline-flex flex-column align-items-center align-items-lg-end p-4 rounded-4" style="background: rgba(127,127,127,0.06); border: 1px solid var(--card-border);">
+              <div class="gob-logo-container mb-2">
+                <div class="gob-chile-flag">
+                  <div class="gob-chile-flag__top">
+                    <div class="gob-chile-flag__blue">★</div>
+                    <div class="gob-chile-flag__white"></div>
+                  </div>
+                  <div class="gob-chile-flag__bottom"></div>
+                </div>
+                <div class="text-start lh-1">
+                  <strong class="d-block" style="font-size: 13px; letter-spacing: -0.02em; color: var(--bs-body-color);">Ministerio de las Culturas,</strong>
+                  <span class="small text-secondary" style="font-size: 11px;">las Artes y el Patrimonio</span>
+                </div>
+              </div>
+              <small class="text-secondary text-uppercase fw-bold mt-2" style="font-size: 9px; letter-spacing: 0.1em;">
+                Gobierno de Chile
+              </small>
+              <div class="mt-3 small text-secondary text-center text-lg-end" style="font-size: 11px; max-width: 220px;">
+                Certificación y asesoría legal para donantes corporativos disponible.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
