@@ -167,7 +167,7 @@ onMounted(async () => {
               <div class="hero-feature__body">
                 <div>
                   <span class="feature-kicker">{{ servicioHero.categoria_slug || 'PRODUCCIÓN TÉCNICA' }}</span>
-                  <h3 class="text-white">{{ servicioHero.nombre }}</h3>
+                  <h3>{{ servicioHero.nombre }}</h3>
                 </div>
                 <button
                   type="button"
@@ -248,7 +248,7 @@ onMounted(async () => {
             <div class="stage-card__meta">
               <div>
                 <span>EQUIPAMIENTO PROFESIONAL</span>
-                <h3 class="text-white">{{ svc.nombre }}</h3>
+                <h3>{{ svc.nombre }}</h3>
               </div>
             </div>
           </article>
@@ -266,8 +266,8 @@ onMounted(async () => {
       <div class="manifesto">
         <div class="manifesto__index">ORION / 01</div>
         <div class="manifesto__content">
-          <p class="eyebrow" style="color: var(--cyan);"><span></span> NUESTRA VISIÓN</p>
-          <h2 class="text-white">Potencia Sonora.<br>Impacto Visual Inolvidable.</h2>
+          <p class="eyebrow"><span></span> NUESTRA VISIÓN</p>
+          <h2>Potencia Sonora.<br>Impacto Visual Inolvidable.</h2>
           <p>
             En Orion Stage fusionamos la precisión técnica del audio profesional con el arte de la iluminación arquitectónica y robótica. Cada evento es diseñado como un espectáculo único.
           </p>
@@ -307,7 +307,7 @@ onMounted(async () => {
         >
           <span class="path-card__index">{{ p.index }}</span>
           <strong>{{ p.kicker }}</strong>
-          <h3 class="text-white" v-html="p.title"></h3>
+          <h3 v-html="p.title"></h3>
           <p>{{ p.desc }}</p>
           <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="path-card__cta">
             <span>{{ p.cta }}</span>

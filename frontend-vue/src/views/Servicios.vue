@@ -36,22 +36,40 @@ onMounted(async () => {
 <template>
   <section class="py-5 text-center position-relative overflow-hidden">
     <div class="container position-relative" style="z-index: 1">
-      <h1 class="display-4 fw-bold">SERVICIOS</h1>
-      <p class="text-secondary">Lo que hacemos para tu evento</p>
+      <p class="eyebrow justify-content-center"><span></span> SOLUCIONES INTEGRALES</p>
+      <h1 class="display-4 fw-bold">CATÁLOGO DE SERVICIOS</h1>
+      <p class="text-secondary" style="max-width: 600px; margin: 0 auto;">Equipamiento de audio, iluminación, visuales y montaje escénico de nivel profesional para todo tipo de eventos.</p>
     </div>
   </section>
 
   <section class="py-4">
     <div class="container">
-      <div class="d-flex flex-wrap gap-2 justify-content-center mb-4">
-        <button class="btn btn-sm" :class="sel === null ? 'btn-orion' : 'btn-outline-light'" @click="sel = null">Todos</button>
-        <button v-for="c in categorias" :key="c.id" class="btn btn-sm"
-          :class="sel === c.slug ? 'btn-orion' : 'btn-outline-light'" @click="sel = c.slug">
-          {{ c.nombre }}
-        </button>
+      <div class="catalog-toolbar">
+        <div class="filter-chips">
+          <button
+            class="filter-chip"
+            :class="{ 'is-active': sel === null }"
+            @click="sel = null"
+          >
+            Todos
+          </button>
+          <button
+            v-for="c in categorias"
+            :key="c.id"
+            class="filter-chip"
+            :class="{ 'is-active': sel === c.slug }"
+            @click="sel = c.slug"
+          >
+            {{ c.nombre }}
+          </button>
+        </div>
+        <span class="catalog-count">
+          <strong>{{ filtrados.length }}</strong> DISPONIBLES
+        </span>
       </div>
+
       <div v-if="cargando" class="text-center text-secondary py-5" aria-live="polite">
-        <div class="spinner-border text-orion-primary" role="status" aria-hidden="true"></div>
+        <div class="spinner-border text-info" role="status" aria-hidden="true"></div>
         <p class="mt-3 mb-0">Cargando servicios...</p>
       </div>
       <div v-else-if="error" class="text-center text-secondary py-5">
@@ -63,15 +81,28 @@ onMounted(async () => {
       <div v-else class="row g-4">
         <div v-for="(svc, idx) in filtrados" :key="svc.id" class="col-md-6 col-lg-4">
           <FadeInUp :delay="idx * 0.05">
-            <div class="card h-100 bg-dark border-secondary hover-scale" style="cursor: pointer" @click="abrirServicio(svc)">
-              <div v-if="svc.imagen_url" class="card-cover overflow-hidden rounded-top" style="height: 10rem">
-                <img :src="svc.imagen_url" :alt="`Servicio de ${svc.nombre}`" class="img-cover"
-                  loading="lazy" decoding="async" />
+            <article class="stage-card">
+              <div class="stage-card__visual" role="button" tabindex="0" @click="abrirServicio(svc)">
+                <span class="stage-badge">{{ svc.categoria_slug || 'PRODUCCIÓN' }}</span>
+                <img
+                  v-if="svc.imagen_url"
+                  :src="svc.imagen_url"
+                  :alt="svc.nombre"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <button type="button" class="stage-card__action-btn" @click.stop="abrirServicio(svc)">
+                  <span>Ver especificaciones</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
               </div>
-              <div class="card-body">
-                <h5 class="card-title mb-0">{{ svc.nombre }}</h5>
+              <div class="stage-card__meta">
+                <div>
+                  <span>EQUIPAMIENTO PROFESIONAL</span>
+                  <h3>{{ svc.nombre }}</h3>
+                </div>
               </div>
-            </div>
+            </article>
           </FadeInUp>
         </div>
       </div>
@@ -80,3 +111,4 @@ onMounted(async () => {
 
   <ServicioModal ref="servicioModalRef" />
 </template>
+
