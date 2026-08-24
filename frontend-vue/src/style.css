@@ -994,10 +994,13 @@ h1, h2, h3, h4, h5, .display-1, .display-2, .display-3, .display-4, .display-5, 
   background: #d52b1e;
 }
 
-/* Responsividad */
-@media (max-width: 960px) {
-  .manifesto { grid-template-columns: 1fr 0.5fr; gap: 30px; }
+/* ==========================================================================
+   RESPONSIVIDAD & BREAKPOINTS MOBILE
+   ========================================================================== */
+@media (max-width: 991.98px) {
+  .manifesto { grid-template-columns: 1fr; gap: 30px; }
   .manifesto__index { display: none; }
+  .manifesto__orb { width: 180px; justify-self: center; }
   .platform-path-grid { grid-template-columns: 1fr; }
   .path-card { border-right: 0; border-bottom: 1px solid var(--card-border); min-height: auto; }
   .path-card:last-child { border-bottom: 0; }
@@ -1005,14 +1008,28 @@ h1, h2, h3, h4, h5, .display-1, .display-2, .display-3, .display-4, .display-5, 
 }
 
 @media (max-width: 767.98px) {
-  .galeria-mosaico { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 10rem; gap: 0.7rem; }
+  .hero-fusion { padding: 95px 0 45px; min-height: auto; }
+  .hero-title-giant { font-size: clamp(32px, 8.2vw, 46px); line-height: 1.08; margin-bottom: 16px; }
+  .catalog-toolbar { flex-direction: column; align-items: stretch; gap: 14px; padding: 14px; }
+  .filter-chips { justify-content: flex-start; }
+  .filter-chip { padding: 6px 14px; font-size: 11.5px; }
+  .stage-card__visual { height: 280px; }
+  .stage-card__action-btn { opacity: 1; transform: none; padding: 10px 14px; }
+  .cultural-law-card { padding: 26px 20px; }
+  .cotiza-box { padding: 24px 18px; border-radius: 20px; }
+  .galeria-mosaico { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 9.5rem; gap: 0.6rem; }
+  .trust-bar { padding: 18px 0; }
+  .trust-stat strong { font-size: 22px; }
+  .trust-stat span { font-size: 10.5px; }
+  .pillar-card { padding: 24px 20px; border-radius: 16px; }
+  .testimonial-card { padding: 24px 20px; border-radius: 16px; }
 }
 
-@media (max-width: 640px) {
-  .manifesto { grid-template-columns: 1fr; }
-  .manifesto__orb { width: 160px; justify-self: center; }
-  .hero-title-giant { font-size: 36px; }
-  .stage-card__action-btn { opacity: 1; transform: none; }
+@media (max-width: 480px) {
+  .hero-title-giant { font-size: 30px; }
+  .galeria-mosaico { grid-template-columns: 1fr; grid-auto-rows: 12rem; }
+  .galeria-item.tam-ancho, .galeria-item.tam-grande { grid-column: span 1; }
+  .galeria-item.tam-alto { grid-row: span 1; }
 }
 
 
