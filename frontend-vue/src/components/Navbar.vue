@@ -64,17 +64,17 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll));
 <style scoped>
 .navbar-orion-stage {
   padding: 14px 0;
-  background: rgba(7, 9, 22, 0.4);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--navbar-bg);
+  border-bottom: 1px solid var(--bs-border-color);
   backdrop-filter: blur(20px) saturate(140%);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
   transition: all 0.3s ease;
   z-index: 1030;
 }
 .navbar-scrolled {
-  background: rgba(7, 9, 22, 0.88);
-  border-bottom-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  background: var(--navbar-bg-scrolled);
+  border-bottom-color: var(--bs-border-color);
+  box-shadow: var(--orion-surface-shadow);
   padding: 10px 0;
 }
 
@@ -86,30 +86,30 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll));
   font-family: var(--shell-display);
   font-size: 16px;
   letter-spacing: -0.02em;
-  color: #fff;
+  color: var(--bs-body-color);
 }
 .brand-subtitle {
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.18em;
-  color: var(--cyan);
+  color: var(--orion-primary);
 }
 
 .nav-link-stage {
   position: relative;
   font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.72) !important;
+  color: var(--bs-secondary-color) !important;
   padding: 8px 12px !important;
   border-radius: 8px;
   transition: all 0.2s ease;
 }
 .nav-link-stage:hover {
-  color: #fff !important;
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--bs-body-color) !important;
+  background: rgba(127, 127, 127, 0.08);
 }
 .nav-link-stage.is-active {
-  color: #fff !important;
+  color: var(--bs-body-color) !important;
 }
 .nav-link-stage.is-active::after {
   content: '';
@@ -119,8 +119,8 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll));
   right: 12px;
   height: 2px;
   border-radius: 2px;
-  background: linear-gradient(90deg, var(--cyan), var(--violet));
-  box-shadow: 0 0 8px var(--cyan);
+  background: linear-gradient(90deg, var(--orion-primary), var(--orion-secondary));
+  box-shadow: 0 0 8px var(--orion-primary);
 }
 
 .btn-cotizar-neon {
@@ -131,15 +131,14 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll));
   border-radius: 10px;
   font-size: 12px;
   font-weight: 800;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #070711;
-  background: #f7f7fb;
+  border: 1px solid var(--bs-border-color);
+  color: var(--bs-body-bg);
+  background: var(--bs-body-color);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 .btn-cotizar-neon:hover {
-  background: #fff;
   transform: translateY(-1px);
-  box-shadow: 0 4px 18px rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.2);
 }
 </style>

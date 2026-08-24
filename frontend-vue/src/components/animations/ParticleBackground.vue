@@ -8,8 +8,7 @@ const props = withDefaults(defineProps<{ global?: boolean }>(), { global: false 
 const canvas = ref<HTMLCanvasElement | null>(null);
 const reducedMotion = useReducedMotion();
 const { theme } = useTheme();
-const fondoParticulas = computed(() => theme.value === 'light' ? 'rgba(255, 249, 245, 0.055)' : 'rgba(3, 8, 28, 0.09)');
-const colorParticulas = computed(() => theme.value === 'light' ? 'rgba(205, 125, 143, 0.22)' : 'rgba(19, 214, 234, 0.16)');
+const colorParticulas = computed(() => theme.value === 'light' ? 'rgba(99, 102, 241, 0.25)' : 'rgba(34, 211, 238, 0.3)');
 
 let rafId = 0;
 
@@ -20,24 +19,23 @@ function start() {
   if (!ctx) return;
 
   const resize = () => {
-    c.width = c.offsetWidth;
-    c.height = c.offsetHeight;
+    c.width = window.innerWidth;
+    c.height = window.innerHeight;
   };
   resize();
   window.addEventListener('resize', resize);
 
-  const count = Math.min(50, Math.floor(window.innerWidth / 20));
+  const count = Math.min(40, Math.floor(window.innerWidth / 35));
   const particles = Array.from({ length: count }, () => ({
     x: Math.random() * c.width,
     y: Math.random() * c.height,
-    vx: (Math.random() - 0.5) * 0.3,
-    vy: (Math.random() - 0.5) * 0.3,
+    vx: (Math.random() - 0.5) * 0.35,
+    vy: (Math.random() - 0.5) * 0.35,
     r: Math.random() * 2 + 1,
   }));
 
   const draw = () => {
-    ctx.fillStyle = fondoParticulas.value;
-    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.clearRect(0, 0, c.width, c.height);
     ctx.fillStyle = colorParticulas.value;
     for (const p of particles) {
       p.x += p.vx;
@@ -78,6 +76,7 @@ onBeforeUnmount(() => cancelAnimationFrame(rafId));
 }
 .particle-bg-global {
   position: fixed;
-  z-index: 0;
+  z-index: -1;
+  pointer-events: none;
 }
 </style>
