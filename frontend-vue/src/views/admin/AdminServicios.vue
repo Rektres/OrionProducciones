@@ -183,7 +183,7 @@ const eliminarCategoria = async (c: CategoriaServicio) => {
       <div class="input-group input-group-sm">
         <input v-model="nuevaCategoriaNombre" type="text" class="form-control" placeholder="Nueva categoría..."
           @keyup.enter="agregarCategoria" />
-        <button type="button" class="btn btn-outline-light" @click="agregarCategoria">Agregar</button>
+        <button type="button" class="btn btn-outline-secondary" @click="agregarCategoria">Agregar</button>
       </div>
     </div>
   </div>
@@ -245,7 +245,7 @@ const eliminarCategoria = async (c: CategoriaServicio) => {
           <button type="submit" class="btn btn-orion" :disabled="guardando">
             {{ guardando ? 'Guardando...' : 'Guardar' }}
           </button>
-          <button type="button" class="btn btn-outline-light" @click="cancelar">Cerrar</button>
+          <button type="button" class="btn btn-outline-secondary" @click="cancelar">Cerrar</button>
           <span v-if="guardadoOk" class="text-success small ms-1">✓ Cambios guardados</span>
         </div>
       </div>
@@ -264,7 +264,7 @@ const eliminarCategoria = async (c: CategoriaServicio) => {
           </span>
         </div>
         <div class="card-footer bg-transparent d-flex justify-content-between">
-          <button type="button" class="btn btn-outline-light btn-sm" @click.stop="editar(s)">Editar</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" @click.stop="editar(s)">Editar</button>
           <button type="button" class="btn btn-outline-danger btn-sm" @click.stop="eliminar(s)">Eliminar</button>
         </div>
       </div>

@@ -201,7 +201,7 @@ const agregarTag = async () => {
         <div class="input-group input-group-sm mt-1">
           <input v-model="nuevoTagNombre" type="text" class="form-control" placeholder="Nuevo tag..."
             @keyup.enter="agregarTag" />
-          <button type="button" class="btn btn-outline-light" @click="agregarTag">Agregar</button>
+          <button type="button" class="btn btn-outline-secondary" @click="agregarTag">Agregar</button>
         </div>
       </div>
 
@@ -221,7 +221,7 @@ const agregarTag = async () => {
           <button type="submit" class="btn btn-orion" :disabled="guardando">
             {{ guardando ? 'Guardando...' : 'Guardar' }}
           </button>
-          <button type="button" class="btn btn-outline-light" @click="cancelar">Cerrar</button>
+          <button type="button" class="btn btn-outline-secondary" @click="cancelar">Cerrar</button>
           <span v-if="guardadoOk" class="text-success small ms-1">✓ Cambios guardados</span>
         </div>
       </div>
@@ -238,7 +238,7 @@ const agregarTag = async () => {
             :class="p.estado === 'publicado' ? 'text-success' : 'text-secondary'">{{ p.estado }}</span>
         </div>
         <div class="card-footer bg-transparent d-flex justify-content-between">
-          <button type="button" class="btn btn-outline-light btn-sm" @click.stop="editar(p)">Editar</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" @click.stop="editar(p)">Editar</button>
           <button type="button" class="btn btn-outline-danger btn-sm" @click.stop="eliminar(p)">Eliminar</button>
         </div>
       </div>

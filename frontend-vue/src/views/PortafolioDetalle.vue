@@ -45,9 +45,11 @@ onMounted(async () => {
       <img v-if="evento.imagen_url" :src="evento.imagen_url"
         :alt="`${evento.nombre} — evento producido por Orion en ${evento.lugar}`"
         class="img-cover position-absolute top-0 start-0" fetchpriority="high" decoding="async" />
-      <div class="container p-4 position-relative" style="background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent)">
-        <span class="badge text-bg-warning mb-2">{{ evento.tipo_slug }}</span>
-        <h1 class="text-white">{{ evento.nombre }}</h1>
+      <div class="container p-4 position-relative w-100" style="background: linear-gradient(0deg, rgba(3, 8, 28, 0.92) 0%, rgba(3, 8, 28, 0.5) 60%, transparent 100%)">
+        <span class="badge mb-2 d-inline-block" style="background: rgba(19, 214, 234, 0.25); color: #13d6ea; border: 1px solid rgba(19, 214, 234, 0.6); font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">
+          {{ evento.tipo_slug }}
+        </span>
+        <h1 class="text-white fw-bold mb-0">{{ evento.nombre }}</h1>
       </div>
     </div>
 
@@ -60,9 +62,24 @@ onMounted(async () => {
       </div>
 
       <div class="row g-3 mb-4">
-        <div class="col-md-4"><div class="card bg-dark border-secondary p-3"><small class="text-orion-primary">Cliente</small><div>{{ evento.cliente }}</div></div></div>
-        <div class="col-md-4"><div class="card bg-dark border-secondary p-3"><small class="text-orion-primary">Ubicación</small><div>{{ evento.lugar }}</div></div></div>
-        <div class="col-md-4"><div class="card bg-dark border-secondary p-3"><small class="text-orion-primary">Asistentes</small><div>{{ evento.asistentes ? evento.asistentes + '+' : 'N/A' }}</div></div></div>
+        <div class="col-md-4">
+          <div class="card p-3 rounded-4" style="background: var(--card-surface); border: 1px solid var(--card-border); box-shadow: var(--orion-surface-shadow);">
+            <small class="fw-bold text-uppercase" style="color: var(--orion-primary); font-size: 11px; letter-spacing: 0.05em;">Cliente</small>
+            <div class="fw-bold text-body fs-5 mt-1">{{ evento.cliente }}</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card p-3 rounded-4" style="background: var(--card-surface); border: 1px solid var(--card-border); box-shadow: var(--orion-surface-shadow);">
+            <small class="fw-bold text-uppercase" style="color: var(--orion-primary); font-size: 11px; letter-spacing: 0.05em;">Ubicación</small>
+            <div class="fw-bold text-body fs-5 mt-1">{{ evento.lugar }}</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card p-3 rounded-4" style="background: var(--card-surface); border: 1px solid var(--card-border); box-shadow: var(--orion-surface-shadow);">
+            <small class="fw-bold text-uppercase" style="color: var(--orion-primary); font-size: 11px; letter-spacing: 0.05em;">Asistentes</small>
+            <div class="fw-bold text-body fs-5 mt-1">{{ evento.asistentes ? evento.asistentes + '+' : 'N/A' }}</div>
+          </div>
+        </div>
       </div>
 
       <h2 class="text-orion-primary">Sobre el evento</h2>

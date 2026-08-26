@@ -236,7 +236,7 @@ const eliminarTipo = async (t: EventoTipo) => {
       <div class="input-group input-group-sm">
         <input v-model="nuevoTipoNombre" type="text" class="form-control" placeholder="Nuevo tipo..."
           @keyup.enter="agregarTipo" />
-        <button type="button" class="btn btn-outline-light" @click="agregarTipo">Agregar</button>
+        <button type="button" class="btn btn-outline-secondary" @click="agregarTipo">Agregar</button>
       </div>
     </div>
   </div>
@@ -338,7 +338,7 @@ const eliminarTipo = async (t: EventoTipo) => {
           <button type="submit" class="btn btn-orion" :disabled="guardando">
             {{ guardando ? 'Guardando...' : 'Guardar' }}
           </button>
-          <button type="button" class="btn btn-outline-light" @click="cancelar">Cerrar</button>
+          <button type="button" class="btn btn-outline-secondary" @click="cancelar">Cerrar</button>
           <span v-if="guardadoOk" class="text-success small ms-1">✓ Cambios guardados</span>
         </div>
       </div>
@@ -360,7 +360,7 @@ const eliminarTipo = async (t: EventoTipo) => {
           </div>
         </div>
         <div class="card-footer bg-transparent d-flex justify-content-between">
-          <button type="button" class="btn btn-outline-light btn-sm" @click.stop="editar(ev)">Editar</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" @click.stop="editar(ev)">Editar</button>
           <button type="button" class="btn btn-outline-danger btn-sm" @click.stop="eliminar(ev)">Eliminar</button>
         </div>
       </div>

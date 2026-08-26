@@ -11,7 +11,7 @@
       </p>
       <div class="d-flex gap-3 justify-content-center flex-wrap mt-4">
         <RouterLink to="/" class="btn btn-orion btn-lg">Volver al inicio</RouterLink>
-        <RouterLink to="/portafolio" class="btn btn-outline-light btn-lg">Ver portafolio</RouterLink>
+        <RouterLink to="/portafolio" class="btn btn-outline-secondary btn-lg">Ver portafolio</RouterLink>
       </div>
     </div>
   </section>

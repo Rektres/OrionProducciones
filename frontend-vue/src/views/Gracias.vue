@@ -18,7 +18,7 @@ const whatsapp = `https://wa.me/${numero}`;
         <a :href="whatsapp" target="_blank" rel="noopener noreferrer" class="btn btn-orion btn-lg">
           Escribir por WhatsApp
         </a>
-        <RouterLink to="/portafolio" class="btn btn-outline-light btn-lg">Ver portafolio</RouterLink>
+        <RouterLink to="/portafolio" class="btn btn-outline-secondary btn-lg">Ver portafolio</RouterLink>
       </div>
     </div>
   </section>

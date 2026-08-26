@@ -28,7 +28,7 @@ const secciones = [
         </RouterLink>
         <RouterLink to="/" class="nav-link d-inline px-1" title="Ver el sitio público">Ver sitio</RouterLink>
         <ThemeToggle />
-        <button type="button" class="btn btn-outline-light btn-sm" @click="salir">Salir</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" @click="salir">Salir</button>
       </div>
     </nav>
     <div class="container-fluid px-3 px-md-5 py-4">
