@@ -9,6 +9,17 @@ import { serviciosService } from '@/services/servicios';
 import { portafolioService } from '@/services/portafolio';
 import type { Servicio, Evento, FotoEvento } from '@/types';
 
+interface CampanaLanding {
+  id: string;
+  mundo: string;
+  titulo: string;
+  subtitulo: string;
+  descripcion: string;
+  poster: string;
+  badge: string;
+  tagColor: string;
+}
+
 const servicios = ref<Servicio[]>([]);
 const eventosDestacados = ref<Evento[]>([]);
 const cargando = ref(true);
@@ -17,6 +28,72 @@ const filtroCategoria = ref<string>('todos');
 const servicioModalRef = ref<InstanceType<typeof ServicioModal> | null>(null);
 const abrirServicio = (svc: Servicio) => servicioModalRef.value?.abrir(svc);
 const galeriaModalRef = ref<InstanceType<typeof GaleriaFotosModal> | null>(null);
+
+const campanasLanding: CampanaLanding[] = [
+  {
+    id: 'women',
+    mundo: 'ORIÓN WOMEN',
+    titulo: 'Confianza en Ti',
+    subtitulo: 'Bienestar, Autocuidado & Liderazgo',
+    descripcion:
+      'Experiencias de bienestar especialmente pensadas para las mujeres de las organizaciones: automaquillaje, nutrición, autocuidado, liderazgo y desarrollo personal.',
+    poster: '/campanas/confianza-en-ti.png',
+    badge: 'Bienestar & Liderazgo',
+    tagColor: '#ec4899',
+  },
+  {
+    id: 'sports-padel',
+    mundo: 'ORIÓN SPORTS',
+    titulo: 'Campeonato de Pádel Hombres',
+    subtitulo: 'Torneo Inter-Empresas & Clima Laboral',
+    descripcion:
+      'El deporte como punto de encuentro: torneos de pádel corporativos que promueven la integración, el trabajo en equipo, la vida saludable y la camaradería.',
+    poster: '/campanas/campeonato-padel.png',
+    badge: 'Deporte & Integración',
+    tagColor: '#13d6ea',
+  },
+  {
+    id: 'sports-futbol',
+    mundo: 'ORIÓN SPORTS',
+    titulo: 'Futbolito Empresas',
+    subtitulo: 'Torneos & Copas Corporativas',
+    descripcion:
+      'Ligas y copas de fútbol 7 con arbitraje oficial, transmisión en vivo, premiaciones y ambientación técnica para fortalecer el espíritu de equipo.',
+    poster: '/campanas/futbolito-empresas.png',
+    badge: 'Trabajo en Equipo',
+    tagColor: '#34d399',
+  },
+  {
+    id: 'family',
+    mundo: 'ORIÓN FAMILY',
+    titulo: 'Escuelas de Verano en Fantasilandia',
+    subtitulo: 'Experiencias para Hijos & Familias',
+    descripcion:
+      'Acercando la empresa a las familias mediante actividades recreativas y escuelas de verano inolvidables para los hijos de los colaboradores.',
+    poster: '/campanas/escuelas-de-verano.png',
+    badge: 'Familia & Niñez',
+    tagColor: '#f59e0b',
+  },
+  {
+    id: 'celebrations',
+    mundo: 'ORIÓN CELEBRATIONS',
+    titulo: 'Fiesta de Fin de Año',
+    subtitulo: 'Galas, Aniversarios & Hitos',
+    descripcion:
+      'Celebraciones corporativas, aniversarios y fiestas de fin de año diseñadas para agradecer, reconocer y celebrar los logros del equipo con estándar de festival.',
+    poster: '/campanas/fiesta-fin-de-ano.png',
+    badge: 'Celebración & Reconocimiento',
+    tagColor: '#d06c26',
+  },
+];
+
+const modalCampanaLanding = ref<CampanaLanding | null>(null);
+const abrirCampana = (c: CampanaLanding) => {
+  modalCampanaLanding.value = c;
+};
+const cerrarCampana = () => {
+  modalCampanaLanding.value = null;
+};
 
 // Categorías dinámicas para los Filter Chips
 const categorias = computed(() => {
@@ -57,9 +134,9 @@ const abrirGaleria = (idx: number) => galeriaModalRef.value?.abrir(fotosGaleria.
 
 const stats = [
   { n: '+12 AÑOS', l: 'DE TRAYECTORIA' },
-  { n: '+600', l: 'EVENTOS EXITOSOS' },
+  { n: '+600', l: 'EXPERIENCIAS & EVENTOS' },
   { n: '100%', l: 'COBERTURA EN CHILE' },
-  { n: 'LINE-ARRAY', l: 'AUDIO CERTIFICADO' },
+  { n: '360°', l: 'PRODUCCIÓN INTEGRAL' },
 ];
 
 const marcas = [
@@ -79,41 +156,41 @@ const marcas = [
 
 const pilares = [
   {
-    num: '01 / ACÚSTICA',
+    num: '01 / BIENESTAR & PERSONAS',
+    title: 'Experiencias que Conectan',
+    desc: 'Escuchamos a cada organización para diseñar actividades con sentido: bienestar, integración deportiva, familia y celebraciones corporativas.'
+  },
+  {
+    num: '02 / INGENIERÍA ACÚSTICA',
     title: 'Audio Line Array & Precisión',
     desc: 'Sistemas de sonido de estándar internacional calibrados por ingenieros FOH certificados para una acústica cristalina.'
   },
   {
-    num: '02 / ILUMINACIÓN',
-    title: 'Magia Lumínica & Shows Láser',
-    desc: 'Cabezas móviles Beam/Spot/Wash y atmósferas arquitectónicas cálidas para crear momentos visuales inolvidables.'
-  },
-  {
-    num: '03 / INFRAESTRUCTURA',
-    title: 'Escenarios & Pantallas LED',
-    desc: 'Estructuras Layher certificadas, tarimas antideslizantes y pantallas LED 4K de alto brillo para interior y exterior.'
+    num: '03 / ILUMINACIÓN & ESCENOGRAFÍA',
+    title: 'Magia Visual & Shows Láser',
+    desc: 'Cabezas robóticas, efectos sincronizados, pantallas LED 4K y ambientación arquitectónica para crear momentos inolvidables.'
   },
   {
     num: '04 / PRODUCCIÓN 360°',
-    title: 'Donde Cada Detalle Importa',
-    desc: 'Dirección técnica integral, coordinación de proveedores y regiduría en vivo para que tú solo disfrutes de tu gran día.'
+    title: 'Desde la Idea al Último Detalle',
+    desc: 'Nos encargamos de toda la complejidad técnica y logística para que tu empresa solo se concentre en vivir la experiencia.'
   }
 ];
 
 const paths = [
   {
-    index: '01 / CORPORATIVO & MARCAS',
-    kicker: 'PRODUCCIÓN EJECUTIVA',
-    title: 'Lanzamientos,<br>Galas & Congresos.',
-    desc: 'Escenografía a medida, pantallas LED de ultra alta definición, microfonía digital inalámbrica y streaming internacional broadcast.',
-    cta: 'Cotizar Corporativo',
+    index: '01 / CORPORATIVO & EXPERIENCIAS',
+    kicker: 'MUNDOS ORIÓN STAGE',
+    title: 'Bienestar, Deporte<br>& Cultura Organizacional.',
+    desc: 'Experiencias a medida para empresas: Orión Women, Orión Sports, Orión Family y celebraciones de fin de año con producción integral.',
+    cta: 'Explorar Campañas',
     theme: 'path-card--1'
   },
   {
     index: '02 / FESTIVALES & CONCIERTOS',
     kicker: 'GRAN ESCALA',
     title: 'Potencia Sonora<br>& Efectos Láser.',
-    desc: 'Sistemas Line Array de alto rendimiento, estructuras Layher y Truss certificadas, show de luces robóticas sincronizadas por timecode.',
+    desc: 'Sistemas Line Array de alto rendimiento, estructuras Layher certificadas, pantallas LED 4K y show de luces robóticas por timecode.',
     cta: 'Cotizar Festival',
     theme: 'path-card--2'
   },
@@ -121,7 +198,7 @@ const paths = [
     index: '03 / BODAS & FIESTAS BOUTIQUE',
     kicker: 'EXPERIENCIA BOUTIQUE',
     title: 'Momentos Únicos,<br>Atmósferas Mágicas.',
-    desc: 'Cielo estrellado con micro-luces cálidas, pista de baile iluminada, audio envolvente para banda en vivo y atención personalizada.',
+    desc: 'Cielo estrellado con micro-luces cálidas, pista de baile iluminada, audio envolvente para banda en vivo y regiduría en terreno.',
     cta: 'Cotizar Matrimonio',
     theme: 'path-card--3'
   }
@@ -129,19 +206,19 @@ const paths = [
 
 const testimonios = [
   {
-    quote: 'La potencia y fidelidad del sonido Line Array en nuestro festival superó todas las expectativas. El montaje fue puntual y de máxima categoría.',
+    quote: 'Orión Stage transformó nuestra jornada anual en un recuerdo imborrable para nuestros colaboradores. La producción, la puntualidad y el cariño en cada detalle marcaron la diferencia.',
     author: 'Rodrigo Morales',
-    role: 'Director de Producción, Sunset Chile'
+    role: 'Director de Personas, Empresa Tecnológica'
   },
   {
-    quote: 'Hicieron de nuestro matrimonio en Viña Santa Rita una noche de ensueño. La iluminación cálida y la música sonaron con una claridad impecable.',
-    author: 'Valentina & Ignacio',
-    role: 'Novios · Matrimonio Boutique 2026'
-  },
-  {
-    quote: 'Nuestra gala anual corporativa tuvo un estándar audiovisual internacional. La tranquilidad de trabajar con ingenieros expertos no tiene precio.',
+    quote: 'La experiencia del torneo de pádel y la ambientación de cierre fueron de primer nivel. Lograron unir a las distintas áreas de la empresa como nunca antes.',
     author: 'Camila Santander',
-    role: 'Gerente de Comunicaciones, Minería del Cobre'
+    role: 'Gerente de Comunicaciones & Clima Laboral'
+  },
+  {
+    quote: 'El estándar técnico y la calidad humana del equipo superaron todas las expectativas. La tranquilidad de trabajar con verdaderos profesionales no tiene precio.',
+    author: 'Valentina & Ignacio',
+    role: 'Productores de Eventos · Santiago'
   }
 ];
 
@@ -174,7 +251,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <!-- HERO SECTION FUSIÓN: ARCADIA + ORION + TU DÍA PERFECTO -->
+  <!-- HERO SECTION: ORIÓN STAGE -->
   <section class="hero-fusion">
     <div class="hero__veil"></div>
     <div class="hero__glow hero__glow--gold"></div>
@@ -185,23 +262,23 @@ onMounted(async () => {
         <div class="col-lg-7">
           <FadeInUp>
             <div class="eyebrow-luxury">
-              <span>★</span> PRODUCCIÓN INTEGRAL DE EVENTOS & EXPERIENCIAS ESCÉNICAS
+              <span>★</span> EXPERIENCIAS CORPORATIVAS · PRODUCCIÓN · ESPECTÁCULOS
             </div>
             <h1 class="hero-title-giant">
-              <span>DONDE CADA DETALLE IMPORTA,</span><br />
-              <span class="highlight-gold">CREAMOS MOMENTOS</span><br />
-              <em>INOLVIDABLES.</em>
+              <span>NO ORGANIZAMOS SOLO EVENTOS,</span><br />
+              <span class="highlight-gold">CREAMOS EXPERIENCIAS</span><br />
+              <em>QUE CONECTAN PERSONAS.</em>
             </h1>
             <p class="lead text-secondary mt-3 mb-4" style="max-width: 580px; font-size: 16px; line-height: 1.75;">
-              Ingeniería acústica Line Array, iluminación robótica de vanguardia y dirección técnica 360° para matrimonios de lujo, festivales masivos y eventos corporativos en todo Chile.
+              Desde la primera idea hasta el último detalle: experiencias de bienestar, deporte corporativo, encuentros familiares y celebraciones de fin de año con ingeniería escénica de clase mundial.
             </p>
             <div class="d-flex flex-wrap gap-3">
               <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-orion d-inline-flex align-items-center gap-2">
-                <span>Cotizar mi Evento</span>
+                <span>Cotizar Experiencia</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </RouterLink>
-              <a href="#catalogo" class="btn-glass">
-                <span>Explorar Catálogo</span>
+              <a href="#campanas" class="btn-glass">
+                <span>Ver Campañas Activas</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg>
               </a>
             </div>
@@ -314,8 +391,55 @@ onMounted(async () => {
     </div>
   </section>
 
-  <!-- 4 PILARES: "DONDE CADA DETALLE IMPORTA" (TU DÍA PERFECTO + ORION) -->
-  <section class="py-5">
+  <!-- SECCIÓN DE CAMPAÑAS ACTIVAS (ORIÓN WOMEN, SPORTS, FAMILY, CELEBRATIONS) -->
+  <section id="campanas" class="py-5">
+    <div class="container">
+      <div class="text-center max-w-700 mx-auto mb-5">
+        <div class="eyebrow-luxury justify-content-center">
+          <span>★</span> NUESTRAS CAMPAÑAS CORPORATIVAS
+        </div>
+        <h2 class="display-5 fw-bold mt-2">Mundos de Experiencia para tu Empresa</h2>
+        <p class="text-secondary mt-2" style="font-size: 15px;">
+          Diseñadas para acompañar a las organizaciones durante todo el año: bienestar femenino, deporte, familia y celebraciones inolvidables.
+        </p>
+      </div>
+
+      <div class="row g-4">
+        <div v-for="c in campanasLanding" :key="c.id" class="col-md-6 col-lg-4">
+          <article class="campana-card">
+            <div class="campana-card__poster" role="button" tabindex="0" @click="abrirCampana(c)">
+              <img :src="c.poster" :alt="c.titulo" loading="lazy" decoding="async" />
+              <div class="campana-card__overlay">
+                <span class="campana-card__badge" :style="{ color: c.tagColor, borderColor: c.tagColor }">
+                  {{ c.mundo }}
+                </span>
+                <h3 class="text-white h5 mb-0 fw-bold">{{ c.titulo }}</h3>
+              </div>
+            </div>
+            <div class="campana-card__body">
+              <span class="small fw-bold text-uppercase text-secondary mb-1" style="font-size: 11px;">
+                {{ c.subtitulo }}
+              </span>
+              <p class="campana-card__desc">
+                {{ c.descripcion }}
+              </p>
+              <div class="campana-card__action">
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" @click="abrirCampana(c)">
+                  Ver Campaña
+                </button>
+                <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-sm btn-orion">
+                  Cotizar
+                </RouterLink>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 PILARES: "DONDE CADA DETALLE IMPORTA" -->
+  <section class="py-5" style="background: var(--section-alt-bg);">
     <div class="container">
       <div class="text-center max-w-700 mx-auto mb-5">
         <div class="eyebrow-luxury justify-content-center">
@@ -329,7 +453,7 @@ onMounted(async () => {
 
       <div class="row g-4">
         <div v-for="pil in pilares" :key="pil.num" class="col-md-6 col-lg-3">
-          <article class="pillar-card">
+          <article class="pillar-card h-100">
             <span class="pillar-card__num">{{ pil.num }}</span>
             <h3>{{ pil.title }}</h3>
             <p>{{ pil.desc }}</p>
@@ -475,23 +599,28 @@ onMounted(async () => {
     </div>
   </section>
 
-  <!-- SECCIÓN MANIFIESTO ORION CON ORBE HOLOGRÁFICO -->
+  <!-- SECCIÓN MANIFIESTO ORION CON ORBE HOLOGRÁFICO (EXTRACTO DE ORIONSTAGE.TXT) -->
   <section class="py-4">
     <div class="container">
       <div class="manifesto">
         <div class="manifesto__index">ORION / 01</div>
         <div class="manifesto__content">
           <div class="eyebrow-luxury">
-            <span>★</span> NUESTRA VISIÓN
+            <span>★</span> NUESTRO PROPÓSITO
           </div>
-          <h2>Potencia Sonora.<br>Impacto Visual Inolvidable.</h2>
+          <h2>¿Por qué nace Orión Stage?<br>Creamos Experiencias que Conectan.</h2>
           <p>
-            En Orion Stage fusionamos la precisión acústica de clase mundial con el arte de la iluminación y la escenografía. Nos encargamos de toda la complejidad técnica para que tú y tus invitados vivan una experiencia mágica.
+            Entendemos que detrás de cada empresa existen personas: colaboradores que trabajan juntos, superan desafíos y necesitan espacios para encontrarse, cuidarse y celebrar. Diseñamos y producimos experiencias de principio a fin, combinando creatividad, bienestar y tecnología escénica.
           </p>
-          <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn-glass">
-            <span>Conversar con un Ingeniero Técnico</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </RouterLink>
+          <div class="d-flex flex-wrap gap-3">
+            <RouterLink to="/nosotros" class="btn btn-orion d-inline-flex align-items-center gap-2">
+              <span>Conoce Nuestra Historia</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </RouterLink>
+            <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn-glass">
+              <span>Conversar con el Equipo</span>
+            </RouterLink>
+          </div>
         </div>
         <div class="manifesto__orb" aria-hidden="true">
           <span></span>
@@ -537,16 +666,16 @@ onMounted(async () => {
     </div>
   </section>
 
-  <!-- TESTIMONIOS Y CONFIANZA (TOQUE TU DÍA PERFECTO) -->
+  <!-- TESTIMONIOS Y CONFIANZA -->
   <section class="py-5" style="background: var(--section-alt-bg);">
     <div class="container">
       <div class="text-center max-w-700 mx-auto mb-5">
         <div class="eyebrow-luxury justify-content-center">
           <span>★</span> TESTIMONIOS REALES
         </div>
-        <h2 class="display-5 fw-bold mt-2">La Confianza de Nuestros Clientes.</h2>
+        <h2 class="display-5 fw-bold mt-2">La Confianza de Quienes Crean con Nosotros.</h2>
         <p class="text-secondary mt-2" style="font-size: 15px;">
-          Productores ejecutivos, empresas y parejas que confiaron en nosotros para su gran momento.
+          Líderes de personas, productoras y empresas que confiaron en Orión Stage para sus momentos más importantes.
         </p>
       </div>
 
@@ -574,7 +703,7 @@ onMounted(async () => {
           <span>★</span> PORTAFOLIO EN ACCIÓN
         </div>
         <h2 class="display-5 fw-bold">Momentos en Vivo</h2>
-        <p class="text-secondary small mt-2">Fotografías reales capturadas en conciertos, bodas y galas producidas por Orion Stage</p>
+        <p class="text-secondary small mt-2">Fotografías reales capturadas en conciertos, eventos corporativos y bodas producidas por Orion Stage</p>
       </div>
 
       <div class="galeria-mosaico">
@@ -611,13 +740,52 @@ onMounted(async () => {
           <div class="eyebrow-luxury justify-content-center">
             <span>★</span> COTIZACIÓN SIN COMPROMISO
           </div>
-          <h2 class="display-5 fw-bold mb-2">Hagamos Realidad tu Gran Evento.</h2>
-          <p class="text-secondary">Cuéntanos sobre tu fecha, recinto y requerimientos técnicos. Diseñaremos una propuesta a tu medida en menos de 24 horas.</p>
+          <h2 class="display-5 fw-bold mb-2">Hagamos Realidad tu Gran Experiencia.</h2>
+          <p class="text-secondary">Cuéntanos sobre tu fecha, cantidad de colaboradores y tipo de experiencia deseada. Diseñaremos una propuesta a tu medida en menos de 24 horas.</p>
         </div>
         <ContactForm />
       </div>
     </div>
   </section>
+
+  <!-- MODAL DE CAMPAÑAS EN LANDING -->
+  <div
+    v-if="modalCampanaLanding"
+    class="modal fade show d-block"
+    tabindex="-1"
+    style="background: rgba(0, 0, 0, 0.85); z-index: 1060;"
+    @click.self="cerrarCampana"
+  >
+    <div class="modal-dialog campana-modal-dialog modal-dialog-centered">
+      <div class="modal-content campana-modal-content">
+        <div class="modal-header border-0 pb-0 px-4 pt-4 d-flex justify-content-between align-items-center">
+          <div>
+            <span class="campana-card__badge mb-1" :style="{ color: modalCampanaLanding.tagColor, borderColor: modalCampanaLanding.tagColor }">
+              {{ modalCampanaLanding.mundo }}
+            </span>
+            <h3 class="h4 fw-bold mb-0 text-body">{{ modalCampanaLanding.titulo }}</h3>
+          </div>
+          <button type="button" class="btn-close" aria-label="Cerrar" @click="cerrarCampana"></button>
+        </div>
+        <div class="modal-body px-4 py-3">
+          <div class="campana-modal-img-wrap mb-3">
+            <img :src="modalCampanaLanding.poster" :alt="modalCampanaLanding.titulo" class="campana-modal-img" />
+          </div>
+          <p class="text-secondary mb-3" style="font-size: 14.5px; line-height: 1.7;">
+            {{ modalCampanaLanding.descripcion }}
+          </p>
+        </div>
+        <div class="modal-footer border-0 px-4 pb-4 pt-0 d-flex justify-content-between">
+          <button type="button" class="btn btn-outline-secondary" @click="cerrarCampana">
+            Cerrar
+          </button>
+          <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-orion" @click="cerrarCampana">
+            Cotizar esta Campaña
+          </RouterLink>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <ServicioModal ref="servicioModalRef" />
   <GaleriaFotosModal ref="galeriaModalRef" />

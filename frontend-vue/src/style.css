@@ -1,18 +1,23 @@
 :root {
-  --orion-primary: #22d3ee;
-  --orion-secondary: #8b5cf6;
+  --orion-primary: #13d6ea;
+  --orion-secondary: #d06c26;
+  --orion-cyan: #13d6ea;
+  --orion-orange: #d06c26;
+  --orion-blue-dark: #03081c;
+  --orion-blue-deep: #021636;
   --orion-gold: #c5a880;
   --orion-gold-light: #dfc8a7;
   --orion-gold-dark: #9f7d4e;
   --orion-tertiary: #0d537d;
-  --orion-bg-deep: #080915;
+  --orion-bg-deep: #03081c;
   --violet: #8b5cf6;
-  --cyan: #22d3ee;
+  --cyan: #13d6ea;
   --lime: #34d399;
   --gold: #ffe09c;
   --shell-font: 'Inter', system-ui, -apple-system, sans-serif;
   --shell-display: 'Space Grotesk', system-ui, -apple-system, sans-serif;
-  --view-gradient: linear-gradient(45deg, #000b21 0%, #003f82 34%, #4ca2b5 68%, #ffd27f 100%);
+  --view-gradient: linear-gradient(45deg, #000b21 0%, #003f82 34%, #13d6ea 68%, #d06c26 100%);
+  --orion-brand-gradient: linear-gradient(135deg, #13d6ea 0%, #d06c26 100%);
 }
 
 /* ==========================================================================
@@ -1025,8 +1030,130 @@ h1, h2, h3, h4, h5, .display-1, .display-2, .display-3, .display-4, .display-5, 
 }
 
 /* ==========================================================================
-   RESPONSIVIDAD & BREAKPOINTS MOBILE
+   SECCIÓN DE CAMPAÑAS & MUNDOS DE EXPERIENCIA ORION STAGE
    ========================================================================== */
+.campana-card {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  background: var(--card-surface);
+  box-shadow: var(--orion-surface-shadow);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.campana-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--orion-primary);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+}
+.campana-card__poster {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: #03081c;
+  cursor: pointer;
+}
+.campana-card__poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transition: transform 0.4s ease;
+}
+.campana-card:hover .campana-card__poster img {
+  transform: scale(1.04);
+}
+.campana-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(3, 8, 28, 0.92) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 16px 18px;
+  pointer-events: none;
+}
+.campana-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(19, 214, 234, 0.18);
+  color: #13d6ea;
+  border: 1px solid rgba(19, 214, 234, 0.4);
+  backdrop-filter: blur(8px);
+  margin-bottom: 6px;
+  align-self: flex-start;
+}
+[data-bs-theme='light'] .campana-card__badge {
+  background: rgba(79, 70, 229, 0.12);
+  color: #4f46e5;
+  border-color: rgba(79, 70, 229, 0.3);
+}
+.campana-card__body {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+.campana-card__title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--bs-body-color);
+}
+.campana-card__desc {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--bs-secondary-color);
+  margin-bottom: 14px;
+}
+.campana-card__action {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* Modal de Campañas */
+.campana-modal-dialog {
+  max-width: 850px;
+  margin: 1.75rem auto;
+}
+.campana-modal-content {
+  background: var(--card-surface);
+  border: 1px solid var(--card-border);
+  border-radius: 24px;
+  backdrop-filter: blur(24px);
+  box-shadow: 0 30px 70px rgba(0,0,0,0.6);
+  overflow: hidden;
+}
+.campana-modal-img-wrap {
+  position: relative;
+  background: #03081c;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+.campana-modal-img {
+  max-width: 100%;
+  max-height: 75vh;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  object-fit: contain;
+}
+
+/* Responsividad */
 @media (max-width: 991.98px) {
   .manifesto { grid-template-columns: 1fr; gap: 30px; }
   .manifesto__index { display: none; }

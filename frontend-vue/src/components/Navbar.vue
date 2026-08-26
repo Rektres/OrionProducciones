@@ -8,6 +8,7 @@ const route = useRoute();
 
 const links = [
   { label: 'Inicio', to: '/' },
+  { label: 'Nosotros', to: '/nosotros' },
   { label: 'Servicios', to: '/servicios' },
   { label: 'Portafolio', to: '/portafolio' },
   { label: 'Preguntas Frecuentes', to: '/faq' },

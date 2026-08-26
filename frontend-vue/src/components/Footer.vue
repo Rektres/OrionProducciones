@@ -38,10 +38,10 @@ const direccion = import.meta.env.VITE_CONTACT_DIRECCION || 'Santiago, Chile';
           <h6 class="footer-heading">Navegación</h6>
           <ul class="list-unstyled footer-links small">
             <li><RouterLink to="/">Inicio</RouterLink></li>
+            <li><RouterLink to="/nosotros">Nosotros</RouterLink></li>
             <li><RouterLink to="/servicios">Servicios</RouterLink></li>
             <li><RouterLink to="/portafolio">Portafolio</RouterLink></li>
             <li><RouterLink to="/faq">FAQ / Preguntas</RouterLink></li>
-            <li><RouterLink to="/quienes-somos">Quiénes somos</RouterLink></li>
           </ul>
         </div>
 

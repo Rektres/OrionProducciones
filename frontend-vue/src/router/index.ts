@@ -63,12 +63,13 @@ export const router = createRouter({
       },
     },
     {
-      path: '/quienes-somos',
+      path: '/nosotros',
+      alias: ['/quienes-somos'],
       component: () => import('@/views/QuienesSomos.vue'),
       meta: {
-        titulo: 'Quiénes somos',
+        titulo: 'Nosotros · Experiencias que Conectan Personas',
         descripcion:
-          'El equipo detrás de Orion: cómo trabajamos y qué nos importa al producir un evento.',
+          'Conoce Orión Stage: nuestro propósito, filosofía, los 4 mundos de experiencias corporativas y la producción 360° que conecta personas.',
       },
     },
     {
