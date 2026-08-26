@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter, RouterLink } from 'vue-router';
 import GaleriaFotosModal from '@/components/GaleriaFotosModal.vue';
+import ShareButton from '@/components/ShareButton.vue';
 import { portafolioService } from '@/services/portafolio';
 import { aplicarSeo } from '@/composables/useSeo';
 import type { Evento } from '@/types';
@@ -51,6 +52,13 @@ onMounted(async () => {
     </div>
 
     <div class="container py-5" style="max-width: 900px">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <RouterLink to="/portafolio" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1 rounded-pill px-3">
+          <span>← Volver al Portafolio</span>
+        </RouterLink>
+        <ShareButton :title="evento.nombre" :text="evento.descripcion_corta || 'Mira esta producción realizada por Orion Stage'" />
+      </div>
+
       <div class="row g-3 mb-4">
         <div class="col-md-4"><div class="card bg-dark border-secondary p-3"><small class="text-orion-primary">Cliente</small><div>{{ evento.cliente }}</div></div></div>
         <div class="col-md-4"><div class="card bg-dark border-secondary p-3"><small class="text-orion-primary">Ubicación</small><div>{{ evento.lugar }}</div></div></div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, onBeforeUnmount, ref } from 'vue';
 import DOMPurify from 'dompurify';
 import { blogService } from '@/services/blog';
 import type { Post } from '@/types';
@@ -9,14 +9,44 @@ const cargando = ref(true);
 
 const limpiar = (html: string) => DOMPurify.sanitize(html);
 
+const inyectarSchemaFaq = (lista: Post[]) => {
+  if (!lista.length) return;
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: lista.map((p) => ({
+      '@type': 'Question',
+      name: p.titulo,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: p.contenido.replace(/<[^>]*>/g, '').trim(),
+      },
+    })),
+  };
+  let scriptEl = document.getElementById('faq-schema-jsonld') as HTMLScriptElement | null;
+  if (!scriptEl) {
+    scriptEl = document.createElement('script');
+    scriptEl.id = 'faq-schema-jsonld';
+    scriptEl.type = 'application/ld+json';
+    document.head.appendChild(scriptEl);
+  }
+  scriptEl.textContent = JSON.stringify(schema);
+};
+
 onMounted(async () => {
   try {
     preguntas.value = await blogService.getPosts(50);
+    inyectarSchemaFaq(preguntas.value);
   } catch (e) {
     console.error('Error cargando FAQ:', e);
   } finally {
     cargando.value = false;
   }
+});
+
+onBeforeUnmount(() => {
+  const scriptEl = document.getElementById('faq-schema-jsonld');
+  if (scriptEl) scriptEl.remove();
 });
 </script>
 
