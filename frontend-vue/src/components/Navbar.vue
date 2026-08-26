@@ -98,12 +98,12 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll));
       </div>
     </div>
   </nav>
-  <div style="height: 76px"></div>
+  <div style="height: 66px"></div>
 </template>
 
 <style scoped>
 .navbar-orion-stage {
-  padding: 14px 0;
+  padding: 10px 0;
   background: var(--navbar-bg);
   border-bottom: 1px solid var(--bs-border-color);
   backdrop-filter: blur(20px) saturate(140%);
@@ -115,7 +115,7 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll));
   background: var(--navbar-bg-scrolled);
   border-bottom-color: var(--bs-border-color);
   box-shadow: var(--orion-surface-shadow);
-  padding: 10px 0;
+  padding: 8px 0;
 }
 
 .brand-logo-glow {

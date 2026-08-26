@@ -34,7 +34,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="py-5 text-center position-relative overflow-hidden">
+  <section class="pt-4 pb-2 text-center position-relative overflow-hidden">
     <div class="container position-relative" style="z-index: 1">
       <p class="eyebrow justify-content-center"><span></span> SOLUCIONES INTEGRALES</p>
       <h1 class="display-4 fw-bold">CATÁLOGO DE SERVICIOS</h1>

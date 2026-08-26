@@ -159,12 +159,12 @@ const pilaresProduccion = [
 
 <template>
   <!-- HERO NOSOTROS -->
-  <section class="hero-fusion py-5 text-center position-relative overflow-hidden">
+  <section class="hero-fusion text-center position-relative overflow-hidden">
     <div class="hero__veil"></div>
     <div class="hero__glow hero__glow--gold"></div>
     <div class="hero__glow hero__glow--cyan"></div>
 
-    <div class="container position-relative py-4" style="z-index: 2">
+    <div class="container position-relative py-2" style="z-index: 2">
       <FadeInUp>
         <div class="eyebrow-luxury justify-content-center mb-3">
           <span>★</span> NUESTRO PROPÓSITO & FILOSOFÍA
