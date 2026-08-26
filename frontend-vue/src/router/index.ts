@@ -118,8 +118,30 @@ export const router = createRouter({
       meta: { titulo: 'Página no encontrada', noindex: true },
     },
   ],
-  scrollBehavior(to) {
-    if (to.hash) return { el: to.hash, top: 80, behavior: 'smooth' };
+  scrollBehavior(to, _from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition;
+    }
+    if (to.hash) {
+      return new Promise((resolve) => {
+        let attempts = 0;
+        const findAndScroll = () => {
+          const el = document.querySelector(to.hash);
+          if (el) {
+            const yOffset = -80;
+            const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+            resolve({ el: to.hash, top: 80, behavior: 'smooth' });
+          } else if (attempts < 15) {
+            attempts++;
+            setTimeout(findAndScroll, 100);
+          } else {
+            resolve({ top: 0 });
+          }
+        };
+        setTimeout(findAndScroll, 80);
+      });
+    }
     return { top: 0 };
   },
 });

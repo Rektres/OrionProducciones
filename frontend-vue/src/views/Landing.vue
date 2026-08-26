@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
-import { RouterLink } from 'vue-router';
+import { computed, onMounted, ref, nextTick, watch } from 'vue';
+import { RouterLink, useRoute } from 'vue-router';
 import ContactForm from '@/components/ContactForm.vue';
 import ServicioModal from '@/components/ServicioModal.vue';
 import GaleriaFotosModal from '@/components/GaleriaFotosModal.vue';
@@ -247,7 +247,41 @@ onMounted(async () => {
     console.error('Error cargando landing:', e);
   } finally {
     cargando.value = false;
+    nextTick(() => {
+      scrollToHash();
+    });
   }
+});
+
+const route = useRoute();
+
+const scrollToHash = () => {
+  const hash = route.hash;
+  if (!hash) return;
+  nextTick(() => {
+    setTimeout(() => {
+      const el = document.querySelector(hash);
+      if (el) {
+        const yOffset = -80;
+        const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    }, 150);
+  });
+};
+
+const irACotizar = (e?: Event) => {
+  if (e) e.preventDefault();
+  const el = document.getElementById('cotizacion');
+  if (el) {
+    const yOffset = -80;
+    const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+  }
+};
+
+watch(() => route.hash, () => {
+  scrollToHash();
 });
 </script>
 
@@ -274,7 +308,7 @@ onMounted(async () => {
               Desde la primera idea hasta el último detalle: experiencias de bienestar, deporte corporativo, encuentros familiares y celebraciones de fin de año con ingeniería escénica de clase mundial.
             </p>
             <div class="d-flex flex-wrap gap-3">
-              <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-orion d-inline-flex align-items-center gap-2">
+              <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-orion d-inline-flex align-items-center gap-2" @click="irACotizar">
                 <span>Cotizar Experiencia</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </RouterLink>
@@ -428,7 +462,7 @@ onMounted(async () => {
                 <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" @click="abrirCampana(c)">
                   Ver Campaña
                 </button>
-                <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-sm btn-orion">
+                <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-sm btn-orion" @click="irACotizar">
                   Cotizar
                 </RouterLink>
               </div>
@@ -486,7 +520,7 @@ onMounted(async () => {
               En Orion Stage contamos con proyectos de música en vivo, festivales y montajes escénicos adjudicados y respaldados bajo la <strong>Ley de Donaciones Culturales del Ministerio de las Culturas, las Artes y el Patrimonio de Chile</strong>. Empresas y personas jurídicas de primera categoría pueden financiar eventos culturales obteniendo una <strong>rebaja y crédito fiscal directo del 50%</strong> del aporte realizado.
             </p>
             <div class="d-flex flex-wrap gap-3">
-              <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-orion d-inline-flex align-items-center gap-2">
+              <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-orion d-inline-flex align-items-center gap-2" @click="irACotizar">
                 <span>Consultar por Ley de Donaciones</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </RouterLink>
@@ -618,7 +652,7 @@ onMounted(async () => {
               <span>Conoce Nuestra Historia</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </RouterLink>
-            <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn-glass">
+            <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn-glass" @click="irACotizar">
               <span>Conversar con el Equipo</span>
             </RouterLink>
           </div>
@@ -658,7 +692,7 @@ onMounted(async () => {
           <strong>{{ p.kicker }}</strong>
           <h3 v-html="p.title"></h3>
           <p>{{ p.desc }}</p>
-          <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="path-card__cta">
+          <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="path-card__cta" @click="irACotizar">
             <span>{{ p.cta }}</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </RouterLink>
@@ -780,7 +814,7 @@ onMounted(async () => {
           <button type="button" class="btn btn-outline-secondary" @click="cerrarCampana">
             Cerrar
           </button>
-          <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-orion" @click="cerrarCampana">
+          <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-orion" @click="cerrarCampana(); irACotizar();">
             Cotizar esta Campaña
           </RouterLink>
         </div>
