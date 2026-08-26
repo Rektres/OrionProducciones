@@ -1,20 +1,13 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 
 const numero = import.meta.env.VITE_WHATSAPP_NUMBER || '56944830378';
 const url = `https://wa.me/${numero}?text=Hola,%20quisiera%20cotizar%20un%20evento%20con%20Orion%20Stage`;
 
 const visible = ref(true);
 
-onMounted(() => {
-  if (sessionStorage.getItem('orion_wsp_dismissed') === '1') {
-    visible.value = false;
-  }
-});
-
 const cerrarWsp = () => {
   visible.value = false;
-  sessionStorage.setItem('orion_wsp_dismissed', '1');
 };
 </script>
 
@@ -25,7 +18,7 @@ const cerrarWsp = () => {
       class="floating-wsp-wrapper position-fixed"
       style="bottom: 2rem; right: 2rem; z-index: 1040;"
     >
-      <!-- Botón de Cerrar / Quitar -->
+      <!-- Botón de Cerrar / Quitar (Solo visible en hover) -->
       <button
         type="button"
         class="wsp-close-btn"
@@ -70,7 +63,7 @@ const cerrarWsp = () => {
   box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
 }
 .floating-wsp-btn:hover {
-  transform: scale(1.1);
+  transform: scale(1.08);
   box-shadow: 0 12px 30px rgba(37, 211, 102, 0.6);
   color: #ffffff;
 }
@@ -83,16 +76,25 @@ const cerrarWsp = () => {
   border-radius: 50%;
   background: #111827;
   color: #f3f4f6;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   display: grid;
   place-items: center;
   cursor: pointer;
   z-index: 10;
-  transition: transform 0.2s ease, background-color 0.2s ease;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.6);
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
   padding: 0;
 }
+.floating-wsp-wrapper:hover .wsp-close-btn,
+.floating-wsp-wrapper:focus-within .wsp-close-btn {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
 .wsp-close-btn:hover {
-  transform: scale(1.15);
+  transform: scale(1.18);
   background: #ef4444;
   color: #ffffff;
 }
