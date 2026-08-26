@@ -12,7 +12,7 @@ const direccion = import.meta.env.VITE_CONTACT_DIRECCION || 'Santiago, Chile';
   <footer class="site-footer-stage mt-5 pt-5 pb-4">
     <div class="container">
       <div class="row g-4 pb-4">
-        <div class="col-lg-4 col-md-6">
+        <div class="col-lg-5 col-md-6">
           <div class="d-flex align-items-center gap-2 mb-3">
             <img src="/logo.png" alt="Orion Stage" height="42" class="brand-logo-glow" />
             <div class="d-flex flex-column lh-1">
@@ -34,29 +34,19 @@ const direccion = import.meta.env.VITE_CONTACT_DIRECCION || 'Santiago, Chile';
           </div>
         </div>
 
-        <div class="col-lg-2 col-md-3 col-6">
+        <div class="col-lg-3 col-md-3 col-6">
           <h6 class="footer-heading">Navegación</h6>
           <ul class="list-unstyled footer-links small">
             <li><RouterLink to="/">Inicio</RouterLink></li>
-            <li><RouterLink to="/nosotros">Nosotros</RouterLink></li>
-            <li><RouterLink to="/servicios">Servicios</RouterLink></li>
-            <li><RouterLink to="/portafolio">Portafolio</RouterLink></li>
-            <li><RouterLink to="/faq">FAQ / Preguntas</RouterLink></li>
+            <li><RouterLink to="/nosotros">Nosotros & Equipo</RouterLink></li>
+            <li><RouterLink to="/servicios">Servicios de Escenario</RouterLink></li>
+            <li><RouterLink to="/portafolio">Portafolio de Eventos</RouterLink></li>
+            <li><RouterLink to="/faq">Preguntas Frecuentes</RouterLink></li>
+            <li><RouterLink :to="{ path: '/', hash: '#cotizacion' }">Solicitar Cotización</RouterLink></li>
           </ul>
         </div>
 
-        <div class="col-lg-3 col-md-3 col-6">
-          <h6 class="footer-heading">Servicios Clave</h6>
-          <ul class="list-unstyled footer-links small">
-            <li><RouterLink to="/servicios">Sonido Line Array & Audio</RouterLink></li>
-            <li><RouterLink to="/servicios">Iluminación Escénica & Láser</RouterLink></li>
-            <li><RouterLink to="/servicios">Escenarios & Estructuras Truss</RouterLink></li>
-            <li><RouterLink to="/servicios">Pantallas LED & Visuales</RouterLink></li>
-            <li><RouterLink to="/servicios">Producción Técnica Integral</RouterLink></li>
-          </ul>
-        </div>
-
-        <div class="col-lg-3 col-md-6">
+        <div class="col-lg-4 col-md-3 col-12">
           <h6 class="footer-heading">Contacto Directo</h6>
           <ul class="list-unstyled footer-links small">
             <li>

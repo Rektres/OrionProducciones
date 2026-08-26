@@ -82,24 +82,64 @@ const cerrarModal = () => {
 
 const propositos = [
   {
-    num: '01',
+    tag: 'CULTURA ORGANIZACIONAL',
     titulo: 'Construir Cultura',
     desc: 'Los mejores eventos no son aquellos que simplemente ocurren, sino aquellos que las personas recuerdan y refuerzan la identidad de la organización.',
   },
   {
-    num: '02',
+    tag: 'INTEGRACIÓN & EQUIPO',
     titulo: 'Fortalecer Vínculos',
     desc: 'Espacios reales para encontrarse, compartir, competir sanamente y derribar las barreras del día a día laboral.',
   },
   {
-    num: '03',
+    tag: 'SENTIDO DE COMUNIDAD',
     titulo: 'Generar Pertenencia',
     desc: 'Demostrar a los colaboradores y a sus familias que son el corazón y la prioridad de la empresa.',
   },
   {
-    num: '04',
+    tag: 'HUELLA EMOCIONAL',
     titulo: 'Crear Recuerdos',
     desc: 'Momentos únicos y significativos que permanecen grabados mucho después de concluido el evento.',
+  },
+];
+
+interface MiembroEquipo {
+  nombre: string;
+  genero: 'mujer' | 'hombre';
+  cargo: string;
+  descripcion: string;
+  badge: string;
+  avatarGrad: string;
+  iniciales: string;
+}
+
+const equipoPrincipal: MiembroEquipo[] = [
+  {
+    nombre: 'Erika Torres',
+    genero: 'mujer',
+    cargo: 'Dirección de Experiencias & Gestión de Clientes',
+    descripcion: 'Lidera el diseño conceptual de cada experiencia, el bienestar corporativo y el acompañamiento cercano a cada organización de principio a fin.',
+    badge: 'Producción Ejecutiva',
+    avatarGrad: 'linear-gradient(135deg, #ec4899 0%, #d06c26 100%)',
+    iniciales: 'ET',
+  },
+  {
+    nombre: 'Carlos Plaza',
+    genero: 'hombre',
+    cargo: 'Dirección Técnica & Operaciones Escénicas',
+    descripcion: 'Especialista en ingeniería acústica Line Array, diseño lumínico robótico, pantallas LED 4K y montaje estructural de estándar internacional.',
+    badge: 'Ingeniería Técnica',
+    avatarGrad: 'linear-gradient(135deg, #13d6ea 0%, #0d537d 100%)',
+    iniciales: 'CP',
+  },
+  {
+    nombre: 'Francisco',
+    genero: 'hombre',
+    cargo: 'Dirección General & Producción 360°',
+    descripcion: 'Coordina la logística integral, recintos, alianzas estratégicas, proveedores y regiduría en terreno para que cada evento funcione a la perfección.',
+    badge: 'Producción 360°',
+    avatarGrad: 'linear-gradient(135deg, #c5a880 0%, #d06c26 100%)',
+    iniciales: 'F',
   },
 ];
 
@@ -224,8 +264,51 @@ const pilaresProduccion = [
     </div>
   </section>
 
-  <!-- PRODUCCIÓN INTEGRAL 360°: NOS ENCARGAMOS DE HACERLO REALIDAD -->
+  <!-- BLOQUE EQUIPO PRINCIPAL (ERIKA TORRES, CARLOS PLAZA, FRANCISCO) -->
   <section class="py-5">
+    <div class="container">
+      <div class="text-center max-w-700 mx-auto mb-5">
+        <div class="eyebrow-luxury justify-content-center">
+          <span>★</span> NUESTRO EQUIPO
+        </div>
+        <h2 class="display-5 fw-bold mt-2">El Equipo Detrás de Cada Escenario</h2>
+        <p class="text-secondary mt-2" style="font-size: 15px;">
+          Profesionales apasionados por el detalle, la ingeniería escénica y la gestión humana para transformar cada evento en una experiencia inolvidable.
+        </p>
+      </div>
+
+      <div class="row g-4 justify-content-center">
+        <div v-for="m in equipoPrincipal" :key="m.nombre" class="col-md-6 col-lg-4">
+          <article class="card h-100 p-4 border-1 rounded-4 text-center position-relative overflow-hidden"
+            style="background: var(--card-surface); border-color: var(--card-border); box-shadow: var(--orion-surface-shadow);">
+            
+            <!-- Avatar Iniciales / Gradiante -->
+            <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center text-white shadow-lg"
+              :style="{ width: '5.2rem', height: '5.2rem', background: m.avatarGrad, fontSize: '1.4rem', fontWeight: '800', letterSpacing: '-0.02em' }">
+              {{ m.iniciales }}
+            </div>
+
+            <span class="badge rounded-pill mb-2 px-3 py-1 text-uppercase mx-auto"
+              style="font-size: 10px; letter-spacing: 0.08em; background: rgba(19, 214, 234, 0.12); color: var(--orion-primary); border: 1px solid rgba(19, 214, 234, 0.3);">
+              {{ m.badge }}
+            </span>
+
+            <h3 class="h4 fw-bold mb-1 text-body">{{ m.nombre }}</h3>
+            <span class="small fw-bold text-secondary text-uppercase mb-3 d-block" style="font-size: 11px; letter-spacing: 0.04em;">
+              {{ m.cargo }}
+            </span>
+
+            <p class="text-secondary small mb-0" style="line-height: 1.7;">
+              {{ m.descripcion }}
+            </p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCCIÓN INTEGRAL 360°: NOS ENCARGAMOS DE HACERLO REALIDAD -->
+  <section class="py-5" style="background: var(--section-alt-bg);">
     <div class="container">
       <div class="cultural-law-card">
         <div class="row align-items-center g-5">
@@ -265,7 +348,7 @@ const pilaresProduccion = [
   </section>
 
   <!-- NUESTRO PROPÓSITO -->
-  <section class="py-5" style="background: var(--section-alt-bg);">
+  <section class="py-5">
     <div class="container">
       <div class="text-center max-w-700 mx-auto mb-5">
         <div class="eyebrow-luxury justify-content-center">
@@ -278,9 +361,9 @@ const pilaresProduccion = [
       </div>
 
       <div class="row g-4">
-        <div v-for="p in propositos" :key="p.num" class="col-md-6 col-lg-3">
+        <div v-for="p in propositos" :key="p.tag" class="col-md-6 col-lg-3">
           <article class="pillar-card h-100">
-            <span class="pillar-card__num">{{ p.num }}</span>
+            <span class="pillar-card__num">{{ p.tag }}</span>
             <h3>{{ p.titulo }}</h3>
             <p>{{ p.desc }}</p>
           </article>

@@ -157,22 +157,22 @@ const marcas = [
 
 const pilares = [
   {
-    num: '01 / BIENESTAR & PERSONAS',
+    tag: 'BIENESTAR & PERSONAS',
     title: 'Experiencias que Conectan',
     desc: 'Escuchamos a cada organización para diseñar actividades con sentido: bienestar, integración deportiva, familia y celebraciones corporativas.'
   },
   {
-    num: '02 / INGENIERÍA ACÚSTICA',
+    tag: 'INGENIERÍA ACÚSTICA',
     title: 'Audio Line Array & Precisión',
     desc: 'Sistemas de sonido de estándar internacional calibrados por ingenieros FOH certificados para una acústica cristalina.'
   },
   {
-    num: '03 / ILUMINACIÓN & ESCENOGRAFÍA',
+    tag: 'ILUMINACIÓN & ESCENOGRAFÍA',
     title: 'Magia Visual & Shows Láser',
     desc: 'Cabezas robóticas, efectos sincronizados, pantallas LED 4K y ambientación arquitectónica para crear momentos inolvidables.'
   },
   {
-    num: '04 / PRODUCCIÓN 360°',
+    tag: 'PRODUCCIÓN 360°',
     title: 'Desde la Idea al Último Detalle',
     desc: 'Nos encargamos de toda la complejidad técnica y logística para que tu empresa solo se concentre en vivir la experiencia.'
   }
@@ -180,7 +180,7 @@ const pilares = [
 
 const paths = [
   {
-    index: '01 / CORPORATIVO & EXPERIENCIAS',
+    index: 'CORPORATIVO & EXPERIENCIAS',
     kicker: 'MUNDOS ORIÓN STAGE',
     title: 'Bienestar, Deporte<br>& Cultura Organizacional.',
     desc: 'Experiencias a medida para empresas: Orión Women, Orión Sports, Orión Family y celebraciones de fin de año con producción integral.',
@@ -188,7 +188,7 @@ const paths = [
     theme: 'path-card--1'
   },
   {
-    index: '02 / FESTIVALES & CONCIERTOS',
+    index: 'FESTIVALES & CONCIERTOS',
     kicker: 'GRAN ESCALA',
     title: 'Potencia Sonora<br>& Efectos Láser.',
     desc: 'Sistemas Line Array de alto rendimiento, estructuras Layher certificadas, pantallas LED 4K y show de luces robóticas por timecode.',
@@ -196,7 +196,7 @@ const paths = [
     theme: 'path-card--2'
   },
   {
-    index: '03 / BODAS & FIESTAS BOUTIQUE',
+    index: 'BODAS & FIESTAS BOUTIQUE',
     kicker: 'EXPERIENCIA BOUTIQUE',
     title: 'Momentos Únicos,<br>Atmósferas Mágicas.',
     desc: 'Cielo estrellado con micro-luces cálidas, pista de baile iluminada, audio envolvente para banda en vivo y regiduría en terreno.',
@@ -453,9 +453,9 @@ onMounted(async () => {
       </div>
 
       <div class="row g-4">
-        <div v-for="pil in pilares" :key="pil.num" class="col-md-6 col-lg-3">
+        <div v-for="pil in pilares" :key="pil.tag" class="col-md-6 col-lg-3">
           <article class="pillar-card h-100">
-            <span class="pillar-card__num">{{ pil.num }}</span>
+            <span class="pillar-card__num">{{ pil.tag }}</span>
             <h3>{{ pil.title }}</h3>
             <p>{{ pil.desc }}</p>
           </article>
@@ -604,7 +604,7 @@ onMounted(async () => {
   <section class="py-4">
     <div class="container">
       <div class="manifesto">
-        <div class="manifesto__index">ORION / 01</div>
+        <div class="manifesto__index">ORION STAGE</div>
         <div class="manifesto__content">
           <div class="eyebrow-luxury">
             <span>★</span> NUESTRO PROPÓSITO
