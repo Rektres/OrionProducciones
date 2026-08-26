@@ -79,7 +79,7 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll));
             </RouterLink>
           </li>
         </ul>
-        <div class="d-flex align-items-center justify-content-between justify-content-lg-end gap-3 pt-3 pt-lg-0 border-top border-lg-0 border-secondary-subtle">
+        <div class="d-flex align-items-center justify-content-between justify-content-lg-end gap-3 pt-3 pt-lg-0">
           <ThemeToggle />
           <button class="btn btn-cotizar-neon" @click="irCotizar">
             <span>Cotizar Evento</span>

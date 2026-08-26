@@ -4,7 +4,7 @@ export type Theme = 'dark' | 'light';
 
 const THEME_KEY = 'orion_theme';
 
-const theme = ref<Theme>((localStorage.getItem(THEME_KEY) as Theme | null) || 'dark');
+const theme = ref<Theme>((localStorage.getItem(THEME_KEY) as Theme | null) || 'light');
 
 const aplicarTema = (t: Theme) => {
   document.documentElement.setAttribute('data-bs-theme', t);

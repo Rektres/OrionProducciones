@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router';
 import ContactForm from '@/components/ContactForm.vue';
 import ServicioModal from '@/components/ServicioModal.vue';
 import GaleriaFotosModal from '@/components/GaleriaFotosModal.vue';
+import BrandLogo from '@/components/BrandLogo.vue';
 import FadeInUp from '@/components/animations/FadeInUp.vue';
 import { serviciosService } from '@/services/servicios';
 import { portafolioService } from '@/services/portafolio';
@@ -140,18 +141,18 @@ const stats = [
 ];
 
 const marcas = [
-  { nombre: 'Banco Santander', tag: 'Galas & Convenciones' },
-  { nombre: 'Entel', tag: 'Festivales Masivos' },
-  { nombre: 'Viña Santa Rita', tag: 'Bodas de Alta Gama' },
-  { nombre: 'Mallplaza', tag: 'Activaciones 360' },
-  { nombre: 'BHP Escondida', tag: 'Corporativo Minero' },
-  { nombre: 'Codelco', tag: 'Eventos Masivos' },
-  { nombre: 'Copec', tag: 'Lanzamientos' },
-  { nombre: 'Lotus Producciones', tag: 'Conciertos' },
-  { nombre: 'Universidad de Chile', tag: 'Ceremonias Oficiales' },
-  { nombre: 'Red Bull Chile', tag: 'Escenarios & Shows' },
-  { nombre: 'Gran Arena Monticello', tag: 'Música en Vivo' },
-  { nombre: 'Espacio Riesco', tag: 'Convenciones & Ferias' },
+  { nombre: 'Banco Santander', tag: 'Galas & Convenciones', logoKey: 'santander' },
+  { nombre: 'Entel', tag: 'Festivales Masivos', logoKey: 'entel' },
+  { nombre: 'Viña Santa Rita', tag: 'Bodas de Alta Gama', logoKey: 'santa-rita' },
+  { nombre: 'Mallplaza', tag: 'Activaciones 360', logoKey: 'mallplaza' },
+  { nombre: 'BHP Escondida', tag: 'Corporativo Minero', logoKey: 'bhp' },
+  { nombre: 'Codelco', tag: 'Eventos Masivos', logoKey: 'codelco' },
+  { nombre: 'Copec', tag: 'Lanzamientos', logoKey: 'copec' },
+  { nombre: 'Lotus Producciones', tag: 'Conciertos', logoKey: 'lotus' },
+  { nombre: 'Universidad de Chile', tag: 'Ceremonias Oficiales', logoKey: 'uchile' },
+  { nombre: 'Red Bull Chile', tag: 'Escenarios & Shows', logoKey: 'redbull' },
+  { nombre: 'Gran Arena Monticello', tag: 'Música en Vivo', logoKey: 'monticello' },
+  { nombre: 'Espacio Riesco', tag: 'Convenciones & Ferias', logoKey: 'espacio-riesco' },
 ];
 
 const pilares = [
@@ -376,14 +377,14 @@ onMounted(async () => {
     <div class="brand-marquee-container">
       <div class="brand-marquee-track">
         <div v-for="(m, i) in marcas" :key="`m1-${i}`" class="brand-pill">
-          <span class="brand-pill-icon">★</span>
+          <BrandLogo :name="m.logoKey" />
           <span>{{ m.nombre }}</span>
           <small class="text-secondary" style="font-size: 11px; opacity: 0.7;">· {{ m.tag }}</small>
         </div>
       </div>
       <div class="brand-marquee-track" aria-hidden="true">
         <div v-for="(m, i) in marcas" :key="`m2-${i}`" class="brand-pill">
-          <span class="brand-pill-icon">★</span>
+          <BrandLogo :name="m.logoKey" />
           <span>{{ m.nombre }}</span>
           <small class="text-secondary" style="font-size: 11px; opacity: 0.7;">· {{ m.tag }}</small>
         </div>
