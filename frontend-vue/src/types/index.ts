@@ -86,6 +86,27 @@ export interface Post {
 }
 
 export type TipoEvento = 'corporativo' | 'social' | 'festival' | 'otro';
+export type EstadoCotizacion = 'nuevo' | 'en_contacto' | 'cotizado' | 'cerrado' | 'descartado';
+
+export interface Cotizacion {
+  id: string;
+  nombre: string;
+  email: string;
+  telefono: string | null;
+  empresa: string | null;
+  tipo_evento: TipoEvento;
+  descripcion: string;
+  fecha_estimada: string | null;
+  presupuesto_estimado: string | null;
+  estado: EstadoCotizacion;
+  created_at: string;
+}
+
+export interface ResponderCotizacionInput {
+  asunto: string;
+  mensaje: string;
+  nuevo_estado?: EstadoCotizacion;
+}
 
 export interface CotizacionFormData {
   nombre: string;
@@ -97,6 +118,7 @@ export interface CotizacionFormData {
   fecha_estimada?: string;
   presupuesto_estimado?: string;
 }
+
 
 // --- Tipos de entrada para el panel de administracion ---
 // No incluyen los campos derivados/read-only (categoria_slug, tipo_slug,

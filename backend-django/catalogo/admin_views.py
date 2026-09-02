@@ -1,3 +1,8 @@
+import logging
+
+from django.conf import settings
+from django.core.mail import send_mail
+from django.db.models import Q
 from rest_framework import mixins, status, viewsets
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
@@ -6,11 +11,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .admin_serializers import (
-    CategoriaServicioAdminSerializer, EventoAdminSerializer, EventoTipoAdminSerializer,
-    FotoEventoAdminSerializer, PostAdminSerializer, ServicioAdminSerializer, TagAdminSerializer,
+    CategoriaServicioAdminSerializer, CotizacionAdminSerializer, CotizacionResponderSerializer,
+    EventoAdminSerializer, EventoTipoAdminSerializer, FotoEventoAdminSerializer,
+    PostAdminSerializer, ServicioAdminSerializer, TagAdminSerializer,
 )
 from .imagenes import crear_imagen_archivo
-from .models import CategoriaServicio, Evento, EventoTipo, FotoEvento, ImagenArchivo, Post, Servicio, Tag
+from .models import CategoriaServicio, Cotizacion, Evento, EventoTipo, FotoEvento, ImagenArchivo, Post, Servicio, Tag
+
+logger = logging.getLogger(__name__)
+
 
 
 class AdminViewSetBase(viewsets.ModelViewSet):
@@ -129,3 +138,148 @@ class PostAdminViewSet(ImagenArchivoMixin, AdminViewSetBase):
         instance.delete()
         if imagen_id:
             ImagenArchivo.objects.filter(pk=imagen_id).delete()
+
+
+class CotizacionAdminViewSet(AdminViewSetBase):
+    serializer_class = CotizacionAdminSerializer
+    queryset = Cotizacion.objects.order_by('-created_at')
+
+    def get_queryset(self):
+        qs = Cotizacion.objects.order_by('-created_at')
+        estado = self.request.query_params.get('estado')
+        if estado:
+            qs = qs.filter(estado=estado)
+        search = self.request.query_params.get('search') or self.request.query_params.get('q')
+        if search:
+            search = search.strip()
+            qs = qs.filter(
+                Q(nombre__icontains=search) |
+                Q(email__icontains=search) |
+                Q(empresa__icontains=search) |
+                Q(descripcion__icontains=search) |
+                Q(tipo_evento__icontains=search)
+            )
+        return qs
+
+    @action(detail=True, methods=['post'], url_path='responder')
+    def responder(self, request, pk=None):
+        cotizacion = self.get_object()
+        serializer = CotizacionResponderSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        asunto = serializer.validated_data['asunto'].strip()
+        mensaje = serializer.validated_data['mensaje'].strip()
+        nuevo_estado = serializer.validated_data.get('nuevo_estado') or 'en_contacto'
+
+        if not cotizacion.email:
+            return Response(
+                {'error': 'La cotización no tiene una dirección de correo asociada.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        cuerpo_html = f"""<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{asunto}</title>
+</head>
+<body style="margin:0; padding:0; background-color:#f1f5f9; font-family:'Helvetica Neue', Helvetica, Arial, sans-serif; color:#1e293b;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f1f5f9; padding:24px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" style="max-width:600px; background-color:#ffffff; border-radius:14px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.06); border:1px solid #e2e8f0;">
+          <!-- HEADER -->
+          <tr>
+            <td style="background-color:#002855; padding:28px 32px; text-align:center;">
+              <h1 style="margin:0; font-size:22px; font-weight:700; color:#ffffff; letter-spacing:1px;">
+                ORION STAGE
+              </h1>
+              <p style="margin:4px 0 0 0; font-size:12px; color:#d06c26; font-weight:600; text-transform:uppercase; letter-spacing:1.5px;">
+                Experiencias | Tecnología de Escenario | Producción
+              </p>
+            </td>
+          </tr>
+
+          <!-- CONTENIDO -->
+          <tr>
+            <td style="padding:32px;">
+              <h2 style="margin:0 0 16px 0; font-size:19px; color:#0f172a; font-weight:700;">
+                Hola {cotizacion.nombre},
+              </h2>
+              
+              <div style="font-size:14.5px; color:#334155; line-height:1.7; margin-bottom:24px; white-space:pre-wrap;">
+{mensaje}
+              </div>
+
+              <!-- CAJA RESUMEN REFERENCIAL -->
+              <div style="background-color:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:24px;">
+                <p style="margin:0 0 8px 0; font-size:12px; font-weight:700; color:#002855; text-transform:uppercase; letter-spacing:0.5px;">
+                  En referencia a tu requerimiento ({cotizacion.tipo_evento}):
+                </p>
+                <p style="margin:0; font-size:13px; color:#64748b; font-style:italic;">
+                  "{cotizacion.descripcion}"
+                </p>
+              </div>
+
+              <!-- BOTÓN WHATSAPP -->
+              <div style="background-color:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:16px; text-align:center; margin-bottom:16px;">
+                <p style="margin:0 0 10px 0; font-size:13px; color:#166534; font-weight:600;">
+                  ¿Prefieres coordinar o responder por WhatsApp?
+                </p>
+                <a href="https://wa.me/56998249498?text=Hola,%20recib%C3%AD%20su%20correo%20respecto%20a%20mi%20cotizaci%C3%B3n%20a%20nombre%20de%20{cotizacion.nombre}" style="display:inline-block; background-color:#16a34a; color:#ffffff; text-decoration:none; font-size:13px; font-weight:600; padding:10px 22px; border-radius:8px; box-shadow:0 2px 8px rgba(22,163,74,0.25);">
+                  Continuar en WhatsApp (+56 9 9824 9498)
+                </a>
+              </div>
+
+              <p style="margin:0; font-size:13px; color:#64748b; line-height:1.6;">
+                Atentamente,<br>
+                <strong style="color:#002855;">Equipo de Producción Orion Stage</strong>
+              </p>
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="background-color:#f8fafc; border-top:1px solid #e2e8f0; padding:20px 32px; text-align:center;">
+              <p style="margin:0 0 4px 0; font-size:12px; font-weight:700; color:#002855;">
+                Orion Stage Producciones SpA
+              </p>
+              <p style="margin:0; font-size:11px; color:#64748b;">
+                <a href="https://orionstage.cl" style="color:#0284c7; text-decoration:none;">orionstage.cl</a> | 
+                <a href="mailto:contacto@orionstage.cl" style="color:#0284c7; text-decoration:none;">contacto@orionstage.cl</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"""
+
+        try:
+            send_mail(
+                subject=asunto,
+                message=f"Hola {cotizacion.nombre},\n\n{mensaje}\n\n--\nEquipo Orion Stage Producciones\nhttps://orionstage.cl",
+                html_message=cuerpo_html,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[cotizacion.email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            logger.exception("Error enviando respuesta a cotizacion %s: %s", cotizacion.id, e)
+            return Response(
+                {'error': f'No se pudo enviar el correo: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        cotizacion.estado = nuevo_estado
+        cotizacion.save(update_fields=['estado'])
+
+        return Response({
+            'status': 'ok',
+            'mensaje': f'Respuesta enviada exitosamente a {cotizacion.email}.',
+            'cotizacion': CotizacionAdminSerializer(cotizacion).data,
+        })
+

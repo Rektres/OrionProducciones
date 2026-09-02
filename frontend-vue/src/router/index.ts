@@ -106,7 +106,8 @@ export const router = createRouter({
       component: () => import('@/views/admin/AdminLayout.vue'),
       meta: { requiresAuth: true, noindex: true },
       children: [
-        { path: '', redirect: '/admin/servicios' },
+        { path: '', redirect: '/admin/mensajes' },
+        { path: 'mensajes', component: () => import('@/views/admin/AdminMensajes.vue') },
         { path: 'servicios', component: () => import('@/views/admin/AdminServicios.vue') },
         { path: 'portafolio', component: () => import('@/views/admin/AdminPortafolio.vue') },
         { path: 'faq', component: () => import('@/views/admin/AdminBlog.vue') },

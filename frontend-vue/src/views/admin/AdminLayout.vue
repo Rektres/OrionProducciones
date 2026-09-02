@@ -11,6 +11,7 @@ const salir = () => {
 };
 
 const secciones = [
+  { to: '/admin/mensajes', label: 'Mensajes' },
   { to: '/admin/servicios', label: 'Servicios' },
   { to: '/admin/portafolio', label: 'Portafolio' },
   { to: '/admin/faq', label: 'FAQ' },

@@ -1,7 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 
-from .models import CategoriaServicio, Evento, EventoTipo, FotoEvento, Post, Servicio, Tag
+from .models import CategoriaServicio, Cotizacion, Evento, EventoTipo, FotoEvento, Post, Servicio, Tag
 
 
 class CategoriaServicioAdminSerializer(serializers.ModelSerializer):
@@ -96,3 +96,21 @@ class PostAdminSerializer(serializers.ModelSerializer):
         if estado == 'publicado' and not fecha_publicacion:
             attrs['fecha_publicacion'] = timezone.now()
         return attrs
+
+
+class CotizacionAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cotizacion
+        fields = '__all__'
+        read_only_fields = ('id', 'created_at')
+
+
+class CotizacionResponderSerializer(serializers.Serializer):
+    asunto = serializers.CharField(max_length=255, required=True)
+    mensaje = serializers.CharField(required=True)
+    nuevo_estado = serializers.ChoiceField(
+        choices=Cotizacion.ESTADOS,
+        required=False,
+        default='en_contacto'
+    )
+

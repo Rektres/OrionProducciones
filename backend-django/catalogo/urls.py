@@ -4,7 +4,7 @@ from rest_framework.routers import SimpleRouter
 
 from . import seo, views
 from .admin_views import (
-    CategoriaServicioAdminViewSet, EventoAdminViewSet, EventoTipoAdminViewSet,
+    CategoriaServicioAdminViewSet, CotizacionAdminViewSet, EventoAdminViewSet, EventoTipoAdminViewSet,
     FotoEventoAdminViewSet, PostAdminViewSet, ServicioAdminViewSet, TagAdminViewSet,
 )
 
@@ -16,6 +16,8 @@ admin_router.register('eventos', EventoAdminViewSet, basename='admin-evento')
 admin_router.register('fotos-evento', FotoEventoAdminViewSet, basename='admin-foto-evento')
 admin_router.register('tags', TagAdminViewSet, basename='admin-tag')
 admin_router.register('posts', PostAdminViewSet, basename='admin-post')
+admin_router.register('cotizaciones', CotizacionAdminViewSet, basename='admin-cotizacion')
+
 
 urlpatterns = [
     path('categorias-servicio/', views.CategoriaServicioList.as_view()),
