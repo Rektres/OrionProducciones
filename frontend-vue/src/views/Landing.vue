@@ -6,6 +6,7 @@ import ServicioModal from '@/components/ServicioModal.vue';
 import GaleriaFotosModal from '@/components/GaleriaFotosModal.vue';
 import BrandLogo from '@/components/BrandLogo.vue';
 import FadeInUp from '@/components/animations/FadeInUp.vue';
+import Galaxy3D from '@/components/Galaxy3D.vue';
 import { serviciosService } from '@/services/servicios';
 import { portafolioService } from '@/services/portafolio';
 import type { Servicio, Evento, FotoEvento } from '@/types';
@@ -25,6 +26,81 @@ const servicios = ref<Servicio[]>([]);
 const eventosDestacados = ref<Evento[]>([]);
 const cargando = ref(true);
 const filtroCategoria = ref<string>('todos');
+
+const coverIndex = ref(0);
+const prevCover = () => {
+  if (serviciosFiltrados.value.length <= 1) return;
+  if (coverIndex.value > 0) {
+    coverIndex.value--;
+  } else {
+    coverIndex.value = serviciosFiltrados.value.length - 1;
+  }
+};
+const nextCover = () => {
+  if (serviciosFiltrados.value.length <= 1) return;
+  if (coverIndex.value < serviciosFiltrados.value.length - 1) {
+    coverIndex.value++;
+  } else {
+    coverIndex.value = 0;
+  }
+};
+const goToCover = (idx: number) => {
+  coverIndex.value = idx;
+};
+
+// Touch swipe support
+let touchStartX = 0;
+const onTouchStart = (e: TouchEvent) => {
+  touchStartX = e.touches[0].clientX;
+};
+const onTouchEnd = (e: TouchEvent) => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 40) {
+    if (diff > 0) nextCover();
+    else prevCover();
+  }
+};
+
+const getCoverStyle = (idx: number) => {
+  const total = serviciosFiltrados.value.length;
+  if (total === 0) return {};
+  
+  const offset = idx - coverIndex.value;
+  const absOffset = Math.abs(offset);
+  
+  if (offset === 0) {
+    return {
+      transform: 'translate3d(0, 0, 80px) rotateY(0deg) scale(1)',
+      zIndex: 25,
+      opacity: 1,
+      pointerEvents: 'auto' as const,
+    };
+  }
+
+  // Cards on left
+  if (offset < 0) {
+    const isVisible = absOffset <= 2;
+    const xDist = Math.max(-320, offset * 180 - 60);
+    const zDist = -absOffset * 80;
+    return {
+      transform: `translate3d(${xDist}px, 0, ${zDist}px) rotateY(38deg) scale(${Math.max(0.72, 1 - absOffset * 0.12)})`,
+      zIndex: 20 - absOffset,
+      opacity: isVisible ? Math.max(0.3, 0.85 - absOffset * 0.25) : 0,
+      pointerEvents: isVisible ? ('auto' as const) : ('none' as const),
+    };
+  }
+
+  // Cards on right
+  const isVisible = absOffset <= 2;
+  const xDist = Math.min(320, offset * 180 + 60);
+  const zDist = -absOffset * 80;
+  return {
+    transform: `translate3d(${xDist}px, 0, ${zDist}px) rotateY(-38deg) scale(${Math.max(0.72, 1 - absOffset * 0.12)})`,
+    zIndex: 20 - absOffset,
+    opacity: isVisible ? Math.max(0.3, 0.85 - absOffset * 0.25) : 0,
+    pointerEvents: isVisible ? ('auto' as const) : ('none' as const),
+  };
+};
 
 const servicioModalRef = ref<InstanceType<typeof ServicioModal> | null>(null);
 const abrirServicio = (svc: Servicio) => servicioModalRef.value?.abrir(svc);
@@ -283,6 +359,10 @@ const irACotizar = (e?: Event) => {
 watch(() => route.hash, () => {
   scrollToHash();
 });
+
+watch(filtroCategoria, () => {
+  coverIndex.value = 0;
+});
 </script>
 
 <template>
@@ -296,9 +376,6 @@ watch(() => route.hash, () => {
       <div class="row align-items-center g-5">
         <div class="col-lg-7">
           <FadeInUp>
-            <div class="eyebrow-luxury">
-              <span>★</span> EXPERIENCIAS CORPORATIVAS · PRODUCCIÓN · ESPECTÁCULOS
-            </div>
             <h1 class="hero-title-giant">
               <span>NO ORGANIZAMOS SOLO EVENTOS,</span><br />
               <span class="highlight-gold">CREAMOS EXPERIENCIAS</span><br />
@@ -403,11 +480,6 @@ watch(() => route.hash, () => {
 
   <!-- CARRUSEL ORGÁNICO: CONFÍAN EN NOSOTROS -->
   <section class="brand-marquee-section">
-    <div class="container mb-3 text-center">
-      <div class="eyebrow-luxury justify-content-center mb-0" style="font-size: 10px;">
-        <span>★</span> EMPRESAS & PRODUCTORAS QUE CONFÍAN EN ORION
-      </div>
-    </div>
     <div class="brand-marquee-container">
       <div class="brand-marquee-track">
         <div v-for="(m, i) in marcas" :key="`m1-${i}`" class="brand-pill">
@@ -430,9 +502,6 @@ watch(() => route.hash, () => {
   <section id="campanas" class="py-5">
     <div class="container">
       <div class="text-center max-w-700 mx-auto mb-5">
-        <div class="eyebrow-luxury justify-content-center">
-          <span>★</span> NUESTRAS CAMPAÑAS CORPORATIVAS
-        </div>
         <h2 class="display-5 fw-bold mt-2">Mundos de Experiencia para tu Empresa</h2>
         <p class="text-secondary mt-2" style="font-size: 15px;">
           Diseñadas para acompañar a las organizaciones durante todo el año: bienestar femenino, deporte, familia y celebraciones inolvidables.
@@ -477,9 +546,6 @@ watch(() => route.hash, () => {
   <section class="py-5" style="background: var(--section-alt-bg);">
     <div class="container">
       <div class="text-center max-w-700 mx-auto mb-5">
-        <div class="eyebrow-luxury justify-content-center">
-          <span>★</span> NUESTROS PILARES DE EXCELENCIA
-        </div>
         <h2 class="display-5 fw-bold mt-2">La Tranquilidad de un Evento Perfecto.</h2>
         <p class="text-secondary mt-2" style="font-size: 15px;">
           Combinamos la calidez humana y el cuidado de cada detalle con la potencia técnica y la ingeniería de vanguardia.
@@ -524,7 +590,7 @@ watch(() => route.hash, () => {
                 <span>Consultar por Ley de Donaciones</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </RouterLink>
-              <a href="https://wa.me/56944830378?text=Hola,%20quisiera%20información%20sobre%20la%20Ley%20de%20Donaciones%20Culturales%20para%20eventos" target="_blank" rel="noopener noreferrer" class="btn-glass">
+              <a href="https://wa.me/56998249498?text=Hola,%20quisiera%20información%20sobre%20la%20Ley%20de%20Donaciones%20Culturales%20para%20eventos" target="_blank" rel="noopener noreferrer" class="btn-glass">
                 <span>Asesoría Directa por WhatsApp</span>
               </a>
             </div>
@@ -557,14 +623,11 @@ watch(() => route.hash, () => {
     </div>
   </section>
 
-  <!-- CATÁLOGO DE SERVICIOS CON FILTER CHIPS -->
+  <!-- CATÁLOGO DE SERVICIOS: COVER FLOW 3D -->
   <section id="catalogo" class="py-5" style="background: var(--section-alt-bg);">
     <div class="container">
       <div class="row align-items-end g-4 mb-2">
         <div class="col-lg-7">
-          <div class="eyebrow-luxury">
-            <span>★</span> EQUIPAMIENTO PROFESIONAL
-          </div>
           <h2 class="display-5 fw-bold mb-0">Tecnología de Escenario & Experiencias.</h2>
         </div>
         <div class="col-lg-5">
@@ -593,39 +656,82 @@ watch(() => route.hash, () => {
         </span>
       </div>
 
-      <!-- Grid de Servicios -->
+      <!-- 3D Cover Flow Carousel -->
       <div v-if="cargando" class="text-center py-5">
         <div class="spinner-border text-warning" role="status"></div>
         <p class="text-secondary mt-3">Cargando catálogo técnico...</p>
       </div>
-      <div v-else-if="serviciosFiltrados.length" class="row g-4">
-        <div
-          v-for="svc in serviciosFiltrados"
-          :key="svc.id"
-          class="col-md-6 col-lg-4"
+      <div v-else-if="serviciosFiltrados.length" class="coverflow-container">
+        <!-- Arrow Prev -->
+        <button
+          type="button"
+          class="coverflow-nav-btn coverflow-nav-btn--prev"
+          aria-label="Servicio anterior"
+          @click="prevCover"
         >
-          <article class="stage-card">
-            <div class="stage-card__visual" role="button" tabindex="0" @click="abrirServicio(svc)">
-              <span class="stage-badge">{{ svc.categoria_slug || 'PRODUCCIÓN' }}</span>
-              <img
-                v-if="svc.imagen_url"
-                :src="svc.imagen_url"
-                :alt="svc.nombre"
-                loading="lazy"
-                decoding="async"
-              />
-              <button type="button" class="stage-card__action-btn" @click.stop="abrirServicio(svc)">
-                <span>Ver especificaciones técnicas</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </button>
-            </div>
-            <div class="stage-card__meta">
-              <div>
-                <span>EQUIPAMIENTO PROFESIONAL</span>
-                <h3>{{ svc.nombre }}</h3>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+
+        <!-- 3D Stage -->
+        <div class="coverflow-stage" @touchstart="onTouchStart" @touchend="onTouchEnd">
+          <div
+            v-for="(svc, idx) in serviciosFiltrados"
+            :key="svc.id"
+            class="coverflow-card-wrap"
+            :class="{
+              'is-active': idx === coverIndex,
+              'is-left': idx < coverIndex,
+              'is-right': idx > coverIndex
+            }"
+            :style="getCoverStyle(idx)"
+            @click="idx === coverIndex ? abrirServicio(svc) : goToCover(idx)"
+          >
+            <article class="stage-card">
+              <div class="stage-card__visual">
+                <span class="stage-badge">{{ svc.categoria_slug || 'PRODUCCIÓN' }}</span>
+                <img
+                  v-if="svc.imagen_url"
+                  :src="svc.imagen_url"
+                  :alt="svc.nombre"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <button type="button" class="stage-card__action-btn" @click.stop="abrirServicio(svc)">
+                  <span>Ver especificaciones técnicas</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
               </div>
-            </div>
-          </article>
+              <div class="stage-card__meta">
+                <div>
+                  <span>EQUIPAMIENTO PROFESIONAL</span>
+                  <h3>{{ svc.nombre }}</h3>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <!-- Arrow Next -->
+        <button
+          type="button"
+          class="coverflow-nav-btn coverflow-nav-btn--next"
+          aria-label="Siguiente servicio"
+          @click="nextCover"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+
+        <!-- Coverflow Pagination Indicators -->
+        <div class="coverflow-pagination">
+          <button
+            v-for="(_, idx) in serviciosFiltrados"
+            :key="`dot-${idx}`"
+            type="button"
+            class="coverflow-dot"
+            :class="{ 'is-active': idx === coverIndex }"
+            :aria-label="`Ir al servicio ${idx + 1}`"
+            @click="goToCover(idx)"
+          ></button>
         </div>
       </div>
       <div v-else class="text-center py-5 text-secondary">
@@ -634,15 +740,12 @@ watch(() => route.hash, () => {
     </div>
   </section>
 
-  <!-- SECCIÓN MANIFIESTO ORION CON ORBE HOLOGRÁFICO (EXTRACTO DE ORIONSTAGE.TXT) -->
+  <!-- SECCIÓN MANIFIESTO ORION CON GALAXIA 3D -->
   <section class="py-4">
     <div class="container">
       <div class="manifesto">
         <div class="manifesto__index">ORION STAGE</div>
         <div class="manifesto__content">
-          <div class="eyebrow-luxury">
-            <span>★</span> NUESTRO PROPÓSITO
-          </div>
           <h2>¿Por qué nace Orión Stage?<br>Creamos Experiencias que Conectan.</h2>
           <p>
             Entendemos que detrás de cada empresa existen personas: colaboradores que trabajan juntos, superan desafíos y necesitan espacios para encontrarse, cuidarse y celebrar. Diseñamos y producimos experiencias de principio a fin, combinando creatividad, bienestar y tecnología escénica.
@@ -658,7 +761,7 @@ watch(() => route.hash, () => {
           </div>
         </div>
         <div class="manifesto__orb" aria-hidden="true">
-          <span></span>
+          <Galaxy3D />
         </div>
       </div>
     </div>
@@ -669,9 +772,6 @@ watch(() => route.hash, () => {
     <div class="container">
       <div class="row align-items-end g-4 mb-4">
         <div class="col-lg-7">
-          <div class="eyebrow-luxury">
-            <span>★</span> SOLUCIONES A TU MEDIDA
-          </div>
           <h2 class="display-5 fw-bold mb-0">Cada Escenario Tiene su Propia Magia.</h2>
         </div>
         <div class="col-lg-5">
@@ -705,9 +805,6 @@ watch(() => route.hash, () => {
   <section class="py-5" style="background: var(--section-alt-bg);">
     <div class="container">
       <div class="text-center max-w-700 mx-auto mb-5">
-        <div class="eyebrow-luxury justify-content-center">
-          <span>★</span> TESTIMONIOS REALES
-        </div>
         <h2 class="display-5 fw-bold mt-2">La Confianza de Quienes Crean con Nosotros.</h2>
         <p class="text-secondary mt-2" style="font-size: 15px;">
           Líderes de personas, productoras y empresas que confiaron en Orión Stage para sus momentos más importantes.
@@ -734,9 +831,6 @@ watch(() => route.hash, () => {
   <section v-if="fotosGaleria.length" class="py-5">
     <div class="container galeria-home-container">
       <div class="text-center mb-5">
-        <div class="eyebrow-luxury justify-content-center">
-          <span>★</span> PORTAFOLIO EN ACCIÓN
-        </div>
         <h2 class="display-5 fw-bold">Momentos en Vivo</h2>
         <p class="text-secondary small mt-2">Fotografías reales capturadas en conciertos, eventos corporativos y bodas producidas por Orion Stage</p>
       </div>
@@ -767,16 +861,13 @@ watch(() => route.hash, () => {
     </div>
   </section>
 
-  <!-- FORMULARIO DE COTIZACIÓN LUXURY BOX -->
+  <!-- FORMULARIO DE COTIZACIÓN LUXURY BOX (3 COLUMNAS ANCHO) -->
   <section id="cotizacion" class="py-5 cotiza-section">
-    <div class="container" style="max-width: 820px">
+    <div class="container" style="max-width: 1060px">
       <div class="cotiza-box">
         <div class="text-center mb-4">
-          <div class="eyebrow-luxury justify-content-center">
-            <span>★</span> COTIZACIÓN SIN COMPROMISO
-          </div>
           <h2 class="display-5 fw-bold mb-2">Hagamos Realidad tu Gran Experiencia.</h2>
-          <p class="text-secondary">Cuéntanos sobre tu fecha, cantidad de colaboradores y tipo de experiencia deseada. Diseñaremos una propuesta a tu medida en menos de 24 horas.</p>
+          <p class="text-secondary" style="max-width: 650px; margin: 0 auto;">Cuéntanos sobre tu fecha, cantidad de colaboradores y tipo de experiencia deseada. Diseñaremos una propuesta a tu medida en menos de 24 horas.</p>
         </div>
         <ContactForm />
       </div>

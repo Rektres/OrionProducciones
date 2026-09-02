@@ -36,7 +36,6 @@ onMounted(async () => {
 <template>
   <section class="pt-4 pb-2 text-center position-relative overflow-hidden">
     <div class="container position-relative" style="z-index: 1">
-      <p class="eyebrow justify-content-center"><span></span> SOLUCIONES INTEGRALES</p>
       <h1 class="display-4 fw-bold">CATÁLOGO DE SERVICIOS</h1>
       <p class="text-secondary" style="max-width: 600px; margin: 0 auto;">Equipamiento de audio, iluminación, visuales y montaje escénico de nivel profesional para todo tipo de eventos.</p>
     </div>

@@ -667,31 +667,132 @@ h1, h2, h3, h4, h5, .display-1, .display-2, .display-3, .display-4, .display-5, 
 .manifesto__orb {
   position: relative;
   z-index: 1;
-  width: min(28vw, 250px);
+  width: min(34vw, 300px);
   aspect-ratio: 1;
   justify-self: end;
   display: grid;
   place-items: center;
-  border: 1px solid var(--bs-border-color);
-  border-radius: 50%;
-  background: radial-gradient(circle at 38% 35%, rgba(197,168,128,0.3), rgba(34,211,238,0.15) 45%, transparent 70%);
 }
-.manifesto__orb::after {
-  content: '';
+
+/* ==========================================================================
+   3D COVER FLOW CAROUSEL
+   ========================================================================== */
+.coverflow-container {
+  position: relative;
+  width: 100%;
+  padding: 20px 0 10px;
+  overflow: visible;
+}
+
+.coverflow-stage {
+  position: relative;
+  width: 100%;
+  height: 480px;
+  perspective: 1200px;
+  perspective-origin: 50% 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.coverflow-card-wrap {
   position: absolute;
-  inset: 30%;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--orion-gold), var(--cyan));
-  box-shadow: 0 0 45px rgba(197,168,128,0.5);
+  width: min(88vw, 360px);
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1),
+              opacity 0.45s ease,
+              filter 0.45s ease,
+              box-shadow 0.45s ease;
+  user-select: none;
 }
-.manifesto__orb span {
+
+.coverflow-card-wrap.is-active {
+  cursor: default;
+  filter: none;
+}
+
+.coverflow-card-wrap:not(.is-active) {
+  filter: brightness(0.8);
+}
+
+.coverflow-card-wrap:not(.is-active):hover {
+  filter: brightness(1);
+}
+
+.coverflow-nav-btn {
   position: absolute;
-  inset: -14%;
-  border-top: 2px solid var(--orion-gold);
+  top: calc(50% - 15px);
+  transform: translateY(-50%);
+  z-index: 30;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  animation: orbit 8s linear infinite;
+  background: var(--card-surface);
+  border: 1px solid var(--card-border);
+  color: var(--bs-body-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: all 0.25s ease;
+  cursor: pointer;
 }
-@keyframes orbit { to { transform: rotate(360deg); } }
+
+.coverflow-nav-btn:hover {
+  background: var(--orion-gold);
+  color: #000;
+  border-color: var(--orion-gold);
+  box-shadow: 0 0 20px rgba(197, 168, 128, 0.5);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.coverflow-nav-btn--prev {
+  left: 8px;
+}
+
+.coverflow-nav-btn--next {
+  right: 8px;
+}
+
+.coverflow-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.coverflow-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--card-border);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.coverflow-dot.is-active {
+  width: 28px;
+  border-radius: 6px;
+  background: var(--orion-primary);
+  box-shadow: 0 0 10px rgba(19, 214, 234, 0.4);
+}
+
+@media (max-width: 768px) {
+  .coverflow-stage {
+    height: 450px;
+  }
+  .coverflow-card-wrap {
+    width: min(85vw, 320px);
+  }
+  .coverflow-nav-btn {
+    width: 40px;
+    height: 40px;
+  }
+}
 
 /* ==========================================================================
    TESTIMONIALS & TRUST CARDS

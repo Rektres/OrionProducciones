@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
-const numero = import.meta.env.VITE_WHATSAPP_NUMBER || '56944830378';
+const numero = import.meta.env.VITE_WHATSAPP_NUMBER || '56998249498';
 const whatsappUrl = `https://wa.me/${numero}`;
 const instagramUrl = import.meta.env.VITE_INSTAGRAM_URL || 'https://instagram.com';
 const linkedinUrl = import.meta.env.VITE_LINKEDIN_URL || 'https://linkedin.com';

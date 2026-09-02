@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const email = import.meta.env.VITE_CONTACT_EMAIL || '';
-const numero = import.meta.env.VITE_WHATSAPP_NUMBER || '56944830378';
+const numero = import.meta.env.VITE_WHATSAPP_NUMBER || '56998249498';
 </script>
 
 <template>

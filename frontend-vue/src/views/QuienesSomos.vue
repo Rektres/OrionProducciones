@@ -166,9 +166,6 @@ const pilaresProduccion = [
 
     <div class="container position-relative py-2" style="z-index: 2">
       <FadeInUp>
-        <div class="eyebrow-luxury justify-content-center mb-3">
-          <span>★</span> NUESTRO PROPÓSITO & FILOSOFÍA
-        </div>
         <h1 class="display-4 fw-bold hero-title-giant mb-3">
           <span>NO ORGANIZAMOS SOLO EVENTOS.</span><br />
           <span class="highlight-gold">CREAMOS EXPERIENCIAS</span><br />
@@ -196,9 +193,6 @@ const pilaresProduccion = [
     <div class="container" style="max-width: 960px">
       <div class="row align-items-center g-5">
         <div class="col-lg-12">
-          <div class="eyebrow-luxury mb-2">
-            <span>★</span> ¿POR QUÉ NACE ORIÓN STAGE?
-          </div>
           <h2 class="display-5 fw-bold mb-4">Nacemos para hacer las cosas de una manera diferente.</h2>
           
           <div class="text-secondary" style="font-size: 15.5px; line-height: 1.8;">
@@ -221,9 +215,6 @@ const pilaresProduccion = [
   <section id="mundos" class="py-5" style="background: var(--section-alt-bg);">
     <div class="container">
       <div class="text-center max-w-700 mx-auto mb-5">
-        <div class="eyebrow-luxury justify-content-center">
-          <span>★</span> LÍNEAS DE EXPERIENCIAS
-        </div>
         <h2 class="display-5 fw-bold mt-2">Mundos de Experiencia Orión Stage</h2>
         <p class="text-secondary mt-2" style="font-size: 15px;">
           Propuestas especializadas para acompañar a las organizaciones en los momentos clave de su vida corporativa durante todo el año.
@@ -268,9 +259,6 @@ const pilaresProduccion = [
   <section class="py-5">
     <div class="container">
       <div class="text-center max-w-700 mx-auto mb-5">
-        <div class="eyebrow-luxury justify-content-center">
-          <span>★</span> NUESTRO EQUIPO
-        </div>
         <h2 class="display-5 fw-bold mt-2">El Equipo Detrás de Cada Escenario</h2>
         <p class="text-secondary mt-2" style="font-size: 15px;">
           Profesionales apasionados por el detalle, la ingeniería escénica y la gestión humana para transformar cada evento en una experiencia inolvidable.
@@ -313,9 +301,6 @@ const pilaresProduccion = [
       <div class="cultural-law-card">
         <div class="row align-items-center g-5">
           <div class="col-lg-7">
-            <div class="eyebrow-luxury mb-2">
-              <span>★</span> PRODUCCIÓN TÉCNICA & EJECUTIVA 360°
-            </div>
             <h2 class="display-6 fw-bold mb-3">Nos encargamos de hacerlo realidad.</h2>
             <p class="text-secondary mb-4" style="font-size: 15px; line-height: 1.8;">
               Detrás de cada experiencia existe una producción rigurosa: planificación, recintos, logística, ambientación, entretención, catering, actividades deportivas, artistas, fotografía y coordinación en terreno.
@@ -351,9 +336,6 @@ const pilaresProduccion = [
   <section class="py-5">
     <div class="container">
       <div class="text-center max-w-700 mx-auto mb-5">
-        <div class="eyebrow-luxury justify-content-center">
-          <span>★</span> NUESTRO PROPÓSITO
-        </div>
         <h2 class="display-5 fw-bold mt-2">Construir Cultura y Fortalecer Vínculos.</h2>
         <p class="text-secondary mt-2" style="font-size: 15px;">
           Porque creemos que cuando una empresa crea experiencias significativas para sus colaboradores, no está simplemente realizando una actividad: está creando recuerdos que permanecen.

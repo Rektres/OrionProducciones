@@ -33,7 +33,6 @@ onMounted(async () => {
 <template>
   <section class="pt-4 pb-2 text-center position-relative overflow-hidden">
     <div class="container position-relative" style="z-index: 1">
-      <p class="eyebrow justify-content-center"><span></span> CASOS DE ÉXITO</p>
       <h1 class="display-4 fw-bold">PORTAFOLIO DE EVENTOS</h1>
       <p class="text-secondary" style="max-width: 600px; margin: 0 auto;">
         Explora nuestros montajes en vivo, festivales, bodas de alta gama y experiencias corporativas producidas en todo Chile.

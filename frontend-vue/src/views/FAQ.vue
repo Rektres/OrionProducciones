@@ -53,7 +53,6 @@ onBeforeUnmount(() => {
 <template>
   <section class="pt-4 pb-2 text-center position-relative overflow-hidden">
     <div class="container position-relative" style="z-index: 1">
-      <p class="eyebrow justify-content-center"><span></span> AYUDA Y RESPUESTAS</p>
       <h1 class="display-4 fw-bold">PREGUNTAS FRECUENTES</h1>
       <p class="text-secondary" style="max-width: 600px; margin: 0 auto;">Todo lo que necesitas saber sobre nuestra logística, tecnología de sonido, iluminación y proceso de contratación.</p>
     </div>

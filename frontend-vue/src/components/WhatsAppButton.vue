@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-const numero = import.meta.env.VITE_WHATSAPP_NUMBER || '56944830378';
+const numero = import.meta.env.VITE_WHATSAPP_NUMBER || '56998249498';
 const url = `https://wa.me/${numero}?text=Hola,%20quisiera%20cotizar%20un%20evento%20con%20Orion%20Stage`;
 
 const visible = ref(true);
