@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { adminServiciosService } from '@/services/adminServicios';
 import ImagenUpload from '@/components/admin/ImagenUpload.vue';
 import type { CategoriaServicio, Servicio, ServicioInput } from '@/types';
@@ -12,7 +12,7 @@ const guardando = ref(false);
 const error = ref('');
 const guardadoOk = ref(false);
 const busqueda = ref('');
-const formEl = ref<HTMLElement | null>(null);
+const vista = ref<'cards' | 'lista'>('cards');
 
 const mostrarCategorias = ref(false);
 const nuevaCategoriaNombre = ref('');
@@ -45,23 +45,15 @@ const cargar = async () => {
 
 onMounted(cargar);
 
-// Al abrir/editar, el formulario aparece arriba del listado: hacemos scroll
-// para que no quede fuera de vista al hacer click en una tarjeta.
-const enfocarForm = async () => {
-  await nextTick();
-  formEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-};
-
-const nuevo = async () => {
+const nuevo = () => {
   Object.assign(form, formVacio());
   editandoId.value = null;
   mostrarForm.value = true;
   error.value = '';
   guardadoOk.value = false;
-  await enfocarForm();
 };
 
-const editar = async (s: Servicio) => {
+const editar = (s: Servicio) => {
   Object.assign(form, {
     nombre: s.nombre,
     categoria: s.categoria,
@@ -75,7 +67,6 @@ const editar = async (s: Servicio) => {
   mostrarForm.value = true;
   error.value = '';
   guardadoOk.value = false;
-  await enfocarForm();
 };
 
 const cancelar = () => {
@@ -158,9 +149,32 @@ const eliminarCategoria = async (c: CategoriaServicio) => {
       <h4 class="mb-0">Servicios</h4>
       <small class="text-secondary">{{ servicios.length }} en total</small>
     </div>
-    <div class="d-flex gap-2 flex-wrap">
+    <div class="d-flex gap-2 flex-wrap align-items-center">
       <input v-model="busqueda" type="search" class="form-control form-control-sm admin-toolbar-search"
         placeholder="Buscar por nombre o categoría..." />
+      
+      <!-- Toggle Vista Cards / Lista -->
+      <div class="btn-group btn-group-sm" role="group" aria-label="Cambiar vista">
+        <button
+          type="button"
+          class="btn"
+          :class="vista === 'cards' ? 'btn-primary' : 'btn-outline-secondary'"
+          title="Vista en tarjetas"
+          @click="vista = 'cards'"
+        >
+          ⊞ Tarjetas
+        </button>
+        <button
+          type="button"
+          class="btn"
+          :class="vista === 'lista' ? 'btn-primary' : 'btn-outline-secondary'"
+          title="Vista en lista"
+          @click="vista = 'lista'"
+        >
+          ☰ Lista
+        </button>
+      </div>
+
       <button type="button" class="btn btn-orion btn-sm" @click="nuevo">+ Nuevo servicio</button>
     </div>
   </div>
@@ -188,71 +202,86 @@ const eliminarCategoria = async (c: CategoriaServicio) => {
     </div>
   </div>
 
-  <div v-if="mostrarForm" ref="formEl" class="card admin-card p-4 mb-4">
-    <div class="d-flex justify-content-between align-items-start mb-3">
-      <h5 class="mb-0">{{ editandoId ? 'Editar servicio' : 'Nuevo servicio' }}</h5>
-      <button type="button" class="btn-close" aria-label="Cerrar" @click="cancelar"></button>
+  <!-- MODAL DE CREACIÓN / EDICIÓN DE SERVICIO -->
+  <div
+    v-if="mostrarForm"
+    class="modal fade show d-block"
+    tabindex="-1"
+    style="background: rgba(0, 0, 0, 0.75); z-index: 1060;"
+    @click.self="cancelar"
+  >
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content admin-card">
+        <div class="modal-header border-bottom border-secondary border-opacity-25 pb-3">
+          <h5 class="modal-title mb-0">{{ editandoId ? 'Editar servicio' : 'Nuevo servicio' }}</h5>
+          <button type="button" class="btn-close" aria-label="Cerrar" @click="cancelar"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="formServicioModal" class="row g-3" @submit.prevent="guardar">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Nombre *</label>
+              <input v-model="form.nombre" type="text" required class="form-control" placeholder="Ej: Iluminación Robótica & Láser" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Categoría</label>
+              <select v-model="form.categoria" class="form-select">
+                <option :value="null">Sin categoría</option>
+                <option v-for="c in categorias" :key="c.id" :value="c.id">{{ c.nombre }}</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Descripción corta *</label>
+              <textarea v-model="form.descripcion_corta" required rows="2" class="form-control" placeholder="Resumen breve para tarjetas y modales públicos..."></textarea>
+              <div class="form-text">Es la que se muestra en el modal del sitio público.</div>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Descripción larga *</label>
+              <textarea v-model="form.descripcion_larga" required rows="4" class="form-control" placeholder="Detalle técnico completo y equipamiento incluido..."></textarea>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Orden de aparición</label>
+              <input v-model.number="form.orden" type="number" class="form-control" />
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <div class="form-check pb-2">
+                <input v-model="form.activo" type="checkbox" class="form-check-input" id="servicioActivo" />
+                <label class="form-check-label fw-semibold" for="servicioActivo">Visible en el sitio</label>
+              </div>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Ícono (SVG inline opcional)</label>
+              <textarea v-model="form.icono_svg" rows="2" class="form-control" placeholder="<svg ...>...</svg>"></textarea>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold">Imagen</label>
+              <div v-if="!editandoId" class="text-secondary small p-2 rounded bg-dark bg-opacity-25">
+                ℹ Guarda los datos del servicio primero para habilitar la carga de imagen.
+              </div>
+              <ImagenUpload v-else :imagen-url="servicioActual()?.imagen_url ?? null"
+                @subir="subirImagen" @quitar="quitarImagen" />
+            </div>
+
+            <div v-if="error" class="col-12"><div class="alert alert-danger py-2 mb-0">{{ error }}</div></div>
+          </form>
+        </div>
+        <div class="modal-footer border-top border-secondary border-opacity-25 d-flex justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <span v-if="guardadoOk" class="text-success small fw-bold">✓ Cambios guardados correctamente</span>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary" @click="cancelar">Cancelar</button>
+            <button type="submit" form="formServicioModal" class="btn btn-orion" :disabled="guardando">
+              {{ guardando ? 'Guardando...' : 'Guardar Servicio' }}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-    <form class="row g-3" @submit.prevent="guardar">
-      <div class="col-md-6">
-        <label class="form-label">Nombre *</label>
-        <input v-model="form.nombre" type="text" required class="form-control" />
-      </div>
-      <div class="col-md-6">
-        <label class="form-label">Categoría</label>
-        <select v-model="form.categoria" class="form-select">
-          <option :value="null">Sin categoría</option>
-          <option v-for="c in categorias" :key="c.id" :value="c.id">{{ c.nombre }}</option>
-        </select>
-      </div>
-      <div class="col-12">
-        <label class="form-label">Descripción corta *</label>
-        <textarea v-model="form.descripcion_corta" required rows="2" class="form-control"></textarea>
-        <div class="form-text">Es la que se muestra en el modal del sitio público.</div>
-      </div>
-      <div class="col-12">
-        <label class="form-label">Descripción larga *</label>
-        <textarea v-model="form.descripcion_larga" required rows="4" class="form-control"></textarea>
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Orden</label>
-        <input v-model.number="form.orden" type="number" class="form-control" />
-      </div>
-      <div class="col-md-3 d-flex align-items-end">
-        <div class="form-check">
-          <input v-model="form.activo" type="checkbox" class="form-check-input" id="servicioActivo" />
-          <label class="form-check-label" for="servicioActivo">Visible en el sitio</label>
-        </div>
-      </div>
-      <div class="col-12">
-        <label class="form-label">Ícono (SVG)</label>
-        <textarea v-model="form.icono_svg" rows="2" class="form-control"></textarea>
-      </div>
-
-      <div class="col-12">
-        <label class="form-label">Imagen</label>
-        <div v-if="!editandoId" class="text-secondary small">
-          Guarda el servicio primero y aquí podrás subir su imagen.
-        </div>
-        <ImagenUpload v-else :imagen-url="servicioActual()?.imagen_url ?? null"
-          @subir="subirImagen" @quitar="quitarImagen" />
-      </div>
-
-      <div v-if="error" class="col-12"><div class="alert alert-danger py-2 mb-0">{{ error }}</div></div>
-
-      <div class="col-12">
-        <div class="admin-form-actions d-flex align-items-center gap-2">
-          <button type="submit" class="btn btn-orion" :disabled="guardando">
-            {{ guardando ? 'Guardando...' : 'Guardar' }}
-          </button>
-          <button type="button" class="btn btn-outline-secondary" @click="cancelar">Cerrar</button>
-          <span v-if="guardadoOk" class="text-success small ms-1">✓ Cambios guardados</span>
-        </div>
-      </div>
-    </form>
   </div>
 
-  <div class="row g-3">
+  <!-- VISTA 1: EN TARJETAS (CARDS) -->
+  <div v-if="vista === 'cards'" class="row g-3">
     <div v-for="s in filtrados" :key="s.id" class="col-sm-6 col-lg-4 col-xl-3">
       <div class="card h-100 admin-card admin-card-clickable hover-scale" @click="editar(s)">
         <div class="admin-thumb" :style="s.imagen_url ? { backgroundImage: `url('${s.imagen_url}')` } : {}"></div>
@@ -271,5 +300,63 @@ const eliminarCategoria = async (c: CategoriaServicio) => {
     </div>
     <div v-if="!servicios.length" class="col-12 text-secondary">Sin servicios todavía. Crea el primero con “+ Nuevo servicio”.</div>
     <div v-else-if="!filtrados.length" class="col-12 text-secondary">Ningún servicio coincide con “{{ busqueda }}”.</div>
+  </div>
+
+  <!-- VISTA 2: EN LISTA (TABLA) -->
+  <div v-else class="card admin-card overflow-hidden">
+    <div class="table-responsive mb-0">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th style="width: 60px;">Imagen</th>
+            <th>Nombre del Servicio</th>
+            <th>Categoría</th>
+            <th style="width: 100px;">Orden</th>
+            <th style="width: 110px;">Estado</th>
+            <th style="width: 150px;" class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="s in filtrados" :key="s.id" class="admin-card-clickable" @click="editar(s)">
+            <td>
+              <img
+                v-if="s.imagen_url"
+                :src="s.imagen_url"
+                :alt="s.nombre"
+                class="rounded"
+                style="width: 44px; height: 44px; object-fit: cover;"
+              />
+              <div v-else class="rounded bg-secondary bg-opacity-25 d-flex align-items-center justify-content-center text-secondary small" style="width: 44px; height: 44px;">
+                -
+              </div>
+            </td>
+            <td>
+              <div class="fw-semibold">{{ s.nombre }}</div>
+              <small class="text-secondary text-truncate d-block" style="max-width: 320px;">{{ s.descripcion_corta }}</small>
+            </td>
+            <td>
+              <span class="badge bg-secondary bg-opacity-25 text-body text-uppercase" style="font-size: 10px;">
+                {{ s.categoria_slug || 'Sin categoría' }}
+              </span>
+            </td>
+            <td>{{ s.orden }}</td>
+            <td>
+              <span class="badge" :class="s.activo ? 'bg-success bg-opacity-25 text-success' : 'bg-secondary bg-opacity-25 text-secondary'">
+                {{ s.activo ? 'Visible' : 'Oculto' }}
+              </span>
+            </td>
+            <td class="text-end">
+              <button type="button" class="btn btn-outline-secondary btn-sm me-2" @click.stop="editar(s)">Editar</button>
+              <button type="button" class="btn btn-outline-danger btn-sm" @click.stop="eliminar(s)">Eliminar</button>
+            </td>
+          </tr>
+          <tr v-if="!filtrados.length">
+            <td colspan="6" class="text-center py-4 text-secondary">
+              {{ servicios.length ? `Ningún servicio coincide con "${busqueda}".` : 'Sin servicios registrados.' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>

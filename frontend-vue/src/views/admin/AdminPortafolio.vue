@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { adminPortafolioService } from '@/services/adminPortafolio';
 import ImagenUpload from '@/components/admin/ImagenUpload.vue';
 import type { Evento, EventoInput, EventoTipo, FotoEvento } from '@/types';
@@ -12,7 +12,7 @@ const guardando = ref(false);
 const error = ref('');
 const guardadoOk = ref(false);
 const busqueda = ref('');
-const formEl = ref<HTMLElement | null>(null);
+const vista = ref<'cards' | 'lista'>('cards');
 
 const fotos = ref<FotoEvento[]>([]);
 const subiendoFoto = ref(false);
@@ -59,29 +59,21 @@ const cargarFotos = async (eventoId: string) => {
   fotos.value = await adminPortafolioService.listarFotos(eventoId);
 };
 
-const enfocarForm = async () => {
-  await nextTick();
-  formEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-};
-
 const slugify = (texto: string) =>
   texto.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
-// Comodidad: al crear, el slug se sugiere solo desde el nombre. Al editar no
-// se toca, para no romper URLs ya publicadas.
 const onNombreInput = () => {
   if (!editandoId.value) form.slug = slugify(form.nombre);
 };
 
-const nuevo = async () => {
+const nuevo = () => {
   Object.assign(form, formVacio());
   editandoId.value = null;
   fotos.value = [];
   mostrarForm.value = true;
   error.value = '';
   guardadoOk.value = false;
-  await enfocarForm();
 };
 
 const editar = async (ev: Evento) => {
@@ -104,7 +96,6 @@ const editar = async (ev: Evento) => {
   error.value = '';
   guardadoOk.value = false;
   await cargarFotos(ev.id);
-  await enfocarForm();
 };
 
 const cancelar = () => {
@@ -171,7 +162,6 @@ const agregarFoto = async (e: Event) => {
   if (!archivos.length) return;
   subiendoFoto.value = true;
   try {
-    // Carga multiple: permite seleccionar varias fotos de una vez.
     for (const archivo of archivos) {
       await adminPortafolioService.agregarFoto(editandoId.value, archivo);
     }
@@ -211,9 +201,32 @@ const eliminarTipo = async (t: EventoTipo) => {
       <h4 class="mb-0">Portafolio</h4>
       <small class="text-secondary">{{ eventos.length }} eventos</small>
     </div>
-    <div class="d-flex gap-2 flex-wrap">
+    <div class="d-flex gap-2 flex-wrap align-items-center">
       <input v-model="busqueda" type="search" class="form-control form-control-sm admin-toolbar-search"
         placeholder="Buscar por nombre, cliente o tipo..." />
+
+      <!-- Toggle Vista Cards / Lista -->
+      <div class="btn-group btn-group-sm" role="group" aria-label="Cambiar vista">
+        <button
+          type="button"
+          class="btn"
+          :class="vista === 'cards' ? 'btn-primary' : 'btn-outline-secondary'"
+          title="Vista en tarjetas"
+          @click="vista = 'cards'"
+        >
+          ⊞ Tarjetas
+        </button>
+        <button
+          type="button"
+          class="btn"
+          :class="vista === 'lista' ? 'btn-primary' : 'btn-outline-secondary'"
+          title="Vista en lista"
+          @click="vista = 'lista'"
+        >
+          ☰ Lista
+        </button>
+      </div>
+
       <button type="button" class="btn btn-orion btn-sm" @click="nuevo">+ Nuevo evento</button>
     </div>
   </div>
@@ -241,111 +254,126 @@ const eliminarTipo = async (t: EventoTipo) => {
     </div>
   </div>
 
-  <div v-if="mostrarForm" ref="formEl" class="card admin-card p-4 mb-4">
-    <div class="d-flex justify-content-between align-items-start mb-3">
-      <h5 class="mb-0">{{ editandoId ? 'Editar evento' : 'Nuevo evento' }}</h5>
-      <button type="button" class="btn-close" aria-label="Cerrar" @click="cancelar"></button>
-    </div>
-    <form class="row g-3" @submit.prevent="guardar">
-      <div class="col-md-6">
-        <label class="form-label">Nombre *</label>
-        <input v-model="form.nombre" type="text" required class="form-control" @input="onNombreInput" />
-      </div>
-      <div class="col-md-6">
-        <label class="form-label">Slug (URL) *</label>
-        <input v-model="form.slug" type="text" required class="form-control" />
-        <div class="form-text">{{ editandoId ? 'Cambiarlo altera la URL pública del evento.' : 'Se sugiere solo desde el nombre.' }}</div>
-      </div>
-      <div class="col-md-6">
-        <label class="form-label">Tipo</label>
-        <select v-model="form.tipo" class="form-select">
-          <option :value="null">Sin tipo</option>
-          <option v-for="t in tipos" :key="t.id" :value="t.id">{{ t.nombre }}</option>
-        </select>
-      </div>
-      <div class="col-md-6">
-        <label class="form-label">Cliente *</label>
-        <input v-model="form.cliente" type="text" required class="form-control" />
-      </div>
-      <div class="col-12">
-        <label class="form-label">Descripción corta *</label>
-        <textarea v-model="form.descripcion_corta" required rows="2" class="form-control"></textarea>
-      </div>
-      <div class="col-12">
-        <label class="form-label">Descripción larga *</label>
-        <textarea v-model="form.descripcion_larga" required rows="4" class="form-control"></textarea>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Fecha de realización *</label>
-        <input v-model="form.fecha_realizacion" type="date" required class="form-control" />
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Lugar *</label>
-        <input v-model="form.lugar" type="text" required class="form-control" />
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Asistentes</label>
-        <input v-model.number="form.asistentes" type="number" class="form-control" />
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Orden</label>
-        <input v-model.number="form.orden" type="number" class="form-control" />
-      </div>
-      <div class="col-md-3 d-flex align-items-end">
-        <div class="form-check">
-          <input v-model="form.destacado" type="checkbox" class="form-check-input" id="eventoDestacado" />
-          <label class="form-check-label" for="eventoDestacado">Destacado en portada</label>
+  <!-- MODAL DE CREACIÓN / EDICIÓN DE EVENTO -->
+  <div
+    v-if="mostrarForm"
+    class="modal fade show d-block"
+    tabindex="-1"
+    style="background: rgba(0, 0, 0, 0.75); z-index: 1060;"
+    @click.self="cancelar"
+  >
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content admin-card">
+        <div class="modal-header border-bottom border-secondary border-opacity-25 pb-3">
+          <h5 class="modal-title mb-0">{{ editandoId ? 'Editar evento' : 'Nuevo evento' }}</h5>
+          <button type="button" class="btn-close" aria-label="Cerrar" @click="cancelar"></button>
         </div>
-      </div>
-      <div class="col-md-3 d-flex align-items-end">
-        <div class="form-check">
-          <input v-model="form.publicado" type="checkbox" class="form-check-input" id="eventoPublicado" />
-          <label class="form-check-label" for="eventoPublicado">Visible en el sitio</label>
-        </div>
-      </div>
+        <div class="modal-body p-4">
+          <form id="formEventoModal" class="row g-3" @submit.prevent="guardar">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Nombre *</label>
+              <input v-model="form.nombre" type="text" required class="form-control" placeholder="Ej: Aniversario BCI 2026" @input="onNombreInput" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Slug (URL) *</label>
+              <input v-model="form.slug" type="text" required class="form-control" />
+              <div class="form-text">{{ editandoId ? 'Cambiarlo altera la URL pública del evento.' : 'Se sugiere solo desde el nombre.' }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Tipo</label>
+              <select v-model="form.tipo" class="form-select">
+                <option :value="null">Sin tipo</option>
+                <option v-for="t in tipos" :key="t.id" :value="t.id">{{ t.nombre }}</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Cliente *</label>
+              <input v-model="form.cliente" type="text" required class="form-control" placeholder="Ej: Banco BCI" />
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Descripción corta *</label>
+              <textarea v-model="form.descripcion_corta" required rows="2" class="form-control" placeholder="Resumen para tarjetas y vistas previas..."></textarea>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Descripción larga *</label>
+              <textarea v-model="form.descripcion_larga" required rows="4" class="form-control" placeholder="Detalle exhaustivo de la producción, montaje y experiencia..."></textarea>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Fecha de realización *</label>
+              <input v-model="form.fecha_realizacion" type="date" required class="form-control" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Lugar / Recinto *</label>
+              <input v-model="form.lugar" type="text" required class="form-control" placeholder="Ej: Espacio Riesco, Santiago" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Cantidad de Asistentes</label>
+              <input v-model.number="form.asistentes" type="number" class="form-control" placeholder="Ej: 1500" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Orden de aparición</label>
+              <input v-model.number="form.orden" type="number" class="form-control" />
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <div class="form-check pb-2">
+                <input v-model="form.destacado" type="checkbox" class="form-check-input" id="eventoDestacado" />
+                <label class="form-check-label fw-semibold" for="eventoDestacado">Destacado en portada</label>
+              </div>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <div class="form-check pb-2">
+                <input v-model="form.publicado" type="checkbox" class="form-check-input" id="eventoPublicado" />
+                <label class="form-check-label fw-semibold" for="eventoPublicado">Visible en el sitio</label>
+              </div>
+            </div>
 
-      <div class="col-12">
-        <label class="form-label">Imagen destacada</label>
-        <div v-if="!editandoId" class="text-secondary small">
-          Guarda el evento primero y aquí podrás subir su imagen.
-        </div>
-        <ImagenUpload v-else :imagen-url="eventoActual()?.imagen_url ?? null"
-          @subir="subirImagen" @quitar="quitarImagen" />
-      </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Imagen destacada</label>
+              <div v-if="!editandoId" class="text-secondary small p-2 rounded bg-dark bg-opacity-25">
+                ℹ Guarda los datos del evento primero para habilitar la carga de la imagen principal.
+              </div>
+              <ImagenUpload v-else :imagen-url="eventoActual()?.imagen_url ?? null"
+                @subir="subirImagen" @quitar="quitarImagen" />
+            </div>
 
-      <div v-if="editandoId" class="col-12">
-        <label class="form-label">Galería <span class="text-secondary fw-normal">({{ fotos.length }} fotos)</span></label>
-        <div v-if="fotos.length" class="d-flex flex-wrap gap-3 mb-2">
-          <div v-for="f in fotos" :key="f.id" class="position-relative">
-            <div class="card-cover rounded" style="height: 6rem; width: 6rem"
-              :style="f.imagen_url ? { backgroundImage: `url('${f.imagen_url}')` } : {}"></div>
-            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 py-0 px-1"
-              title="Eliminar foto" @click="eliminarFoto(f)">×</button>
+            <div v-if="editandoId" class="col-12">
+              <label class="form-label fw-semibold">Galería de Fotos <span class="text-secondary fw-normal">({{ fotos.length }} fotos)</span></label>
+              <div v-if="fotos.length" class="d-flex flex-wrap gap-3 mb-2">
+                <div v-for="f in fotos" :key="f.id" class="position-relative">
+                  <div class="card-cover rounded" style="height: 6rem; width: 6rem"
+                    :style="f.imagen_url ? { backgroundImage: `url('${f.imagen_url}')` } : {}"></div>
+                  <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 py-0 px-1"
+                    title="Eliminar foto" @click="eliminarFoto(f)">×</button>
+                </div>
+              </div>
+              <div v-else class="text-secondary small mb-2">Sin fotos en la galería todavía.</div>
+              <input type="file" multiple accept="image/png,image/jpeg,image/webp,image/gif"
+                class="form-control form-control-sm" :disabled="subiendoFoto" @change="agregarFoto" />
+              <div class="form-text">
+                {{ subiendoFoto ? 'Subiendo fotos...' : 'Puedes seleccionar varias fotos a la vez.' }}
+              </div>
+            </div>
+
+            <div v-if="error" class="col-12"><div class="alert alert-danger py-2 mb-0">{{ error }}</div></div>
+          </form>
+        </div>
+        <div class="modal-footer border-top border-secondary border-opacity-25 d-flex justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <span v-if="guardadoOk" class="text-success small fw-bold">✓ Cambios guardados correctamente</span>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary" @click="cancelar">Cancelar</button>
+            <button type="submit" form="formEventoModal" class="btn btn-orion" :disabled="guardando">
+              {{ guardando ? 'Guardando...' : 'Guardar Evento' }}
+            </button>
           </div>
         </div>
-        <div v-else class="text-secondary small mb-2">Sin fotos en la galería todavía.</div>
-        <input type="file" multiple accept="image/png,image/jpeg,image/webp,image/gif"
-          class="form-control form-control-sm" :disabled="subiendoFoto" @change="agregarFoto" />
-        <div class="form-text">
-          {{ subiendoFoto ? 'Subiendo fotos...' : 'Puedes seleccionar varias fotos a la vez.' }}
-        </div>
       </div>
-
-      <div v-if="error" class="col-12"><div class="alert alert-danger py-2 mb-0">{{ error }}</div></div>
-
-      <div class="col-12">
-        <div class="admin-form-actions d-flex align-items-center gap-2">
-          <button type="submit" class="btn btn-orion" :disabled="guardando">
-            {{ guardando ? 'Guardando...' : 'Guardar' }}
-          </button>
-          <button type="button" class="btn btn-outline-secondary" @click="cancelar">Cerrar</button>
-          <span v-if="guardadoOk" class="text-success small ms-1">✓ Cambios guardados</span>
-        </div>
-      </div>
-    </form>
+    </div>
   </div>
 
-  <div class="row g-3">
+  <!-- VISTA 1: EN TARJETAS (CARDS) -->
+  <div v-if="vista === 'cards'" class="row g-3">
     <div v-for="ev in filtrados" :key="ev.id" class="col-sm-6 col-lg-4 col-xl-3">
       <div class="card h-100 admin-card admin-card-clickable hover-scale" @click="editar(ev)">
         <div class="admin-thumb" :style="ev.imagen_url ? { backgroundImage: `url('${ev.imagen_url}')` } : {}"></div>
@@ -367,5 +395,71 @@ const eliminarTipo = async (t: EventoTipo) => {
     </div>
     <div v-if="!eventos.length" class="col-12 text-secondary">Sin eventos todavía. Crea el primero con “+ Nuevo evento”.</div>
     <div v-else-if="!filtrados.length" class="col-12 text-secondary">Ningún evento coincide con “{{ busqueda }}”.</div>
+  </div>
+
+  <!-- VISTA 2: EN LISTA (TABLA) -->
+  <div v-else class="card admin-card overflow-hidden">
+    <div class="table-responsive mb-0">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th style="width: 60px;">Imagen</th>
+            <th>Nombre del Evento</th>
+            <th>Cliente & Fecha</th>
+            <th>Tipo</th>
+            <th style="width: 90px;">Destacado</th>
+            <th style="width: 100px;">Estado</th>
+            <th style="width: 150px;" class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="ev in filtrados" :key="ev.id" class="admin-card-clickable" @click="editar(ev)">
+            <td>
+              <img
+                v-if="ev.imagen_url"
+                :src="ev.imagen_url"
+                :alt="ev.nombre"
+                class="rounded"
+                style="width: 44px; height: 44px; object-fit: cover;"
+              />
+              <div v-else class="rounded bg-secondary bg-opacity-25 d-flex align-items-center justify-content-center text-secondary small" style="width: 44px; height: 44px;">
+                -
+              </div>
+            </td>
+            <td>
+              <div class="fw-semibold">{{ ev.nombre }}</div>
+              <small class="text-secondary">{{ ev.lugar }}</small>
+            </td>
+            <td>
+              <div>{{ ev.cliente }}</div>
+              <small class="text-secondary">{{ ev.fecha_realizacion }}</small>
+            </td>
+            <td>
+              <span class="badge bg-secondary bg-opacity-25 text-body text-uppercase" style="font-size: 10px;">
+                {{ ev.tipo_slug || 'Sin tipo' }}
+              </span>
+            </td>
+            <td>
+              <span v-if="ev.destacado" class="badge bg-primary bg-opacity-25 text-primary">★ Sí</span>
+              <span v-else class="text-secondary small">No</span>
+            </td>
+            <td>
+              <span class="badge" :class="ev.publicado ? 'bg-success bg-opacity-25 text-success' : 'bg-secondary bg-opacity-25 text-secondary'">
+                {{ ev.publicado ? 'Visible' : 'Oculto' }}
+              </span>
+            </td>
+            <td class="text-end">
+              <button type="button" class="btn btn-outline-secondary btn-sm me-2" @click.stop="editar(ev)">Editar</button>
+              <button type="button" class="btn btn-outline-danger btn-sm" @click.stop="eliminar(ev)">Eliminar</button>
+            </td>
+          </tr>
+          <tr v-if="!filtrados.length">
+            <td colspan="7" class="text-center py-4 text-secondary">
+              {{ eventos.length ? `Ningún evento coincide con "${busqueda}".` : 'Sin eventos registrados.' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>

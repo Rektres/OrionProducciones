@@ -84,11 +84,26 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 class CotizacionSerializer(serializers.ModelSerializer):
-    # El modelo guarda el email como TextField, asi que sin esto DRF no valida el
-    # formato y entraria cualquier string al buzon de cotizaciones.
     email = serializers.EmailField()
+    fecha_estimada = serializers.DateField(required=False, allow_null=True)
+    telefono = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    empresa = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    presupuesto_estimado = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
     class Meta:
         model = Cotizacion
         fields = '__all__'
         read_only_fields = ('id', 'estado', 'created_at')
+
+    def to_internal_value(self, data):
+        if isinstance(data, dict):
+            data = data.copy()
+            if data.get('fecha_estimada') == '':
+                data['fecha_estimada'] = None
+            if data.get('empresa') == '':
+                data['empresa'] = None
+            if data.get('telefono') == '':
+                data['telefono'] = None
+            if data.get('presupuesto_estimado') == '':
+                data['presupuesto_estimado'] = None
+        return super().to_internal_value(data)

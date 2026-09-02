@@ -127,14 +127,14 @@ const enviarCotizacionCampana = async () => {
   try {
     const descFinal = `[SOLICITUD DE CAMPAÑA: ${campana.value?.mundo} - ${campana.value?.titulo}]\n\n${form.mensaje}`;
     await contactoService.crearCotizacion({
-      nombre: form.nombre,
-      email: form.email,
-      telefono: form.telefono,
-      empresa: '',
+      nombre: form.nombre.trim(),
+      email: form.email.trim(),
+      telefono: form.telefono.trim() || undefined,
+      empresa: undefined,
       tipo_evento: 'corporativo',
       descripcion: descFinal,
-      fecha_estimada: '',
-      presupuesto_estimado: '',
+      fecha_estimada: undefined,
+      presupuesto_estimado: undefined,
     });
 
     registrarEvento('cotizacion_enviada', { tipo_evento: 'campana', campana: campana.value?.titulo });

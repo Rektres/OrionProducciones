@@ -26,7 +26,9 @@ const secciones = [
           class="nav-link d-inline px-1" active-class="text-orion-primary fw-semibold">
           {{ s.label }}
         </RouterLink>
-        <RouterLink to="/" class="nav-link d-inline px-1" title="Ver el sitio público">Ver sitio</RouterLink>
+        <a href="/" target="_blank" rel="noopener noreferrer" class="nav-link d-inline px-1" title="Ver el sitio público en nueva pestaña">
+          Ver sitio <span style="font-size: 11px;">↗</span>
+        </a>
         <ThemeToggle />
         <button type="button" class="btn btn-outline-secondary btn-sm" @click="salir">Salir</button>
       </div>

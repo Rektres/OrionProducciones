@@ -28,50 +28,50 @@ const eventosDestacados = ref<Evento[]>([]);
 const cargando = ref(true);
 const filtroCategoria = ref<string>('todos');
 
-const coverIndex = ref(0);
-const prevCover = () => {
-  if (serviciosFiltrados.value.length <= 1) return;
-  if (coverIndex.value > 0) {
-    coverIndex.value--;
+const heroCoverIndex = ref(0);
+const prevHeroCover = () => {
+  if (eventosDestacados.value.length <= 1) return;
+  if (heroCoverIndex.value > 0) {
+    heroCoverIndex.value--;
   } else {
-    coverIndex.value = serviciosFiltrados.value.length - 1;
+    heroCoverIndex.value = eventosDestacados.value.length - 1;
   }
 };
-const nextCover = () => {
-  if (serviciosFiltrados.value.length <= 1) return;
-  if (coverIndex.value < serviciosFiltrados.value.length - 1) {
-    coverIndex.value++;
+const nextHeroCover = () => {
+  if (eventosDestacados.value.length <= 1) return;
+  if (heroCoverIndex.value < eventosDestacados.value.length - 1) {
+    heroCoverIndex.value++;
   } else {
-    coverIndex.value = 0;
+    heroCoverIndex.value = 0;
   }
 };
-const goToCover = (idx: number) => {
-  coverIndex.value = idx;
+const goToHeroCover = (idx: number) => {
+  heroCoverIndex.value = idx;
 };
 
-// Touch swipe support
-let touchStartX = 0;
-const onTouchStart = (e: TouchEvent) => {
-  touchStartX = e.touches[0].clientX;
+// Touch swipe support para el Cover Flow de eventos del Hero
+let heroTouchStartX = 0;
+const onHeroTouchStart = (e: TouchEvent) => {
+  heroTouchStartX = e.touches[0].clientX;
 };
-const onTouchEnd = (e: TouchEvent) => {
-  const diff = touchStartX - e.changedTouches[0].clientX;
+const onHeroTouchEnd = (e: TouchEvent) => {
+  const diff = heroTouchStartX - e.changedTouches[0].clientX;
   if (Math.abs(diff) > 40) {
-    if (diff > 0) nextCover();
-    else prevCover();
+    if (diff > 0) nextHeroCover();
+    else prevHeroCover();
   }
 };
 
-const getCoverStyle = (idx: number) => {
-  const total = serviciosFiltrados.value.length;
+const getHeroCoverStyle = (idx: number) => {
+  const total = eventosDestacados.value.length;
   if (total === 0) return {};
   
-  const offset = idx - coverIndex.value;
+  const offset = idx - heroCoverIndex.value;
   const absOffset = Math.abs(offset);
   
   if (offset === 0) {
     return {
-      transform: 'translate3d(0, 0, 80px) rotateY(0deg) scale(1)',
+      transform: 'translate3d(0, 0, 70px) rotateY(0deg) scale(1)',
       zIndex: 25,
       opacity: 1,
       pointerEvents: 'auto' as const,
@@ -81,24 +81,24 @@ const getCoverStyle = (idx: number) => {
   // Cards on left
   if (offset < 0) {
     const isVisible = absOffset <= 2;
-    const xDist = Math.max(-320, offset * 180 - 60);
-    const zDist = -absOffset * 80;
+    const xDist = Math.max(-280, offset * 130 - 35);
+    const zDist = -absOffset * 60;
     return {
-      transform: `translate3d(${xDist}px, 0, ${zDist}px) rotateY(38deg) scale(${Math.max(0.72, 1 - absOffset * 0.12)})`,
+      transform: `translate3d(${xDist}px, 0, ${zDist}px) rotateY(34deg) scale(${Math.max(0.76, 1 - absOffset * 0.12)})`,
       zIndex: 20 - absOffset,
-      opacity: isVisible ? Math.max(0.3, 0.85 - absOffset * 0.25) : 0,
+      opacity: isVisible ? Math.max(0.25, 0.85 - absOffset * 0.25) : 0,
       pointerEvents: isVisible ? ('auto' as const) : ('none' as const),
     };
   }
 
   // Cards on right
   const isVisible = absOffset <= 2;
-  const xDist = Math.min(320, offset * 180 + 60);
-  const zDist = -absOffset * 80;
+  const xDist = Math.min(280, offset * 130 + 35);
+  const zDist = -absOffset * 60;
   return {
-    transform: `translate3d(${xDist}px, 0, ${zDist}px) rotateY(-38deg) scale(${Math.max(0.72, 1 - absOffset * 0.12)})`,
+    transform: `translate3d(${xDist}px, 0, ${zDist}px) rotateY(-34deg) scale(${Math.max(0.76, 1 - absOffset * 0.12)})`,
     zIndex: 20 - absOffset,
-    opacity: isVisible ? Math.max(0.3, 0.85 - absOffset * 0.25) : 0,
+    opacity: isVisible ? Math.max(0.25, 0.85 - absOffset * 0.25) : 0,
     pointerEvents: isVisible ? ('auto' as const) : ('none' as const),
   };
 };
@@ -191,10 +191,6 @@ const serviciosFiltrados = computed(() => {
 // Evento o Servicio destacado para la tarjeta flotante del Hero
 const eventoHero = computed(() => {
   return eventosDestacados.value[0] || null;
-});
-
-const servicioFallback = computed(() => {
-  return servicios.value[0] || null;
 });
 
 // Galería de fotos de eventos: mosaico dinámico
@@ -357,10 +353,6 @@ const irACotizar = (e?: Event) => {
 watch(() => route.hash, () => {
   scrollToHash();
 });
-
-watch(filtroCategoria, () => {
-  coverIndex.value = 0;
-});
 </script>
 
 <template>
@@ -395,10 +387,100 @@ watch(filtroCategoria, () => {
           </FadeInUp>
         </div>
 
-        <div class="col-lg-5 d-none d-lg-flex justify-content-end">
-          <FadeInUp :delay="0.3">
-            <!-- Tarjeta Flotante Hero (Navega directamente al Evento) -->
-            <aside v-if="eventoHero" class="hero-card-preview">
+        <div class="col-lg-5 d-flex justify-content-center justify-content-lg-end hero-coverflow-col">
+          <FadeInUp :delay="0.3" class="w-100">
+            <!-- 3D COVER FLOW DE EVENTOS EN EL HERO -->
+            <div v-if="eventosDestacados.length" class="coverflow-container hero-coverflow">
+              <!-- Botón Anterior -->
+              <button
+                type="button"
+                class="coverflow-nav-btn coverflow-nav-btn--prev"
+                aria-label="Evento anterior"
+                @click="prevHeroCover"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+
+              <!-- Escenario 3D -->
+              <div class="coverflow-stage hero-coverflow-stage" @touchstart="onHeroTouchStart" @touchend="onHeroTouchEnd">
+                <div
+                  v-for="(ev, idx) in eventosDestacados"
+                  :key="ev.id"
+                  class="coverflow-card-wrap hero-coverflow-card"
+                  :class="{
+                    'is-active': idx === heroCoverIndex,
+                    'is-left': idx < heroCoverIndex,
+                    'is-right': idx > heroCoverIndex
+                  }"
+                  :style="getHeroCoverStyle(idx)"
+                  @click="goToHeroCover(idx)"
+                >
+                  <article class="stage-card">
+                    <!-- Cabecera de estado -->
+                    <div class="stage-card__top">
+                      <div class="d-flex align-items-center gap-2">
+                        <span class="stage-card__status-dot"></span>
+                        <span class="stage-card__status-text">PRODUCCIÓN DESTACADA</span>
+                      </div>
+                      <span class="stage-card__badge-edition">Temporada 2026</span>
+                    </div>
+
+                    <!-- Imagen con overlay -->
+                    <div class="stage-card__visual">
+                      <img
+                        v-if="ev.imagen_destacada"
+                        :src="ev.imagen_destacada"
+                        :alt="ev.nombre"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <div class="stage-card__overlay-bottom">
+                        <span class="stage-card__tag-pill">{{ ev.tipo_slug || 'PRODUCCIÓN ESCÉNICA' }}</span>
+                        <h3 class="stage-card__overlay-title">{{ ev.nombre }}</h3>
+                      </div>
+                    </div>
+
+                    <!-- Pie con botón -->
+                    <div class="stage-card__footer">
+                      <div class="stage-card__footer-meta">
+                        <span>Locación & Producción</span>
+                        <strong>{{ ev.lugar || 'Santiago, Chile' }}</strong>
+                      </div>
+                      <RouterLink :to="`/portafolio/${ev.slug}`" class="stage-card__detail-btn text-decoration-none">
+                        <span>Ver Detalle</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                      </RouterLink>
+                    </div>
+                  </article>
+                </div>
+              </div>
+
+              <!-- Botón Siguiente -->
+              <button
+                type="button"
+                class="coverflow-nav-btn coverflow-nav-btn--next"
+                aria-label="Siguiente evento"
+                @click="nextHeroCover"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+              </button>
+
+              <!-- Paginación con Puntos -->
+              <div class="coverflow-pagination">
+                <button
+                  v-for="(_, idx) in eventosDestacados"
+                  :key="idx"
+                  type="button"
+                  class="coverflow-dot"
+                  :class="{ 'is-active': idx === heroCoverIndex }"
+                  :aria-label="`Ir al evento ${idx + 1}`"
+                  @click="goToHeroCover(idx)"
+                ></button>
+              </div>
+            </div>
+
+            <!-- Fallback si aún no cargan eventos -->
+            <aside v-else-if="eventoHero" class="hero-card-preview">
               <div class="d-flex align-items-center gap-2 mb-2 px-1">
                 <span class="live-dot"></span>
                 <span class="small fw-bold text-uppercase" style="letter-spacing: 0.1em; font-size: 10px;">PRODUCCIÓN DESTACADA</span>
@@ -411,50 +493,6 @@ watch(filtroCategoria, () => {
                   class="hero-card-preview__img"
                 />
               </RouterLink>
-              <div class="d-flex align-items-end justify-content-between pt-3 px-1">
-                <div>
-                  <span class="small fw-bold text-uppercase text-orion-gold" style="font-size: 10px; letter-spacing: 0.1em;">
-                    {{ eventoHero.tipo_slug || 'PRODUCCIÓN ESCÉNICA' }}
-                  </span>
-                  <RouterLink :to="`/portafolio/${eventoHero.slug}`" class="text-decoration-none d-block">
-                    <h3 class="h5 mb-0 fw-bold mt-1 text-body">{{ eventoHero.nombre }}</h3>
-                  </RouterLink>
-                </div>
-                <RouterLink
-                  :to="`/portafolio/${eventoHero.slug}`"
-                  class="btn btn-sm btn-outline-secondary rounded-circle p-2 d-inline-flex align-items-center justify-content-center"
-                  aria-label="Ir al evento"
-                  title="Ver detalle del evento"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </RouterLink>
-              </div>
-            </aside>
-            <aside v-else-if="servicioFallback" class="hero-card-preview">
-              <div class="d-flex align-items-center gap-2 mb-2 px-1">
-                <span class="live-dot"></span>
-                <span class="small fw-bold text-uppercase" style="letter-spacing: 0.1em; font-size: 10px;">EQUIPAMIENTO DESTACADO</span>
-              </div>
-              <img
-                :src="servicioFallback.imagen_url || '/logo.png'"
-                :alt="servicioFallback.nombre"
-                class="hero-card-preview__img"
-              />
-              <div class="d-flex align-items-end justify-content-between pt-3 px-1">
-                <div>
-                  <span class="small fw-bold text-uppercase text-orion-gold" style="font-size: 10px;">
-                    {{ servicioFallback.categoria_slug || 'PRODUCCIÓN TÉCNICA' }}
-                  </span>
-                  <h3 class="h5 mb-0 fw-bold mt-1 text-body">{{ servicioFallback.nombre }}</h3>
-                </div>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-secondary rounded-circle p-2"
-                  @click="abrirServicio(servicioFallback)"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </button>
-              </div>
             </aside>
           </FadeInUp>
         </div>
@@ -654,101 +692,54 @@ watch(filtroCategoria, () => {
         </span>
       </div>
 
-      <!-- 3D Cover Flow Carousel -->
+      <!-- Catálogo de Servicios en Grid Limpio -->
       <div v-if="cargando" class="text-center py-5">
         <div class="spinner-border text-warning" role="status"></div>
         <p class="text-secondary mt-3">Cargando catálogo técnico...</p>
       </div>
-      <div v-else-if="serviciosFiltrados.length" class="coverflow-container">
-        <!-- Arrow Prev -->
-        <button
-          type="button"
-          class="coverflow-nav-btn coverflow-nav-btn--prev"
-          aria-label="Servicio anterior"
-          @click="prevCover"
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-
-        <!-- 3D Stage -->
-        <div class="coverflow-stage" @touchstart="onTouchStart" @touchend="onTouchEnd">
-          <div
-            v-for="(svc, idx) in serviciosFiltrados"
-            :key="svc.id"
-            class="coverflow-card-wrap"
-            :class="{
-              'is-active': idx === coverIndex,
-              'is-left': idx < coverIndex,
-              'is-right': idx > coverIndex
-            }"
-            :style="getCoverStyle(idx)"
-            @click="idx === coverIndex ? abrirServicio(svc) : goToCover(idx)"
-          >
-            <article class="stage-card">
-              <!-- Top Header Bar -->
-              <div class="stage-card__top">
-                <div class="d-flex align-items-center gap-2">
-                  <span class="stage-card__status-dot"></span>
-                  <span class="stage-card__status-text">PRODUCCIÓN ACTIVA EN ORION STAGE</span>
-                </div>
-                <span class="stage-card__badge-edition">Edición 2026</span>
-              </div>
-
-              <!-- Center Image with Overlay -->
-              <div class="stage-card__visual">
-                <img
-                  v-if="svc.imagen_url"
-                  :src="svc.imagen_url"
-                  :alt="svc.nombre"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <div class="stage-card__overlay-bottom">
-                  <span class="stage-card__tag-pill">{{ svc.categoria_slug || 'PRODUCCIÓN TÉCNICA' }}</span>
-                  <h3 class="stage-card__overlay-title">{{ svc.nombre }}</h3>
-                </div>
-              </div>
-
-              <!-- Bottom Footer with Meta & Action -->
-              <div class="stage-card__footer">
-                <div class="stage-card__footer-meta">
-                  <span>Equipamiento & Soporte</span>
-                  <strong>Estándar Certificado Pro</strong>
-                </div>
-                <button type="button" class="stage-card__detail-btn" @click.stop="abrirServicio(svc)">
-                  <span>Ver Detalle</span>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </button>
-              </div>
-            </article>
-          </div>
-        </div>
-
-        <!-- Arrow Next -->
-        <button
-          type="button"
-          class="coverflow-nav-btn coverflow-nav-btn--next"
-          aria-label="Siguiente servicio"
-          @click="nextCover"
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
-
-        <!-- Coverflow Pagination Indicators -->
-        <div class="coverflow-pagination">
-          <button
-            v-for="(_, idx) in serviciosFiltrados"
-            :key="`dot-${idx}`"
-            type="button"
-            class="coverflow-dot"
-            :class="{ 'is-active': idx === coverIndex }"
-            :aria-label="`Ir al servicio ${idx + 1}`"
-            @click="goToCover(idx)"
-          ></button>
-        </div>
-      </div>
-      <div v-else class="text-center py-5 text-secondary">
+      <div v-else-if="!serviciosFiltrados.length" class="text-center py-5 text-secondary">
         No se encontraron servicios para la categoría seleccionada.
+      </div>
+      <div v-else class="row g-4 mt-1">
+        <div v-for="svc in serviciosFiltrados" :key="svc.id" class="col-md-6 col-lg-4">
+          <article class="stage-card h-100">
+            <!-- Top Header Bar -->
+            <div class="stage-card__top">
+              <div class="d-flex align-items-center gap-2">
+                <span class="stage-card__status-dot"></span>
+                <span class="stage-card__status-text">EQUIPAMIENTO PROFESIONAL</span>
+              </div>
+              <span class="stage-card__badge-edition">Edición 2026</span>
+            </div>
+
+            <!-- Center Image with Overlay -->
+            <div class="stage-card__visual">
+              <img
+                v-if="svc.imagen_url"
+                :src="svc.imagen_url"
+                :alt="svc.nombre"
+                loading="lazy"
+                decoding="async"
+              />
+              <div class="stage-card__overlay-bottom">
+                <span class="stage-card__tag-pill">{{ svc.categoria_slug || 'PRODUCCIÓN TÉCNICA' }}</span>
+                <h3 class="stage-card__overlay-title">{{ svc.nombre }}</h3>
+              </div>
+            </div>
+
+            <!-- Bottom Footer with Meta & Action -->
+            <div class="stage-card__footer">
+              <div class="stage-card__footer-meta">
+                <span>Equipamiento & Soporte</span>
+                <strong>Estándar Certificado Pro</strong>
+              </div>
+              <button type="button" class="stage-card__detail-btn" @click.stop="abrirServicio(svc)">
+                <span>Ver Detalle</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </article>
+        </div>
       </div>
     </div>
   </section>

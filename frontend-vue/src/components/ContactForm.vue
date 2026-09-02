@@ -224,7 +224,14 @@ const onSubmit = async () => {
   loading.value = true;
 
   try {
-    await contactoService.crearCotizacion({ ...form });
+    const payload = {
+      ...form,
+      fecha_estimada: form.fecha_estimada || undefined,
+      empresa: form.empresa || undefined,
+      telefono: form.telefono || undefined,
+      presupuesto_estimado: form.presupuesto_estimado || undefined,
+    };
+    await contactoService.crearCotizacion(payload);
     registrarEvento('cotizacion_enviada', { tipo_evento: form.tipo_evento });
     router.push('/gracias');
   } catch (e) {
