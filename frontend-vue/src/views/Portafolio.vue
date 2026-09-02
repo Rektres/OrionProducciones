@@ -79,23 +79,43 @@ onMounted(async () => {
       <div v-else class="row g-4">
         <div v-for="ev in filtrados" :key="ev.id" class="col-md-6 col-lg-4">
           <FadeInUp>
-            <RouterLink :to="`/portafolio/${ev.slug}`" class="text-decoration-none d-block h-100">
-              <div class="card border-0 card-cover d-flex justify-content-end position-relative overflow-hidden rounded-4 shadow-sm h-100" style="min-height: 280px;">
-                <img v-if="ev.imagen_url" :src="ev.imagen_url"
-                  :alt="`${ev.nombre} — evento producido por Orion en ${ev.lugar}`"
-                  class="img-cover position-absolute top-0 start-0 w-100 h-100" loading="lazy" decoding="async" />
-                <div class="p-4 position-relative w-100" style="background: linear-gradient(0deg, rgba(3, 8, 28, 0.92) 0%, rgba(3, 8, 28, 0.6) 65%, transparent 100%); z-index: 2;">
-                  <span class="badge mb-2 d-inline-block" style="background: rgba(19, 214, 234, 0.2); color: #13d6ea; border: 1px solid rgba(19, 214, 234, 0.5); font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">
-                    {{ ev.tipo_slug }}
-                  </span>
-                  <h5 class="text-white mb-1 fw-bold lh-sm">{{ ev.nombre }}</h5>
-                  <small class="text-white-50 d-flex align-items-center gap-1 mt-1">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                    <span>{{ ev.lugar }}</span>
-                  </small>
+            <article class="stage-card h-100">
+              <!-- Top Header Bar -->
+              <div class="stage-card__top">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="stage-card__status-dot"></span>
+                  <span class="stage-card__status-text">PRODUCCIÓN DESTACADA</span>
+                </div>
+                <span class="stage-card__badge-edition">Temporada 2026</span>
+              </div>
+
+              <!-- Center Image with Overlay -->
+              <div class="stage-card__visual">
+                <img
+                  v-if="ev.imagen_url"
+                  :src="ev.imagen_url"
+                  :alt="`${ev.nombre} — evento producido por Orion Stage en ${ev.lugar}`"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div class="stage-card__overlay-bottom">
+                  <span class="stage-card__tag-pill">{{ ev.tipo_slug || 'PRODUCCIÓN ESCÉNICA' }}</span>
+                  <h3 class="stage-card__overlay-title">{{ ev.nombre }}</h3>
                 </div>
               </div>
-            </RouterLink>
+
+              <!-- Bottom Footer with Meta & Action -->
+              <div class="stage-card__footer">
+                <div class="stage-card__footer-meta">
+                  <span>Locación & Producción</span>
+                  <strong>{{ ev.lugar || 'Santiago, Chile' }}</strong>
+                </div>
+                <RouterLink :to="`/portafolio/${ev.slug}`" class="stage-card__detail-btn text-decoration-none">
+                  <span>Ver Detalle</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </RouterLink>
+              </div>
+            </article>
           </FadeInUp>
         </div>
       </div>

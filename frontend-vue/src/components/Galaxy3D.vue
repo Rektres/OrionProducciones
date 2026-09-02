@@ -86,10 +86,13 @@ onMounted(() => {
     });
   }
 
-  // 3D Tilt parameters
-  const tiltX = 62 * (Math.PI / 180); // Pitch tilt ~62 deg
-  const cosTilt = Math.cos(tiltX);
-  const sinTilt = Math.sin(tiltX);
+  // 3D Tilt parameters (Increased pitch tilt + diagonal orientation matching reference)
+  const tiltX = 74 * (Math.PI / 180); // Pitch tilt ~74 deg (more horizontal / elliptical disc)
+  const tiltZ = -16 * (Math.PI / 180); // Diagonal orientation ~ -16 deg
+  const cosTiltX = Math.cos(tiltX);
+  const sinTiltX = Math.sin(tiltX);
+  const cosTiltZ = Math.cos(tiltZ);
+  const sinTiltZ = Math.sin(tiltZ);
 
   let rotation = 0;
 
@@ -108,8 +111,8 @@ onMounted(() => {
 
     // 1. Render Galactic Glow / Nebula background
     const bgGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxRadius * 1.2);
-    bgGlow.addColorStop(0, 'rgba(56, 189, 248, 0.28)');
-    bgGlow.addColorStop(0.2, 'rgba(99, 102, 241, 0.18)');
+    bgGlow.addColorStop(0, 'rgba(56, 189, 248, 0.32)');
+    bgGlow.addColorStop(0.2, 'rgba(99, 102, 241, 0.20)');
     bgGlow.addColorStop(0.5, 'rgba(168, 85, 247, 0.08)');
     bgGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
     
@@ -118,22 +121,30 @@ onMounted(() => {
     ctx.arc(cx, cy, maxRadius * 1.3, 0, Math.PI * 2);
     ctx.fill();
 
-    // 2. Render Stars with 3D projection
-    rotation += 0.004;
+    // 2. Render Stars with 3D projection & diagonal slant
+    rotation += 0.0035;
 
     for (let i = 0; i < stars.length; i++) {
       const star = stars[i];
       const curAngle = star.angle + rotation * (star.speed * 80);
 
       // 3D coordinates in galaxy plane
-      const x3d = Math.cos(curAngle) * star.radius;
-      const y3d = Math.sin(curAngle) * star.radius;
-      const z3d = star.zOffset;
+      const x0 = Math.cos(curAngle) * star.radius;
+      const y0 = Math.sin(curAngle) * star.radius;
+      const z0 = star.zOffset;
 
-      // Project with 3D tilt (rotate around X axis)
-      const x2d = cx + x3d;
-      const y2d = cy + (y3d * cosTilt - z3d * sinTilt);
-      const depthScale = 0.8 + ((y3d * sinTilt + z3d * cosTilt) / (maxRadius * 2)) * 0.4;
+      // 1) Tilt around X axis (pitch)
+      const x1 = x0;
+      const y1 = y0 * cosTiltX - z0 * sinTiltX;
+      const z1 = y0 * sinTiltX + z0 * cosTiltX;
+
+      // 2) Rotate around Z axis (diagonal slant)
+      const x2 = x1 * cosTiltZ - y1 * sinTiltZ;
+      const y2 = x1 * sinTiltZ + y1 * cosTiltZ;
+
+      const x2d = cx + x2;
+      const y2d = cy + y2;
+      const depthScale = 0.75 + ((z1 + maxRadius) / (maxRadius * 2)) * 0.5;
 
       ctx.beginPath();
       ctx.arc(x2d, y2d, Math.max(0.4, star.size * depthScale), 0, Math.PI * 2);

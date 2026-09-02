@@ -3,6 +3,7 @@ import { computed, onMounted, ref, nextTick, watch } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 import ContactForm from '@/components/ContactForm.vue';
 import ServicioModal from '@/components/ServicioModal.vue';
+import CampanaModal from '@/components/CampanaModal.vue';
 import GaleriaFotosModal from '@/components/GaleriaFotosModal.vue';
 import BrandLogo from '@/components/BrandLogo.vue';
 import FadeInUp from '@/components/animations/FadeInUp.vue';
@@ -164,12 +165,9 @@ const campanasLanding: CampanaLanding[] = [
   },
 ];
 
-const modalCampanaLanding = ref<CampanaLanding | null>(null);
-const abrirCampana = (c: CampanaLanding) => {
-  modalCampanaLanding.value = c;
-};
-const cerrarCampana = () => {
-  modalCampanaLanding.value = null;
+const campanaModalRef = ref<InstanceType<typeof CampanaModal> | null>(null);
+const abrirCampana = (c: CampanaLanding, cotizar = false) => {
+  campanaModalRef.value?.abrir(c, cotizar);
 };
 
 // Categorías dinámicas para los Filter Chips
@@ -528,12 +526,12 @@ watch(filtroCategoria, () => {
                 {{ c.descripcion }}
               </p>
               <div class="campana-card__action">
-                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" @click="abrirCampana(c)">
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" @click="abrirCampana(c, false)">
                   Ver Campaña
                 </button>
-                <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-sm btn-orion" @click="irACotizar">
+                <button type="button" class="btn btn-sm btn-orion" @click="abrirCampana(c, true)">
                   Cotizar
-                </RouterLink>
+                </button>
               </div>
             </div>
           </article>
@@ -687,8 +685,17 @@ watch(filtroCategoria, () => {
             @click="idx === coverIndex ? abrirServicio(svc) : goToCover(idx)"
           >
             <article class="stage-card">
+              <!-- Top Header Bar -->
+              <div class="stage-card__top">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="stage-card__status-dot"></span>
+                  <span class="stage-card__status-text">PRODUCCIÓN ACTIVA EN ORION STAGE</span>
+                </div>
+                <span class="stage-card__badge-edition">Edición 2026</span>
+              </div>
+
+              <!-- Center Image with Overlay -->
               <div class="stage-card__visual">
-                <span class="stage-badge">{{ svc.categoria_slug || 'PRODUCCIÓN' }}</span>
                 <img
                   v-if="svc.imagen_url"
                   :src="svc.imagen_url"
@@ -696,16 +703,22 @@ watch(filtroCategoria, () => {
                   loading="lazy"
                   decoding="async"
                 />
-                <button type="button" class="stage-card__action-btn" @click.stop="abrirServicio(svc)">
-                  <span>Ver especificaciones técnicas</span>
+                <div class="stage-card__overlay-bottom">
+                  <span class="stage-card__tag-pill">{{ svc.categoria_slug || 'PRODUCCIÓN TÉCNICA' }}</span>
+                  <h3 class="stage-card__overlay-title">{{ svc.nombre }}</h3>
+                </div>
+              </div>
+
+              <!-- Bottom Footer with Meta & Action -->
+              <div class="stage-card__footer">
+                <div class="stage-card__footer-meta">
+                  <span>Equipamiento & Soporte</span>
+                  <strong>Estándar Certificado Pro</strong>
+                </div>
+                <button type="button" class="stage-card__detail-btn" @click.stop="abrirServicio(svc)">
+                  <span>Ver Detalle</span>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </button>
-              </div>
-              <div class="stage-card__meta">
-                <div>
-                  <span>EQUIPAMIENTO PROFESIONAL</span>
-                  <h3>{{ svc.nombre }}</h3>
-                </div>
               </div>
             </article>
           </div>
@@ -874,45 +887,7 @@ watch(filtroCategoria, () => {
     </div>
   </section>
 
-  <!-- MODAL DE CAMPAÑAS EN LANDING -->
-  <div
-    v-if="modalCampanaLanding"
-    class="modal fade show d-block"
-    tabindex="-1"
-    style="background: rgba(0, 0, 0, 0.85); z-index: 1060;"
-    @click.self="cerrarCampana"
-  >
-    <div class="modal-dialog campana-modal-dialog modal-dialog-centered">
-      <div class="modal-content campana-modal-content">
-        <div class="modal-header border-0 pb-0 px-4 pt-4 d-flex justify-content-between align-items-center">
-          <div>
-            <span class="campana-card__badge mb-1" :style="{ color: modalCampanaLanding.tagColor, borderColor: modalCampanaLanding.tagColor }">
-              {{ modalCampanaLanding.mundo }}
-            </span>
-            <h3 class="h4 fw-bold mb-0 text-body">{{ modalCampanaLanding.titulo }}</h3>
-          </div>
-          <button type="button" class="btn-close" aria-label="Cerrar" @click="cerrarCampana"></button>
-        </div>
-        <div class="modal-body px-4 py-3">
-          <div class="campana-modal-img-wrap mb-3">
-            <img :src="modalCampanaLanding.poster" :alt="modalCampanaLanding.titulo" class="campana-modal-img" />
-          </div>
-          <p class="text-secondary mb-3" style="font-size: 14.5px; line-height: 1.7;">
-            {{ modalCampanaLanding.descripcion }}
-          </p>
-        </div>
-        <div class="modal-footer border-0 px-4 pb-4 pt-0 d-flex justify-content-between">
-          <button type="button" class="btn btn-outline-secondary" @click="cerrarCampana">
-            Cerrar
-          </button>
-          <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-orion" @click="cerrarCampana(); irACotizar();">
-            Cotizar esta Campaña
-          </RouterLink>
-        </div>
-      </div>
-    </div>
-  </div>
-
+  <CampanaModal ref="campanaModalRef" />
   <ServicioModal ref="servicioModalRef" />
   <GaleriaFotosModal ref="galeriaModalRef" />
 </template>

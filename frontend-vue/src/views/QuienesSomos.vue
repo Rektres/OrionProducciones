@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import FadeInUp from '@/components/animations/FadeInUp.vue';
+import CampanaModal from '@/components/CampanaModal.vue';
 
 interface CampanaInfo {
   id: string;
@@ -72,12 +73,9 @@ const campanas: CampanaInfo[] = [
   },
 ];
 
-const modalCampana = ref<CampanaInfo | null>(null);
-const abrirModal = (c: CampanaInfo) => {
-  modalCampana.value = c;
-};
-const cerrarModal = () => {
-  modalCampana.value = null;
+const campanaModalRef = ref<InstanceType<typeof CampanaModal> | null>(null);
+const abrirModal = (c: CampanaInfo, cotizar = false) => {
+  campanaModalRef.value?.abrir(c, cotizar);
 };
 
 const propositos = [
@@ -133,13 +131,13 @@ const equipoPrincipal: MiembroEquipo[] = [
     iniciales: 'CP',
   },
   {
-    nombre: 'Francisco',
+    nombre: 'Francisco Reyes',
     genero: 'hombre',
     cargo: 'Dirección General & Producción 360°',
     descripcion: 'Coordina la logística integral, recintos, alianzas estratégicas, proveedores y regiduría en terreno para que cada evento funcione a la perfección.',
     badge: 'Producción 360°',
     avatarGrad: 'linear-gradient(135deg, #c5a880 0%, #d06c26 100%)',
-    iniciales: 'F',
+    iniciales: 'FR',
   },
 ];
 
@@ -241,12 +239,12 @@ const pilaresProduccion = [
                 {{ c.descripcion }}
               </p>
               <div class="campana-card__action">
-                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" @click="abrirModal(c)">
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" @click="abrirModal(c, false)">
                   Ver Campaña
                 </button>
-                <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-sm btn-orion">
+                <button type="button" class="btn btn-sm btn-orion" @click="abrirModal(c, true)">
                   Cotizar
-                </RouterLink>
+                </button>
               </div>
             </div>
           </article>
@@ -354,42 +352,6 @@ const pilaresProduccion = [
     </div>
   </section>
 
-  <!-- MODAL DE VISUALIZACIÓN DE CAMPAÑA -->
-  <div
-    v-if="modalCampana"
-    class="modal fade show d-block"
-    tabindex="-1"
-    style="background: rgba(0, 0, 0, 0.85); z-index: 1060;"
-    @click.self="cerrarModal"
-  >
-    <div class="modal-dialog campana-modal-dialog modal-dialog-centered">
-      <div class="modal-content campana-modal-content">
-        <div class="modal-header border-0 pb-0 px-4 pt-4 d-flex justify-content-between align-items-center">
-          <div>
-            <span class="campana-card__badge mb-1" :style="{ color: modalCampana.tagColor, borderColor: modalCampana.tagColor }">
-              {{ modalCampana.mundo }}
-            </span>
-            <h3 class="h4 fw-bold mb-0 text-body">{{ modalCampana.titulo }}</h3>
-          </div>
-          <button type="button" class="btn-close" aria-label="Cerrar" @click="cerrarModal"></button>
-        </div>
-        <div class="modal-body px-4 py-3">
-          <div class="campana-modal-img-wrap mb-3">
-            <img :src="modalCampana.poster" :alt="modalCampana.titulo" class="campana-modal-img" />
-          </div>
-          <p class="text-secondary mb-3" style="font-size: 14.5px; line-height: 1.7;">
-            {{ modalCampana.descripcion }}
-          </p>
-        </div>
-        <div class="modal-footer border-0 px-4 pb-4 pt-0 d-flex justify-content-between">
-          <button type="button" class="btn btn-outline-secondary" @click="cerrarModal">
-            Cerrar
-          </button>
-          <RouterLink :to="{ path: '/', hash: '#cotizacion' }" class="btn btn-orion" @click="cerrarModal">
-            Cotizar esta Campaña
-          </RouterLink>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- MODAL DE VISUALIZACIÓN Y COTIZACIÓN DE CAMPAÑA -->
+  <CampanaModal ref="campanaModalRef" />
 </template>
