@@ -1,142 +1,162 @@
-# Orion — sitio de la productora
+# Orion Stage — Plataforma Web & Panel de Administración
 
-Sitio web de **Orion**, productora de eventos (Chile). Stack de cuatro servicios en contenedores,
-detrás de un Nginx que es el único puerto expuesto:
+Plataforma oficial de **Orion Stage Producciones SpA**, productora técnica e integral de eventos corporativos, masivos y privados en Chile.
+
+El proyecto está diseñado con una arquitectura desacoplada y modular: SPA pública de alto impacto visual con diseño escénico *dark/luxury* y panel de administración propio (`/admin`), respaldada por una API REST en Django y PostgreSQL.
+
+---
+
+## 🏛 Arquitectura del Sistema
+
+El proyecto soporta despliegue tanto en **contenedores Docker** como en **entorno nativo (cPanel / VPS con Gunicorn)**:
 
 ```
-        ┌──────────── docker compose · red orion_net ─────────────┐
-        │                                                          │
-Navegador ──▶ Nginx :80 ──┬──▶ Frontend Vue 3   (nginx :3000, estáticos)
-                          │
-                          └──▶ BFF Express :3001 ──▶ Django REST :8000 ──▶ PostgreSQL 16 :5432
-                                                            │
-                                                            └──▶ SMTP (aviso de cotizaciones)
+                          ┌─────────────────────────── ORION STAGE ──────────────────────────┐
+                          │                                                                  │
+[Navegador / Cliente] ──▶ Nginx / Apache (:80 / :443) ──┬──▶ Frontend Vue 3 (SPA Pública & Admin)
+                                                        │
+                                                        └──▶ API Django REST (:8000) ──▶ PostgreSQL (:5432)
+                                                                    │
+                                                                    ├──▶ SMTP (Notificaciones de Cotización)
+                                                                    └──▶ Tablas Binarias (Imágenes WebP)
 ```
 
-El sitio público es de solo lectura (servicios, portafolio, FAQ) y permite enviar cotizaciones.
-El contenido se administra desde `/admin`, un panel dentro de la misma SPA autenticado con token DRF.
+### Características Principales
 
-Dominio en **español**: tablas, campos y slugs de rutas (`servicios`, `eventos`, `cotizaciones`,
-`portafolio/:slug`).
+- **Hero 3D Cover Flow:** Carrusel interactivo tridimensional en la portada que rota y escala los eventos destacados con perspectiva espacial y soporte táctil (*touch swipe*).
+- **Galaxia 3D Interactiva:** Animación matemática WebGL/Canvas con inclinación espacial de 74° y rotación continua.
+- **Cotizador Inteligente & Validación Dinámica:**
+  - Formulario de 3 columnas con formateo automático de teléfono chileno (`+56 9 XXXX XXXX`).
+  - Validación de dominios de correo y razón social.
+  - Modales de campañas con visualización en alta resolución y cotización rápida integrada.
+- **Notificaciones por Correo Humanizadas:**
+  - Envío automático dual por SMTP: notificación detallada al productor y correo de bienvenida/confirmación cálido y cercano al cliente.
+  - Integración directa con WhatsApp (`+56 9 9824 9498`) en un solo clic.
+- **Panel de Administración (`/admin`):**
+  - Autenticado vía Token DRF con roles de superusuario.
+  - Alternador de vista: **Tarjetas (Cards)** vs **Lista (Tabla compacta)** en Servicios y Portafolio.
+  - Creación y edición modal fluida (`modal-dialog-scrollable`) con subida de imágenes y galerías.
+  - Enlace *"Ver sitio ↗"* con apertura en nueva pestaña (`target="_blank"`).
+- **Motor de Imágenes WebP en Base de Datos:**
+  - Almacenamiento binario en tabla `imagenes_archivo` sin dependencias de buckets externos.
+  - Sanitización mágica de cabeceras, redimensionado a 1920 px y compresión WebP automática.
+  - Servicio HTTP con encabezados inmutables y caché de 1 año (`max-age=31536000`).
+- **SEO & Accesibilidad:** Metadatos Open Graph, Twitter Cards, Schema.org estructurado, `sitemap.xml` dinámico y `robots.txt` generados por Django.
 
-## Tecnologías
+---
 
-| Servicio | Stack |
+## 🛠 Stack Tecnológico
+
+| Capa | Tecnologías |
 |---|---|
-| `frontend-vue/` | Vue 3 (Composition API, `<script setup>`) · TypeScript strict · Vite 5 · Vue Router 4 · Bootstrap 5 · Axios · DOMPurify |
-| `bff-express/` | Node 20 · Express · TypeScript · `http-proxy-middleware` · CORS |
-| `backend-django/` | Django 5.1 · Django REST Framework · TokenAuthentication · Pillow · Gunicorn · psycopg 3 |
-| Datos | PostgreSQL 16 (contenedor propio, volumen `postgres_data`) |
-| Infra | Docker Compose · Nginx (reverse proxy) · systemd · GitHub Actions con runner self-hosted |
+| **Frontend** | Vue 3 (Composition API, `<script setup>`), TypeScript (strict), Vite 5, Vue Router 4, Bootstrap 5, Axios, DOMPurify |
+| **BFF / Proxy** | Node 20, Express, TypeScript, `http-proxy-middleware`, CORS |
+| **Backend** | Python 3.12, Django 5.1, Django REST Framework, TokenAuthentication, Pillow, psycopg 3, Gunicorn |
+| **Base de Datos** | PostgreSQL 16 (Local / Cloud / Contenedor) |
+| **Infraestructura** | Docker Compose, Nginx, Apache / cPanel, Cloudflare SSL |
 
-Detalles que no se ven en la tabla:
+---
 
-- **Sin storage externo.** Las imágenes se guardan como binario en la tabla `imagenes_archivo`.
-  Al subirlas se validan por tamaño, MIME y firma mágica, y se recodifican a **WebP** reescalando a
-  1920 px (`catalogo/imagenes.py`). Se sirven por `/api/imagenes/<uuid>/` con cache inmutable.
-- **SEO.** `useSeo.ts` escribe title, description, canonical y Open Graph por ruta; las etiquetas
-  estáticas de `index.html` cubren a los crawlers que no ejecutan JS. `robots.txt` y `sitemap.xml`
-  los genera Django (`catalogo/seo.py`) con los slugs publicados y la URL pública real.
-- **Analítica opcional.** Soporta Plausible o GA4 por variable de entorno y viene **apagada**: sin
-  configurar no carga ningún script ni cookie de terceros. El banner de consentimiento aparece solo
-  con GA4.
-- **Tema claro/oscuro** con variables CSS propias (`--orion-*`).
-
-## Estructura
+## 📂 Estructura del Repositorio
 
 ```
-backend-django/   API Django REST. App única `catalogo` (modelos, endpoints públicos y admin).
-bff-express/      Proxy fino: reenvía /api/* a Django conservando método, headers y multipart.
-frontend-vue/     SPA pública + panel /admin.
-nginx/            Reverse proxy: "/" → frontend, "/api/" → BFF, "/robots.txt" y "/sitemap.xml" → Django.
-.systemd/         Unit para levantar el stack al arranque del servidor.
+Orion_Project/
+├── backend-django/          # API Django REST (App `catalogo`, modelos, endpoints y correos)
+├── bff-express/             # Proxy fino Express + TypeScript
+├── frontend-vue/            # SPA Vue 3 + TypeScript (Vistas públicas + /admin)
+├── nginx/                   # Configuración del reverse proxy Nginx
+├── Archivos/                # [IGNORADO EN GIT] Material histórico, guías PDF, diagramas y capturas
+│   ├── 01_Guias_y_Manuales_PDF/
+│   ├── 02_Diagramas_HTML/
+│   ├── 03_Campanas_Publicitarias/
+│   ├── 04_Cotizaciones_y_Comprobantes/
+│   ├── 05_Identidad_Visual_y_Textos/
+│   ├── 06_Credenciales_y_Capturas/
+│   ├── 07_Incidencias_Tecnicas/
+│   └── 08_Stack_Anterior_React_Supabase/
+├── docker-compose.yml       # Stack completo para producción/staging
+├── docker-compose.preprod.yml
+├── .env.production.example  # Plantilla de variables de entorno
+├── AGENTS.md                # Reglas y directivas de desarrollo
+└── README.md                # Documentación del proyecto
 ```
 
-## Levantar en local
+---
 
-Requisitos: **Docker** con Compose v2. Para trabajar servicio por servicio, además Node 20+ y Python 3.12+.
+## 🚀 Despliegue y Ejecución
+
+### 1. Despliegue con Docker Compose
 
 ```bash
-cp .env.production.example .env    # completar secretos
+# Copiar variables de entorno y configurar credenciales
+cp .env.production.example .env
+
+# Levantar todos los servicios en segundo plano
 docker compose up -d --build
 ```
 
-Queda en **http://localhost**. Logs con `docker compose logs -f`, apagar con `docker compose down`.
-
-### Desarrollo servicio por servicio
-
+El sitio estará disponible en `http://localhost`. Para monitorear logs:
 ```bash
-cd backend-django && python -m venv .venv && .venv/Scripts/activate   # Linux/macOS: source .venv/bin/activate
-pip install -r requirements.txt && python manage.py migrate && python manage.py runserver 8000
-
-cd bff-express  && npm install && npm run dev     # :3001
-cd frontend-vue && npm install && npm run dev     # :5173
+docker compose logs -f
 ```
 
-Crear el usuario del panel: `python manage.py createsuperuser`.
-
-## Variables de entorno
-
-**Raíz (`.env`)** — la consume `docker compose`. Plantilla completa y comentada en
-[`.env.production.example`](./.env.production.example): `DATABASE_URL`, `POSTGRES_PASSWORD`,
-`DJANGO_SECRET_KEY`, `DEBUG`, `DB_SSL_REQUIRE`, `SERVER_IP`, `ALLOWED_ORIGINS`, `PG_BIND_IP` y el
-bloque SMTP (`EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_USE_TLS`,
-`DEFAULT_FROM_EMAIL`, `ADMIN_NOTIFICATION_EMAIL`).
-
-**Frontend (`frontend-vue/.env`)** — ver [`frontend-vue/.env.example`](./frontend-vue/.env.example):
-`VITE_API_URL`, `VITE_WHATSAPP_NUMBER`, `VITE_BASE`, redes y contacto del footer
-(`VITE_CONTACT_EMAIL`, `VITE_CONTACT_DIRECCION`) y analítica (`VITE_ANALYTICS_PROVIDER`,
-`VITE_ANALYTICS_ID`).
-
-En producción `VITE_API_URL` es la ruta relativa `/api`, así que el mismo build sirve para cualquier
-IP o dominio sin reconstruir.
-
-## Endpoints (`/api/`)
-
-**Públicos (lectura):** `categorias-servicio/` · `servicios/` · `servicios/<id>/` · `evento-tipos/` ·
-`eventos/` · `eventos/<slug>/` · `eventos/<id>/fotos/` · `posts/` · `posts/<slug>/` · `tags/` ·
-`imagenes/<uuid>/`
-
-**Público (escritura):** `POST cotizaciones/` — con throttle por IP.
-
-**Panel:** `POST auth/token/` y el CRUD bajo `admin/` (`servicios`, `categorias-servicio`, `eventos`,
-`evento-tipos`, `fotos-evento`, `posts`, `tags`), todos con `TokenAuthentication` + `IsAuthenticated`.
-
-**Fuera de `/api/`:** `GET /health` (healthcheck del contenedor) y, expuestos por Nginx en la raíz,
-`/robots.txt` y `/sitemap.xml`.
-
-## Verificación antes de commitear
-
-No hay suite de tests. Las mismas puertas que corre el CI:
+### 2. Desarrollo Local Servicio por Servicio
 
 ```bash
-cd frontend-vue  && npm run build        # vue-tsc + vite build
-cd bff-express   && npm run typecheck
+# Backend Django
+cd backend-django
+python -m venv .venv
+# En Windows: .venv\Scripts\activate | En Linux: source .venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver 8000
+
+# BFF Express
+cd bff-express
+npm install
+npm run dev
+
+# Frontend Vue
+cd frontend-vue
+npm install
+npm run dev
+```
+
+---
+
+## 🔐 Panel de Administración y Superusuarios
+
+El acceso al panel administrativo se realiza desde la ruta `/admin/login` en la SPA.
+
+* **Crear Superusuario:**
+  ```bash
+  cd backend-django
+  python manage.py createsuperuser
+  ```
+
+---
+
+## 🧪 Verificación de Calidad y Puertas de CI
+
+Antes de subir cambios a `main`, ejecuta las verificaciones obligatorias:
+
+```bash
+# 1. Compilación y chequeo de tipos en Frontend
+cd frontend-vue && npm run build
+
+# 2. Chequeo de tipos en BFF
+cd bff-express && npm run typecheck
+
+# 3. Integridad del Backend Django y migraciones
 cd backend-django && python manage.py check
 cd backend-django && python manage.py makemigrations --check --dry-run
 ```
 
-## Despliegue
+---
 
-Automático por **GitHub Actions** (`.github/workflows/deploy-docker.yml`) al hacer push a `main` o a
-`migracion-django-vue`:
+## 📄 Convenciones del Proyecto
 
-1. Typecheck de los tres servicios en un runner de GitHub.
-2. Un runner **self-hosted** en el VPS hace pull de la rama, `docker compose build` y `up -d`.
-3. Espera a que `django` y `postgres` estén *healthy*.
-4. Aplica migraciones (`manage.py migrate`).
-5. Smoke test contra `/api/health` y `/`.
+* **Idioma del Dominio:** Español para modelos, rutas, funciones y variables de negocio (`servicios`, `eventos`, `cotizaciones`, `portafolio/:slug`).
+* **Estilos:** Bootstrap 5 con variables personalizadas CSS (`--orion-*`) con soporte integral de tema claro y oscuro.
+* **Archivos y Documentación:** Todos los manuales PDF, comprobantes, contratos y material histórico se almacenan localmente en `Archivos/` y permanecen estrictamente fuera del repositorio git (`.gitignore`).
 
-En el servidor, `.systemd/orion-compose.service` levanta el stack al arrancar la máquina. El `.env`
-de producción se crea a mano en el VPS y nunca viaja en git.
-
-## Notas
-
-- `DATABASE_URL` lleva la contraseña: solo en `.env` (ignorado por git) o en el panel del host. Nunca
-  en el frontend.
-- Django conecta con un rol privilegiado, así que no hay RLS de por medio: **cada endpoint de lectura
-  filtra explícitamente** el contenido publicado (`activo`, `publicado`, `estado='publicado'`).
-- Al cambiar modelos hay que generar la migración: el CI falla si `makemigrations --check` detecta
-  cambios sin migrar.
-- La carpeta `Archivos/` (ignorada por git) guarda el stack anterior en React + Supabase, documentos
-  y diagramas. No se borró nada: sigue disponible en local y en el historial de git.
