@@ -8,7 +8,7 @@ from .emails import enviar_notificacion_cotizacion
 from .imagenes import TIPOS_IMAGEN_PERMITIDOS
 from .models import (
     CategoriaServicio, Servicio, EventoTipo, Evento, FotoEvento,
-    Tag, Post, Cotizacion, ImagenArchivo,
+    Tag, Post, Cotizacion, CotizacionHistorial, ImagenArchivo,
 )
 from .serializers import (
     CategoriaServicioSerializer, ServicioSerializer, EventoTipoSerializer,
@@ -108,7 +108,15 @@ class CotizacionCreate(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         cotizacion = serializer.save()
+        CotizacionHistorial.objects.create(
+            cotizacion=cotizacion,
+            usuario_nombre='Web / Cliente',
+            tipo_accion='creacion',
+            estado_nuevo='nuevo',
+            detalle=f'Cotización recibida desde el sitio web ({cotizacion.tipo_evento}).',
+        )
         enviar_notificacion_cotizacion(cotizacion)
+
 
 
 @require_http_methods(['GET', 'HEAD'])

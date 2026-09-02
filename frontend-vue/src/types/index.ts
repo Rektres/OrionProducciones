@@ -88,6 +88,18 @@ export interface Post {
 export type TipoEvento = 'corporativo' | 'social' | 'festival' | 'otro';
 export type EstadoCotizacion = 'nuevo' | 'en_contacto' | 'cotizado' | 'cerrado' | 'descartado';
 
+export interface CotizacionHistorial {
+  id: string;
+  cotizacion: string;
+  usuario: number | null;
+  usuario_nombre: string;
+  tipo_accion: string;
+  estado_anterior: EstadoCotizacion | null;
+  estado_nuevo: EstadoCotizacion | null;
+  detalle: string | null;
+  created_at: string;
+}
+
 export interface Cotizacion {
   id: string;
   nombre: string;
@@ -100,6 +112,7 @@ export interface Cotizacion {
   presupuesto_estimado: string | null;
   estado: EstadoCotizacion;
   created_at: string;
+  historial?: CotizacionHistorial[];
 }
 
 export interface ResponderCotizacionInput {
@@ -107,6 +120,7 @@ export interface ResponderCotizacionInput {
   mensaje: string;
   nuevo_estado?: EstadoCotizacion;
 }
+
 
 export interface CotizacionFormData {
   nombre: string;

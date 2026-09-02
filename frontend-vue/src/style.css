@@ -1,7 +1,7 @@
 :root {
-  --orion-primary: #13d6ea;
+  --orion-primary: #0284c7;
   --orion-secondary: #d06c26;
-  --orion-cyan: #13d6ea;
+  --orion-cyan: #38bdf8;
   --orion-orange: #d06c26;
   --orion-blue-dark: #03081c;
   --orion-blue-deep: #021636;
@@ -11,13 +11,13 @@
   --orion-tertiary: #0d537d;
   --orion-bg-deep: #03081c;
   --violet: #8b5cf6;
-  --cyan: #13d6ea;
-  --lime: #34d399;
-  --gold: #ffe09c;
+  --cyan: #38bdf8;
+  --lime: #10b981;
+  --gold: #f59e0b;
   --shell-font: 'Inter', system-ui, -apple-system, sans-serif;
   --shell-display: 'Space Grotesk', system-ui, -apple-system, sans-serif;
-  --view-gradient: linear-gradient(45deg, #000b21 0%, #003f82 34%, #13d6ea 68%, #d06c26 100%);
-  --orion-brand-gradient: linear-gradient(135deg, #13d6ea 0%, #d06c26 100%);
+  --view-gradient: linear-gradient(45deg, #000b21 0%, #003f82 34%, #0284c7 68%, #d06c26 100%);
+  --orion-brand-gradient: linear-gradient(135deg, #0284c7 0%, #d06c26 100%);
 }
 
 /* ==========================================================================

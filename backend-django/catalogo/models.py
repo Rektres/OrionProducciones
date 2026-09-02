@@ -1,4 +1,5 @@
 import uuid
+from django.contrib.auth.models import User
 from django.db import models
 
 
@@ -171,3 +172,20 @@ class Cotizacion(models.Model):
 
     class Meta:
         db_table = 'cotizaciones'
+
+
+class CotizacionHistorial(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    cotizacion = models.ForeignKey(Cotizacion, on_delete=models.CASCADE, related_name='historial', db_column='cotizacion_id')
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, db_column='usuario_id')
+    usuario_nombre = models.TextField(default='Sistema')
+    tipo_accion = models.TextField()  # 'creacion', 'cambio_estado', 'respuesta_correo', 'nota'
+    estado_anterior = models.TextField(null=True, blank=True)
+    estado_nuevo = models.TextField(null=True, blank=True)
+    detalle = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'cotizaciones_historial'
+        ordering = ['-created_at']
+

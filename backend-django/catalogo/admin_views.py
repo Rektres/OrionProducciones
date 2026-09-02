@@ -16,7 +16,7 @@ from .admin_serializers import (
     PostAdminSerializer, ServicioAdminSerializer, TagAdminSerializer,
 )
 from .imagenes import crear_imagen_archivo
-from .models import CategoriaServicio, Cotizacion, Evento, EventoTipo, FotoEvento, ImagenArchivo, Post, Servicio, Tag
+from .models import CategoriaServicio, Cotizacion, CotizacionHistorial, Evento, EventoTipo, FotoEvento, ImagenArchivo, Post, Servicio, Tag
 
 logger = logging.getLogger(__name__)
 
@@ -142,10 +142,10 @@ class PostAdminViewSet(ImagenArchivoMixin, AdminViewSetBase):
 
 class CotizacionAdminViewSet(AdminViewSetBase):
     serializer_class = CotizacionAdminSerializer
-    queryset = Cotizacion.objects.order_by('-created_at')
+    queryset = Cotizacion.objects.prefetch_related('historial').order_by('-created_at')
 
     def get_queryset(self):
-        qs = Cotizacion.objects.order_by('-created_at')
+        qs = Cotizacion.objects.prefetch_related('historial').order_by('-created_at')
         estado = self.request.query_params.get('estado')
         if estado:
             qs = qs.filter(estado=estado)
@@ -160,6 +160,25 @@ class CotizacionAdminViewSet(AdminViewSetBase):
                 Q(tipo_evento__icontains=search)
             )
         return qs
+
+    def perform_update(self, serializer):
+        instance = self.get_object()
+        prev_estado = instance.estado
+        updated = serializer.save()
+        nuevo_estado = updated.estado
+
+        if prev_estado != nuevo_estado:
+            user = self.request.user if self.request.user and self.request.user.is_authenticated else None
+            username = user.username if user else 'Admin'
+            CotizacionHistorial.objects.create(
+                cotizacion=updated,
+                usuario=user,
+                usuario_nombre=username,
+                tipo_accion='cambio_estado',
+                estado_anterior=prev_estado,
+                estado_nuevo=nuevo_estado,
+                detalle=f'Estado modificado de "{prev_estado}" a "{nuevo_estado}" por {username}.',
+            )
 
     @action(detail=True, methods=['post'], url_path='responder')
     def responder(self, request, pk=None):
@@ -176,6 +195,15 @@ class CotizacionAdminViewSet(AdminViewSetBase):
                 {'error': 'La cotización no tiene una dirección de correo asociada.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        # Convert paragraphs and newlines to proper HTML paragraphs and <br>
+        parrafos = [p.strip() for p in mensaje.split('\n\n') if p.strip()]
+        parrafos_html = []
+        for p in parrafos:
+            lineas = [l for l in p.split('\n')]
+            p_html = '<br>\n'.join(lineas)
+            parrafos_html.append(f'<p style="margin:0 0 16px 0; font-size:15px; color:#334155; line-height:1.75;">{p_html}</p>')
+        cuerpo_mensaje_html = '\n'.join(parrafos_html) if parrafos_html else f'<p style="margin:0 0 16px 0; font-size:15px; color:#334155; line-height:1.75;">{mensaje}</p>'
 
         cuerpo_html = f"""<!DOCTYPE html>
 <html lang="es">
@@ -204,12 +232,12 @@ class CotizacionAdminViewSet(AdminViewSetBase):
           <!-- CONTENIDO -->
           <tr>
             <td style="padding:32px;">
-              <h2 style="margin:0 0 16px 0; font-size:19px; color:#0f172a; font-weight:700;">
+              <h2 style="margin:0 0 18px 0; font-size:19px; color:#0f172a; font-weight:700;">
                 Hola {cotizacion.nombre},
               </h2>
               
-              <div style="font-size:14.5px; color:#334155; line-height:1.7; margin-bottom:24px; white-space:pre-wrap;">
-{mensaje}
+              <div style="margin-bottom:24px;">
+{cuerpo_mensaje_html}
               </div>
 
               <!-- CAJA RESUMEN REFERENCIAL -->
@@ -258,12 +286,14 @@ class CotizacionAdminViewSet(AdminViewSetBase):
 </body>
 </html>"""
 
+        from_email = 'Orion Stage <contacto@orionstage.cl>'
+
         try:
             send_mail(
                 subject=asunto,
                 message=f"Hola {cotizacion.nombre},\n\n{mensaje}\n\n--\nEquipo Orion Stage Producciones\nhttps://orionstage.cl",
                 html_message=cuerpo_html,
-                from_email=settings.DEFAULT_FROM_EMAIL,
+                from_email=from_email,
                 recipient_list=[cotizacion.email],
                 fail_silently=False,
             )
@@ -274,12 +304,30 @@ class CotizacionAdminViewSet(AdminViewSetBase):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+        prev_estado = cotizacion.estado
         cotizacion.estado = nuevo_estado
         cotizacion.save(update_fields=['estado'])
+
+        user = request.user if request.user and request.user.is_authenticated else None
+        username = user.username if user else 'Admin'
+        CotizacionHistorial.objects.create(
+            cotizacion=cotizacion,
+            usuario=user,
+            usuario_nombre=username,
+            tipo_accion='respuesta_correo',
+            estado_anterior=prev_estado,
+            estado_nuevo=nuevo_estado,
+            detalle=f'Respuesta oficial enviada a {cotizacion.email} por {username}. Asunto: "{asunto}"',
+        )
+
+        # Recargar instancia fresca con historial completo
+        cotizacion_fresca = Cotizacion.objects.prefetch_related('historial').get(pk=cotizacion.pk)
 
         return Response({
             'status': 'ok',
             'mensaje': f'Respuesta enviada exitosamente a {cotizacion.email}.',
-            'cotizacion': CotizacionAdminSerializer(cotizacion).data,
+            'cotizacion': CotizacionAdminSerializer(cotizacion_fresca).data,
         })
+
+
 

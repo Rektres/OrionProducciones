@@ -1,7 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 
-from .models import CategoriaServicio, Cotizacion, Evento, EventoTipo, FotoEvento, Post, Servicio, Tag
+from .models import CategoriaServicio, Cotizacion, CotizacionHistorial, Evento, EventoTipo, FotoEvento, Post, Servicio, Tag
 
 
 class CategoriaServicioAdminSerializer(serializers.ModelSerializer):
@@ -98,7 +98,16 @@ class PostAdminSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class CotizacionHistorialSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CotizacionHistorial
+        fields = '__all__'
+        read_only_fields = ('id', 'created_at')
+
+
 class CotizacionAdminSerializer(serializers.ModelSerializer):
+    historial = CotizacionHistorialSerializer(many=True, read_only=True)
+
     class Meta:
         model = Cotizacion
         fields = '__all__'
@@ -113,4 +122,5 @@ class CotizacionResponderSerializer(serializers.Serializer):
         required=False,
         default='en_contacto'
     )
+
 

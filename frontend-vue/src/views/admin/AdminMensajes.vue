@@ -9,10 +9,24 @@ const busqueda = ref('');
 const filtroEstado = ref<string>('todos');
 const vista = ref<'lista' | 'cards'>('lista');
 
-// Modal de detalle y respuesta
+// Ordenamiento de tabla
+type ColumnaOrden = 'estado' | 'created_at' | 'nombre' | 'tipo_evento' | 'fecha_estimada' | 'presupuesto_estimado';
+const columnaOrden = ref<ColumnaOrden>('created_at');
+const direccionOrden = ref<'asc' | 'desc'>('desc');
+
+const ordenarPor = (col: ColumnaOrden) => {
+  if (columnaOrden.value === col) {
+    direccionOrden.value = direccionOrden.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    columnaOrden.value = col;
+    direccionOrden.value = 'asc';
+  }
+};
+
+// Modal de detalle, respuesta e historial
 const modalAbierto = ref(false);
 const cotizacionSeleccionada = ref<Cotizacion | null>(null);
-const pestanaModal = ref<'detalle' | 'responder'>('detalle');
+const pestanaModal = ref<'detalle' | 'responder' | 'historial'>('detalle');
 
 // Estado de respuesta de correo
 const enviandoRespuesta = ref(false);
@@ -63,6 +77,10 @@ const cargarCotizaciones = async () => {
   cargando.value = true;
   try {
     cotizaciones.value = await adminCotizacionesService.listar();
+    if (cotizacionSeleccionada.value) {
+      const updated = cotizaciones.value.find((c) => c.id === cotizacionSeleccionada.value?.id);
+      if (updated) cotizacionSeleccionada.value = { ...updated };
+    }
   } catch (err) {
     console.error('Error cargando cotizaciones:', err);
   } finally {
@@ -79,9 +97,9 @@ const totalCotizados = computed(() => cotizaciones.value.filter((c) => c.estado 
 const totalCerrados = computed(() => cotizaciones.value.filter((c) => c.estado === 'cerrado').length);
 const totalDescartados = computed(() => cotizaciones.value.filter((c) => c.estado === 'descartado').length);
 
-// Filtrado reactivo por texto y estado
-const filtradas = computed(() => {
-  let list = cotizaciones.value;
+// Filtrado y ordenamiento reactivo
+const filtradasYOrdenadas = computed(() => {
+  let list = [...cotizaciones.value];
 
   if (filtroEstado.value !== 'todos') {
     list = list.filter((c) => c.estado === filtroEstado.value);
@@ -99,16 +117,41 @@ const filtradas = computed(() => {
     );
   }
 
+  const factor = direccionOrden.value === 'asc' ? 1 : -1;
+  list.sort((a, b) => {
+    switch (columnaOrden.value) {
+      case 'created_at':
+        return factor * (new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      case 'nombre':
+        return factor * a.nombre.localeCompare(b.nombre, 'es');
+      case 'tipo_evento':
+        return factor * a.tipo_evento.localeCompare(b.tipo_evento, 'es');
+      case 'fecha_estimada': {
+        const fa = a.fecha_estimada || '';
+        const fb = b.fecha_estimada || '';
+        return factor * fa.localeCompare(fb);
+      }
+      case 'presupuesto_estimado': {
+        const pa = a.presupuesto_estimado || '';
+        const pb = b.presupuesto_estimado || '';
+        return factor * pa.localeCompare(pb);
+      }
+      case 'estado':
+        return factor * a.estado.localeCompare(b.estado);
+      default:
+        return 0;
+    }
+  });
+
   return list;
 });
 
-const abrirDetalle = (c: Cotizacion, tab: 'detalle' | 'responder' = 'detalle') => {
+const abrirDetalle = (c: Cotizacion, tab: 'detalle' | 'responder' | 'historial' = 'detalle') => {
   cotizacionSeleccionada.value = { ...c };
   pestanaModal.value = tab;
   errorRespuesta.value = '';
   respuestaExitosa.value = '';
 
-  // Inicializar asunto y estado por defecto
   formRespuesta.asunto = `Respuesta a tu cotización para ${c.tipo_evento} — Orion Stage`;
   formRespuesta.mensaje = `Hola ${c.nombre},\n\nMuchas gracias por escribirnos a Orion Stage respecto a tu requerimiento.\n\n`;
   formRespuesta.nuevo_estado = c.estado === 'nuevo' ? 'en_contacto' : c.estado;
@@ -138,9 +181,9 @@ const cambiarEstado = async (nuevoEstado: EstadoCotizacion) => {
       cotizacionSeleccionada.value.id,
       nuevoEstado
     );
-    cotizacionSeleccionada.value.estado = actualizada.estado;
+    cotizacionSeleccionada.value = { ...actualizada };
     const idx = cotizaciones.value.findIndex((c) => c.id === actualizada.id);
-    if (idx !== -1) cotizaciones.value[idx].estado = actualizada.estado;
+    if (idx !== -1) cotizaciones.value[idx] = actualizada;
   } catch (err) {
     console.error('Error actualizando estado:', err);
     alert('No se pudo actualizar el estado.');
@@ -164,15 +207,15 @@ const enviarRespuesta = async () => {
       formRespuesta
     );
     respuestaExitosa.value = res.mensaje || '¡Correo enviado con éxito!';
-    cotizacionSeleccionada.value.estado = res.cotizacion.estado;
+    cotizacionSeleccionada.value = { ...res.cotizacion };
 
     // Actualizar en listado general
     const idx = cotizaciones.value.findIndex((c) => c.id === res.cotizacion.id);
     if (idx !== -1) cotizaciones.value[idx] = res.cotizacion;
 
     setTimeout(() => {
-      pestanaModal.value = 'detalle';
-    }, 1800);
+      pestanaModal.value = 'historial';
+    }, 1500);
   } catch (err: any) {
     errorRespuesta.value =
       err?.response?.data?.error || 'Ocurrió un error al enviar el correo. Revisa la configuración SMTP.';
@@ -210,20 +253,21 @@ const formatearFecha = (fechaIso: string) => {
   }
 };
 
+// Clases sobrias y no neón para estados
 const badgeClaseEstado = (estado: EstadoCotizacion) => {
   switch (estado) {
     case 'nuevo':
-      return 'bg-warning text-dark fw-bold';
+      return 'badge-subtle-amber';
     case 'en_contacto':
-      return 'bg-info bg-opacity-25 text-info border border-info border-opacity-50';
+      return 'badge-subtle-sky';
     case 'cotizado':
-      return 'bg-primary bg-opacity-25 text-primary border border-primary border-opacity-50';
+      return 'badge-subtle-indigo';
     case 'cerrado':
-      return 'bg-success bg-opacity-25 text-success border border-success border-opacity-50';
+      return 'badge-subtle-emerald';
     case 'descartado':
-      return 'bg-secondary bg-opacity-25 text-secondary';
+      return 'badge-subtle-slate';
     default:
-      return 'bg-secondary';
+      return 'badge-subtle-slate';
   }
 };
 
@@ -244,6 +288,34 @@ const labelEstado = (estado: EstadoCotizacion) => {
   }
 };
 
+const labelTipoAccion = (tipo: string) => {
+  switch (tipo) {
+    case 'creacion':
+      return 'Registro Web';
+    case 'cambio_estado':
+      return 'Cambio de Estado';
+    case 'respuesta_correo':
+      return 'Correo Oficial';
+    case 'nota':
+      return 'Nota Interna';
+    default:
+      return tipo;
+  }
+};
+
+const badgeClaseAccion = (tipo: string) => {
+  switch (tipo) {
+    case 'creacion':
+      return 'badge-subtle-slate';
+    case 'cambio_estado':
+      return 'badge-subtle-sky';
+    case 'respuesta_correo':
+      return 'badge-subtle-indigo';
+    default:
+      return 'badge-subtle-slate';
+  }
+};
+
 const obtenerLinkWhatsapp = (c: Cotizacion) => {
   if (!c.telefono) return '#';
   const cleanPhone = c.telefono.replace(/[^0-9]/g, '');
@@ -261,7 +333,7 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
       <div>
         <h4 class="mb-1 text-orion-gold fw-bold">Bandeja de Mensajes y Cotizaciones</h4>
         <p class="text-secondary small mb-0">
-          Gestiona las consultas recibidas desde la web, actualiza prospectos y responde oficialmente por correo y WhatsApp.
+          Gestiona requerimientos, revisa el historial de auditoría y responde oficialmente desde <strong>contacto@orionstage.cl</strong>.
         </p>
       </div>
 
@@ -284,57 +356,57 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
       <div class="col-6 col-md-4 col-lg-2">
         <div
           class="card admin-card p-3 text-center admin-card-clickable h-100"
-          :class="{ 'border-primary shadow-sm': filtroEstado === 'todos' }"
+          :class="{ 'border-primary-subtle shadow-sm active-tab-border': filtroEstado === 'todos' }"
           @click="filtroEstado = 'todos'"
         >
           <small class="text-secondary d-block text-uppercase" style="font-size: 11px;">Total</small>
-          <span class="fs-4 fw-bold">{{ cotizaciones.length }}</span>
+          <span class="fs-4 fw-bold text-body">{{ cotizaciones.length }}</span>
         </div>
       </div>
       <div class="col-6 col-md-4 col-lg-2">
         <div
           class="card admin-card p-3 text-center admin-card-clickable h-100"
-          :class="{ 'border-warning shadow-sm': filtroEstado === 'nuevo' }"
+          :class="{ 'border-warning-subtle shadow-sm active-tab-border': filtroEstado === 'nuevo' }"
           @click="filtroEstado = 'nuevo'"
         >
-          <small class="text-warning d-block text-uppercase" style="font-size: 11px;">● Nuevos</small>
-          <span class="fs-4 fw-bold text-warning">{{ totalNuevos }}</span>
+          <small class="text-warning-emphasis d-block text-uppercase" style="font-size: 11px;">● Nuevos</small>
+          <span class="fs-4 fw-bold text-warning-emphasis">{{ totalNuevos }}</span>
         </div>
       </div>
       <div class="col-6 col-md-4 col-lg-2">
         <div
           class="card admin-card p-3 text-center admin-card-clickable h-100"
-          :class="{ 'border-info shadow-sm': filtroEstado === 'en_contacto' }"
+          :class="{ 'border-info-subtle shadow-sm active-tab-border': filtroEstado === 'en_contacto' }"
           @click="filtroEstado = 'en_contacto'"
         >
-          <small class="text-info d-block text-uppercase" style="font-size: 11px;">En contacto</small>
-          <span class="fs-4 fw-bold text-info">{{ totalEnContacto }}</span>
+          <small class="text-info-emphasis d-block text-uppercase" style="font-size: 11px;">En contacto</small>
+          <span class="fs-4 fw-bold text-info-emphasis">{{ totalEnContacto }}</span>
         </div>
       </div>
       <div class="col-6 col-md-4 col-lg-2">
         <div
           class="card admin-card p-3 text-center admin-card-clickable h-100"
-          :class="{ 'border-primary shadow-sm': filtroEstado === 'cotizado' }"
+          :class="{ 'border-indigo-subtle shadow-sm active-tab-border': filtroEstado === 'cotizado' }"
           @click="filtroEstado = 'cotizado'"
         >
-          <small class="text-primary d-block text-uppercase" style="font-size: 11px;">Cotizados</small>
-          <span class="fs-4 fw-bold text-primary">{{ totalCotizados }}</span>
+          <small class="text-primary-emphasis d-block text-uppercase" style="font-size: 11px;">Cotizados</small>
+          <span class="fs-4 fw-bold text-primary-emphasis">{{ totalCotizados }}</span>
         </div>
       </div>
       <div class="col-6 col-md-4 col-lg-2">
         <div
           class="card admin-card p-3 text-center admin-card-clickable h-100"
-          :class="{ 'border-success shadow-sm': filtroEstado === 'cerrado' }"
+          :class="{ 'border-success-subtle shadow-sm active-tab-border': filtroEstado === 'cerrado' }"
           @click="filtroEstado = 'cerrado'"
         >
-          <small class="text-success d-block text-uppercase" style="font-size: 11px;">✓ Cerrados</small>
-          <span class="fs-4 fw-bold text-success">{{ totalCerrados }}</span>
+          <small class="text-success-emphasis d-block text-uppercase" style="font-size: 11px;">✓ Cerrados</small>
+          <span class="fs-4 fw-bold text-success-emphasis">{{ totalCerrados }}</span>
         </div>
       </div>
       <div class="col-6 col-md-4 col-lg-2">
         <div
           class="card admin-card p-3 text-center admin-card-clickable h-100"
-          :class="{ 'border-secondary shadow-sm': filtroEstado === 'descartado' }"
+          :class="{ 'border-secondary shadow-sm active-tab-border': filtroEstado === 'descartado' }"
           @click="filtroEstado = 'descartado'"
         >
           <small class="text-secondary d-block text-uppercase" style="font-size: 11px;">Descartados</small>
@@ -347,12 +419,12 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
     <div class="card admin-card p-3 mb-4">
       <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
         <!-- Buscador -->
-        <div class="flex-grow-1" style="max-width: 400px;">
+        <div class="flex-grow-1" style="max-width: 380px;">
           <input
             v-model="busqueda"
             type="search"
             class="form-control form-control-sm admin-toolbar-search"
-            placeholder="Buscar por cliente, email, empresa o requerimiento..."
+            placeholder="Buscar cliente, email, empresa..."
           />
         </div>
 
@@ -361,7 +433,7 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
           <button
             type="button"
             class="btn btn-sm"
-            :class="filtroEstado === 'todos' ? 'btn-orion' : 'btn-outline-secondary'"
+            :class="filtroEstado === 'todos' ? 'btn-secondary' : 'btn-outline-secondary'"
             @click="filtroEstado = 'todos'"
           >
             Todos
@@ -369,7 +441,7 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
           <button
             type="button"
             class="btn btn-sm"
-            :class="filtroEstado === 'nuevo' ? 'btn-warning text-dark fw-bold' : 'btn-outline-secondary'"
+            :class="filtroEstado === 'nuevo' ? 'badge-subtle-amber fw-bold' : 'btn-outline-secondary'"
             @click="filtroEstado = 'nuevo'"
           >
             Nuevos ({{ totalNuevos }})
@@ -377,7 +449,7 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
           <button
             type="button"
             class="btn btn-sm"
-            :class="filtroEstado === 'en_contacto' ? 'btn-info text-dark fw-bold' : 'btn-outline-secondary'"
+            :class="filtroEstado === 'en_contacto' ? 'badge-subtle-sky fw-bold' : 'btn-outline-secondary'"
             @click="filtroEstado = 'en_contacto'"
           >
             En contacto
@@ -385,7 +457,7 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
           <button
             type="button"
             class="btn btn-sm"
-            :class="filtroEstado === 'cotizado' ? 'btn-primary' : 'btn-outline-secondary'"
+            :class="filtroEstado === 'cotizado' ? 'badge-subtle-indigo fw-bold' : 'btn-outline-secondary'"
             @click="filtroEstado = 'cotizado'"
           >
             Cotizados
@@ -393,11 +465,11 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
         </div>
 
         <!-- Selector de Vista Cards / Lista -->
-        <div class="btn-group btn-group-sm" role="group" aria-label="Cambiar vista">
+        <div class="btn-group btn-group-sm ms-auto" role="group" aria-label="Cambiar vista">
           <button
             type="button"
             class="btn"
-            :class="vista === 'lista' ? 'btn-primary' : 'btn-outline-secondary'"
+            :class="vista === 'lista' ? 'btn-secondary' : 'btn-outline-secondary'"
             title="Vista en lista"
             @click="vista = 'lista'"
           >
@@ -406,7 +478,7 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
           <button
             type="button"
             class="btn"
-            :class="vista === 'cards' ? 'btn-primary' : 'btn-outline-secondary'"
+            :class="vista === 'cards' ? 'btn-secondary' : 'btn-outline-secondary'"
             title="Vista en tarjetas"
             @click="vista = 'cards'"
           >
@@ -416,24 +488,42 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
       </div>
     </div>
 
-    <!-- LISTADO - VISTA 1: TABLA (LISTA) -->
+    <!-- LISTADO - VISTA 1: TABLA (LISTA) CON SORTING -->
     <div v-if="vista === 'lista'" class="card admin-card overflow-hidden shadow-sm">
       <div class="table-responsive mb-0">
         <table class="table table-hover align-middle mb-0">
           <thead class="table-dark">
             <tr>
-              <th style="width: 120px;">Estado</th>
-              <th style="width: 160px;">Fecha / Hora</th>
-              <th>Cliente / Empresa</th>
-              <th>Tipo de Evento</th>
-              <th>Fecha Est.</th>
-              <th>Presupuesto</th>
-              <th style="width: 200px;" class="text-end">Acciones</th>
+              <th style="width: 130px; cursor: pointer; user-select: none;" @click="ordenarPor('estado')">
+                Estado
+                <span class="small opacity-75 ms-1">{{ columnaOrden === 'estado' ? (direccionOrden === 'asc' ? '▲' : '▼') : '↕' }}</span>
+              </th>
+              <th style="width: 160px; cursor: pointer; user-select: none;" @click="ordenarPor('created_at')">
+                Fecha / Hora
+                <span class="small opacity-75 ms-1">{{ columnaOrden === 'created_at' ? (direccionOrden === 'asc' ? '▲' : '▼') : '↕' }}</span>
+              </th>
+              <th style="cursor: pointer; user-select: none;" @click="ordenarPor('nombre')">
+                Cliente / Empresa
+                <span class="small opacity-75 ms-1">{{ columnaOrden === 'nombre' ? (direccionOrden === 'asc' ? '▲' : '▼') : '↕' }}</span>
+              </th>
+              <th style="cursor: pointer; user-select: none;" @click="ordenarPor('tipo_evento')">
+                Tipo Evento
+                <span class="small opacity-75 ms-1">{{ columnaOrden === 'tipo_evento' ? (direccionOrden === 'asc' ? '▲' : '▼') : '↕' }}</span>
+              </th>
+              <th style="cursor: pointer; user-select: none;" @click="ordenarPor('fecha_estimada')">
+                Fecha Est.
+                <span class="small opacity-75 ms-1">{{ columnaOrden === 'fecha_estimada' ? (direccionOrden === 'asc' ? '▲' : '▼') : '↕' }}</span>
+              </th>
+              <th style="cursor: pointer; user-select: none;" @click="ordenarPor('presupuesto_estimado')">
+                Presupuesto
+                <span class="small opacity-75 ms-1">{{ columnaOrden === 'presupuesto_estimado' ? (direccionOrden === 'asc' ? '▲' : '▼') : '↕' }}</span>
+              </th>
+              <th style="width: 250px;" class="text-end text-nowrap">Acciones</th>
             </tr>
           </thead>
           <tbody>
             <tr
-              v-for="c in filtradas"
+              v-for="c in filtradasYOrdenadas"
               :key="c.id"
               class="admin-card-clickable"
               @click="abrirDetalle(c, 'detalle')"
@@ -454,7 +544,7 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
                 </div>
               </td>
               <td>
-                <span class="badge bg-secondary bg-opacity-25 text-body text-uppercase" style="font-size: 11px;">
+                <span class="badge badge-subtle-slate text-uppercase" style="font-size: 11px;">
                   {{ c.tipo_evento }}
                 </span>
               </td>
@@ -462,39 +552,52 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
                 <small>{{ c.fecha_estimada || 'Por definir' }}</small>
               </td>
               <td>
-                <span v-if="c.presupuesto_estimado" class="text-success small fw-semibold">
+                <span v-if="c.presupuesto_estimado" class="text-success-emphasis small fw-semibold">
                   {{ c.presupuesto_estimado }}
                 </span>
                 <span v-else class="text-secondary small">-</span>
               </td>
-              <td class="text-end">
-                <button
-                  type="button"
-                  class="btn btn-outline-primary btn-sm me-1"
-                  title="Ver detalle"
-                  @click.stop="abrirDetalle(c, 'detalle')"
-                >
-                  👁 Ver
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-orion btn-sm me-1"
-                  title="Responder por correo"
-                  @click.stop="abrirDetalle(c, 'responder')"
-                >
-                  ✉ Responder
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-danger btn-sm"
-                  title="Eliminar registro"
-                  @click.stop="eliminarCotizacion(c)"
-                >
-                  ✕
-                </button>
+              <!-- ACCIONES ALINEADAS HORIZONTALMENTE CON ELIMINAR A LA DERECHA -->
+              <td class="text-end text-nowrap" @click.stop>
+                <div class="d-inline-flex align-items-center gap-1">
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm"
+                    title="Ver detalle del requerimiento"
+                    @click="abrirDetalle(c, 'detalle')"
+                  >
+                    👁 Ver
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary btn-sm"
+                    title="Responder por correo oficial"
+                    @click="abrirDetalle(c, 'responder')"
+                  >
+                    ✉ Responder
+                  </button>
+                  <a
+                    v-if="c.telefono"
+                    :href="obtenerLinkWhatsapp(c)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn btn-outline-success btn-sm"
+                    title="Abrir WhatsApp"
+                  >
+                    WhatsApp
+                  </a>
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    title="Eliminar cotización"
+                    @click="eliminarCotizacion(c)"
+                  >
+                    ✕
+                  </button>
+                </div>
               </td>
             </tr>
-            <tr v-if="!filtradas.length">
+            <tr v-if="!filtradasYOrdenadas.length">
               <td colspan="7" class="text-center py-5 text-secondary">
                 {{ cotizaciones.length ? `No hay cotizaciones que coincidan con "${busqueda}".` : 'No se han recibido cotizaciones todavía.' }}
               </td>
@@ -506,10 +609,10 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
 
     <!-- LISTADO - VISTA 2: TARJETAS (CARDS) -->
     <div v-else class="row g-3">
-      <div v-for="c in filtradas" :key="c.id" class="col-md-6 col-lg-4">
+      <div v-for="c in filtradasYOrdenadas" :key="c.id" class="col-md-6 col-lg-4">
         <div
           class="card h-100 admin-card admin-card-clickable p-3 d-flex flex-column justify-content-between"
-          :class="{ 'border-warning': c.estado === 'nuevo' }"
+          :class="{ 'border-warning-subtle': c.estado === 'nuevo' }"
           @click="abrirDetalle(c, 'detalle')"
         >
           <div>
@@ -525,20 +628,24 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
             <p class="small text-secondary mb-2">{{ c.email }} {{ c.telefono ? `· ${c.telefono}` : '' }}</p>
 
             <div class="d-flex gap-2 mb-2">
-              <span class="badge bg-secondary bg-opacity-25 text-body text-uppercase" style="font-size: 10px;">
+              <span class="badge badge-subtle-slate text-uppercase" style="font-size: 10px;">
                 {{ c.tipo_evento }}
               </span>
-              <span v-if="c.fecha_estimada" class="badge bg-dark text-secondary" style="font-size: 10px;">
+              <span v-if="c.fecha_estimada" class="badge badge-subtle-slate" style="font-size: 10px;">
                 📅 {{ c.fecha_estimada }}
+              </span>
+              <span v-if="c.historial && c.historial.length" class="badge badge-subtle-sky ms-auto" style="font-size: 10px;">
+                📜 {{ c.historial.length }} eventos
               </span>
             </div>
 
-            <p class="small text-body bg-dark bg-opacity-25 p-2 rounded mb-3" style="max-height: 70px; overflow: hidden; text-overflow: ellipsis;">
+            <p class="small text-body bg-dark bg-opacity-40 p-2 rounded mb-3" style="max-height: 70px; overflow: hidden; text-overflow: ellipsis; line-height: 1.5;">
               "{{ c.descripcion }}"
             </p>
           </div>
 
-          <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary border-opacity-25">
+          <!-- BARRA DE ACCIONES DE TARJETA -->
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary border-opacity-25" @click.stop>
             <a
               v-if="c.telefono"
               :href="obtenerLinkWhatsapp(c)"
@@ -546,23 +653,29 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
               rel="noopener noreferrer"
               class="btn btn-outline-success btn-sm py-1 px-2"
               title="Abrir WhatsApp"
-              @click.stop
             >
               WhatsApp
             </a>
-            <div class="d-flex gap-1 ms-auto">
+            <div class="d-inline-flex gap-1 ms-auto">
               <button
                 type="button"
-                class="btn btn-orion btn-sm"
-                @click.stop="abrirDetalle(c, 'responder')"
+                class="btn btn-outline-secondary btn-sm py-1 px-2"
+                @click="abrirDetalle(c, 'detalle')"
+              >
+                👁 Ver
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm py-1 px-2"
+                @click="abrirDetalle(c, 'responder')"
               >
                 ✉ Responder
               </button>
               <button
                 type="button"
-                class="btn btn-outline-danger btn-sm"
+                class="btn btn-outline-danger btn-sm py-1 px-2"
                 title="Eliminar"
-                @click.stop="eliminarCotizacion(c)"
+                @click="eliminarCotizacion(c)"
               >
                 ✕
               </button>
@@ -570,21 +683,21 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
           </div>
         </div>
       </div>
-      <div v-if="!filtradas.length" class="col-12 text-center py-5 text-secondary">
+      <div v-if="!filtradasYOrdenadas.length" class="col-12 text-center py-5 text-secondary">
         {{ cotizaciones.length ? `No hay mensajes que coincidan con "${busqueda}".` : 'No se han recibido mensajes aún.' }}
       </div>
     </div>
 
-    <!-- MODAL DE DETALLE Y GESTIÓN DE RESPUESTA -->
+    <!-- MODAL DE DETALLE, RESPUESTA E HISTORIAL -->
     <div
       v-if="modalAbierto && cotizacionSeleccionada"
       class="modal fade show d-block"
       tabindex="-1"
-      style="background: rgba(0, 0, 0, 0.8); z-index: 1060;"
+      style="background: rgba(0, 0, 0, 0.85); z-index: 1060; backdrop-filter: blur(4px);"
       @click.self="cerrarModal"
     >
       <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-        <div class="modal-content admin-card">
+        <div class="modal-content admin-card border border-secondary border-opacity-25 shadow-lg">
           <!-- CABECERA DEL MODAL -->
           <div class="modal-header border-bottom border-secondary border-opacity-25 pb-3">
             <div>
@@ -601,13 +714,13 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
             <button type="button" class="btn-close" aria-label="Cerrar" @click="cerrarModal"></button>
           </div>
 
-          <!-- PESTAÑAS DENTRO DEL MODAL -->
+          <!-- PESTAÑAS DENTRO DEL MODAL (DETALLE / RESPONDER / HISTORIAL) -->
           <div class="px-4 pt-3 border-bottom border-secondary border-opacity-25">
-            <ul class="nav nav-tabs border-0">
+            <ul class="nav nav-tabs border-0 gap-2">
               <li class="nav-item">
                 <button
                   type="button"
-                  class="nav-link"
+                  class="nav-link py-2 px-3"
                   :class="{ 'active fw-bold text-orion-gold': pestanaModal === 'detalle' }"
                   @click="pestanaModal = 'detalle'"
                 >
@@ -617,11 +730,24 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
               <li class="nav-item">
                 <button
                   type="button"
-                  class="nav-link"
+                  class="nav-link py-2 px-3"
                   :class="{ 'active fw-bold text-orion-gold': pestanaModal === 'responder' }"
                   @click="pestanaModal = 'responder'"
                 >
-                  ✉ Redactar Respuesta por Correo
+                  ✉ Redactar Respuesta
+                </button>
+              </li>
+              <li class="nav-item">
+                <button
+                  type="button"
+                  class="nav-link py-2 px-3"
+                  :class="{ 'active fw-bold text-orion-gold': pestanaModal === 'historial' }"
+                  @click="pestanaModal = 'historial'"
+                >
+                  📜 Historial & Auditoría
+                  <span v-if="cotizacionSeleccionada.historial && cotizacionSeleccionada.historial.length" class="badge badge-subtle-slate ms-1">
+                    {{ cotizacionSeleccionada.historial.length }}
+                  </span>
                 </button>
               </li>
             </ul>
@@ -632,11 +758,11 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
             <!-- PESTAÑA 1: DETALLE DE COTIZACIÓN -->
             <div v-if="pestanaModal === 'detalle'">
               <!-- Ficha de Datos -->
-              <div class="card bg-dark bg-opacity-25 border border-secondary border-opacity-25 p-3 mb-4 rounded">
+              <div class="card bg-dark bg-opacity-40 border border-secondary border-opacity-25 p-3 mb-4 rounded-3">
                 <div class="row g-3">
                   <div class="col-sm-6">
                     <small class="text-secondary d-block">Correo Electrónico</small>
-                    <a :href="`mailto:${cotizacionSeleccionada.email}`" class="text-primary fw-semibold">
+                    <a :href="`mailto:${cotizacionSeleccionada.email}`" class="text-primary-emphasis fw-semibold">
                       {{ cotizacionSeleccionada.email }}
                     </a>
                   </div>
@@ -649,7 +775,7 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
                         :href="obtenerLinkWhatsapp(cotizacionSeleccionada)"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="badge bg-success text-white text-decoration-none py-1 px-2"
+                        class="badge badge-subtle-emerald text-decoration-none py-1 px-2"
                       >
                         Abrir WhatsApp ↗
                       </a>
@@ -661,7 +787,7 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
                   </div>
                   <div class="col-sm-6">
                     <small class="text-secondary d-block">Tipo de Evento</small>
-                    <span class="badge bg-secondary text-uppercase">{{ cotizacionSeleccionada.tipo_evento }}</span>
+                    <span class="badge badge-subtle-slate text-uppercase">{{ cotizacionSeleccionada.tipo_evento }}</span>
                   </div>
                   <div class="col-sm-6">
                     <small class="text-secondary d-block">Fecha Estimada</small>
@@ -669,19 +795,19 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
                   </div>
                   <div class="col-sm-6">
                     <small class="text-secondary d-block">Presupuesto Estimado</small>
-                    <span class="fw-bold text-success">{{ cotizacionSeleccionada.presupuesto_estimado || 'A evaluar' }}</span>
+                    <span class="fw-bold text-success-emphasis">{{ cotizacionSeleccionada.presupuesto_estimado || 'A evaluar' }}</span>
                   </div>
                 </div>
               </div>
 
               <!-- Mensaje / Requerimiento -->
               <h6 class="fw-bold mb-2 text-orion-gold">Mensaje o Detalle del Requerimiento:</h6>
-              <div class="p-3 bg-dark bg-opacity-50 rounded border-start border-4 border-warning mb-4" style="white-space: pre-wrap; font-size: 14.5px; line-height: 1.6;">
+              <div class="p-3 bg-dark bg-opacity-50 rounded-3 border-start border-3 border-warning-subtle mb-4" style="white-space: pre-wrap; font-size: 14.5px; line-height: 1.7;">
 {{ cotizacionSeleccionada.descripcion }}
               </div>
 
               <!-- Selector Rápido de Estado -->
-              <div class="card p-3 bg-dark bg-opacity-25 border border-secondary border-opacity-25">
+              <div class="card p-3 bg-dark bg-opacity-40 border border-secondary border-opacity-25 rounded-3">
                 <label class="form-label fw-semibold mb-2">Cambiar Estado del Prospecto:</label>
                 <div class="d-flex gap-2 flex-wrap">
                   <button
@@ -699,9 +825,9 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
             </div>
 
             <!-- PESTAÑA 2: REDACTAR RESPUESTA POR CORREO -->
-            <div v-else>
-              <div class="alert alert-info py-2 px-3 small mb-3">
-                ℹ El mensaje será enviado formalmente desde el correo corporativo (SMTP) de Orion Stage a <strong>{{ cotizacionSeleccionada.email }}</strong> con diseño HTML enriquecido.
+            <div v-else-if="pestanaModal === 'responder'">
+              <div class="alert alert-secondary py-2 px-3 small mb-3 border border-secondary border-opacity-25 bg-dark bg-opacity-50">
+                ℹ El mensaje será enviado formalmente desde <strong>contacto@orionstage.cl</strong> a <strong>{{ cotizacionSeleccionada.email }}</strong> respetando todos los párrafos y saltos de línea.
               </div>
 
               <!-- Selector de Plantillas Rápidas -->
@@ -739,8 +865,12 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
                   rows="8"
                   required
                   class="form-control"
-                  placeholder="Escribe aquí el mensaje oficial..."
+                  placeholder="Escribe aquí el mensaje oficial respetando los párrafos..."
+                  style="line-height: 1.6; font-size: 14.5px;"
                 ></textarea>
+                <small class="text-secondary d-block mt-1">
+                  💡 Los saltos de línea y párrafos escritos aquí se reflejarán fielmente en el correo final del cliente.
+                </small>
               </div>
 
               <div class="row g-3 align-items-center mb-3">
@@ -759,13 +889,58 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
               <div v-if="errorRespuesta" class="alert alert-danger py-2 mb-3">{{ errorRespuesta }}</div>
               <div v-if="respuestaExitosa" class="alert alert-success py-2 mb-3">✓ {{ respuestaExitosa }}</div>
             </div>
+
+            <!-- PESTAÑA 3: HISTORIAL & AUDITORÍA -->
+            <div v-else-if="pestanaModal === 'historial'">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0 text-orion-gold">Registro de Acciones y Cambios de Estado</h6>
+                <small class="text-secondary">Total: {{ cotizacionSeleccionada.historial?.length || 0 }} registros</small>
+              </div>
+
+              <div v-if="cotizacionSeleccionada.historial && cotizacionSeleccionada.historial.length" class="timeline-container">
+                <div
+                  v-for="(h, idx) in cotizacionSeleccionada.historial"
+                  :key="h.id || idx"
+                  class="timeline-item pb-3 mb-3 border-bottom border-secondary border-opacity-10"
+                >
+                  <div class="d-flex justify-content-between align-items-start mb-1">
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="badge" :class="badgeClaseAccion(h.tipo_accion)">
+                        {{ labelTipoAccion(h.tipo_accion) }}
+                      </span>
+                      <strong class="small text-body">{{ h.usuario_nombre || 'Admin' }}</strong>
+                    </div>
+                    <small class="text-secondary">{{ formatearFecha(h.created_at) }}</small>
+                  </div>
+
+                  <p class="small text-body mb-1" style="line-height: 1.5;">
+                    {{ h.detalle }}
+                  </p>
+
+                  <div v-if="h.estado_anterior || h.estado_nuevo" class="d-flex align-items-center gap-1 mt-1">
+                    <small class="text-secondary" style="font-size: 11px;">Transición:</small>
+                    <span v-if="h.estado_anterior" class="badge badge-subtle-slate" style="font-size: 10px;">
+                      {{ labelEstado(h.estado_anterior) }}
+                    </span>
+                    <span class="text-secondary" style="font-size: 10px;">➔</span>
+                    <span v-if="h.estado_nuevo" class="badge" :class="badgeClaseEstado(h.estado_nuevo)" style="font-size: 10px;">
+                      {{ labelEstado(h.estado_nuevo) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div v-else class="text-center py-4 text-secondary">
+                No hay registros de historial previos para esta cotización.
+              </div>
+            </div>
           </div>
 
           <!-- FOOTER DEL MODAL -->
           <div class="modal-footer border-top border-secondary border-opacity-25 d-flex justify-content-between">
             <div>
               <button
-                v-if="pestanaModal === 'responder'"
+                v-if="pestanaModal !== 'detalle'"
                 type="button"
                 class="btn btn-outline-secondary btn-sm me-2"
                 @click="pestanaModal = 'detalle'"
@@ -786,15 +961,15 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
               <button
                 v-if="pestanaModal === 'detalle'"
                 type="button"
-                class="btn btn-orion"
+                class="btn btn-outline-primary"
                 @click="pestanaModal = 'responder'"
               >
                 ✉ Redactar Respuesta
               </button>
               <button
-                v-else
+                v-else-if="pestanaModal === 'responder'"
                 type="button"
-                class="btn btn-orion"
+                class="btn btn-primary"
                 :disabled="enviandoRespuesta"
                 @click="enviarRespuesta"
               >
@@ -813,6 +988,42 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
 .admin-mensajes-container {
   animation: fadeIn 0.3s ease-in-out;
 }
+
+/* Colores sutiles y no neón para badges en modo oscuro */
+.badge-subtle-amber {
+  background-color: rgba(217, 119, 6, 0.18);
+  color: #fde68a;
+  border: 1px solid rgba(217, 119, 6, 0.35);
+}
+
+.badge-subtle-sky {
+  background-color: rgba(56, 189, 248, 0.15);
+  color: #bae6fd;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.badge-subtle-indigo {
+  background-color: rgba(99, 102, 241, 0.18);
+  color: #c7d2fe;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+}
+
+.badge-subtle-emerald {
+  background-color: rgba(16, 185, 129, 0.18);
+  color: #a7f3d0;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.badge-subtle-slate {
+  background-color: rgba(100, 116, 139, 0.2);
+  color: #cbd5e1;
+  border: 1px solid rgba(100, 116, 139, 0.35);
+}
+
+.active-tab-border {
+  border-color: #d06c26 !important;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

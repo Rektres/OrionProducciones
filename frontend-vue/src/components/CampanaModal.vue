@@ -22,6 +22,7 @@ const modoCotizar = ref(false);
 const loading = ref(false);
 const exito = ref(false);
 const errorGeneral = ref('');
+const escalaZoom = ref(1);
 
 const form = reactive({
   nombre: '',
@@ -38,6 +39,7 @@ const abrir = (c: CampanaData, cotizarDirecto = false) => {
   exito.value = false;
   errorGeneral.value = '';
   errores.value = {};
+  escalaZoom.value = 1;
   form.nombre = '';
   form.email = '';
   form.telefono = '';
@@ -49,7 +51,25 @@ const cerrar = () => {
   abierto.value = false;
   modoCotizar.value = false;
   campana.value = null;
+  escalaZoom.value = 1;
 };
+
+const toggleZoom = () => {
+  escalaZoom.value = escalaZoom.value > 1 ? 1 : 2;
+};
+
+const zoomIn = () => {
+  if (escalaZoom.value < 3) escalaZoom.value += 0.5;
+};
+
+const zoomOut = () => {
+  if (escalaZoom.value > 1) escalaZoom.value -= 0.5;
+};
+
+const resetZoom = () => {
+  escalaZoom.value = 1;
+};
+
 
 // Formateador dinámico de teléfono
 const onTelefonoInput = (e: Event) => {
@@ -178,18 +198,61 @@ defineExpose({ abrir, cerrar });
 
         <!-- MODAL BODY: VISTA POSTER ORGANICO -->
         <div v-if="!modoCotizar" class="modal-body px-4 py-3">
-          <div class="campana-poster-full-wrap mb-3">
-            <img
-              :src="campana.poster"
-              :alt="campana.titulo"
-              class="campana-poster-highres"
-              loading="eager"
-            />
+          <div class="campana-poster-full-wrap position-relative mb-3">
+            <!-- Barra flotante de controles de zoom -->
+            <div class="campana-zoom-toolbar d-flex align-items-center gap-1">
+              <button
+                type="button"
+                class="btn btn-dark btn-sm py-0 px-2"
+                title="Alejar imagen"
+                :disabled="escalaZoom <= 1"
+                @click.stop="zoomOut"
+              >
+                🔍 -
+              </button>
+              <span class="badge bg-dark bg-opacity-75 py-1 px-2 font-monospace" style="font-size: 11px;">
+                {{ Math.round(escalaZoom * 100) }}%
+              </span>
+              <button
+                type="button"
+                class="btn btn-dark btn-sm py-0 px-2"
+                title="Acercar imagen"
+                :disabled="escalaZoom >= 3"
+                @click.stop="zoomIn"
+              >
+                🔍 +
+              </button>
+              <button
+                v-if="escalaZoom > 1"
+                type="button"
+                class="btn btn-outline-warning btn-sm py-0 px-2 ms-1"
+                title="Restablecer tamaño original"
+                @click.stop="resetZoom"
+              >
+                ↺ Original
+              </button>
+            </div>
+
+            <div class="campana-zoom-viewport" :class="{ 'is-zoomed': escalaZoom > 1 }">
+              <img
+                :src="campana.poster"
+                :alt="campana.titulo"
+                class="campana-poster-highres"
+                :style="{
+                  transform: `scale(${escalaZoom})`,
+                  cursor: escalaZoom > 1 ? 'zoom-out' : 'zoom-in',
+                  transformOrigin: 'top center'
+                }"
+                loading="eager"
+                @click="toggleZoom"
+              />
+            </div>
           </div>
           <p class="text-secondary mb-3 campana-modal-desc">
             {{ campana.descripcion }}
           </p>
         </div>
+
 
         <!-- MODAL BODY: VISTA FORMULARIO RAPIDO DE COTIZACION -->
         <div v-else class="modal-body px-4 py-3">
@@ -344,13 +407,38 @@ defineExpose({ abrir, cerrar });
 .campana-poster-full-wrap {
   width: 100%;
   max-height: 72vh;
-  overflow: auto;
+  position: relative;
   border-radius: 16px;
   background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--card-border);
+  overflow: hidden;
+}
+
+.campana-zoom-toolbar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(6px);
+  padding: 4px 8px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.campana-zoom-viewport {
+  width: 100%;
+  max-height: 72vh;
+  overflow: auto;
   display: flex;
   justify-content: center;
-  align-items: center;
-  border: 1px solid var(--card-border);
+  align-items: flex-start;
+  padding: 8px;
+}
+
+.campana-zoom-viewport.is-zoomed {
+  display: block;
 }
 
 .campana-poster-highres {
@@ -360,7 +448,9 @@ defineExpose({ abrir, cerrar });
   object-fit: contain;
   display: block;
   border-radius: 12px;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+
 
 .campana-modal-desc {
   font-size: 15px;
