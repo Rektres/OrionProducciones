@@ -433,7 +433,7 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
           <button
             type="button"
             class="btn btn-sm"
-            :class="filtroEstado === 'todos' ? 'btn-secondary' : 'btn-outline-secondary'"
+            :class="filtroEstado === 'todos' ? 'btn-secondary fw-bold text-white' : 'btn-outline-secondary'"
             @click="filtroEstado = 'todos'"
           >
             Todos
@@ -441,26 +441,34 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
           <button
             type="button"
             class="btn btn-sm"
-            :class="filtroEstado === 'nuevo' ? 'badge-subtle-amber fw-bold' : 'btn-outline-secondary'"
+            :class="filtroEstado === 'nuevo' ? 'badge-estado-nuevo fw-bold text-white shadow-sm' : 'btn-outline-secondary'"
             @click="filtroEstado = 'nuevo'"
           >
-            Nuevos ({{ totalNuevos }})
+            ● Nuevos ({{ totalNuevos }})
           </button>
           <button
             type="button"
             class="btn btn-sm"
-            :class="filtroEstado === 'en_contacto' ? 'badge-subtle-sky fw-bold' : 'btn-outline-secondary'"
+            :class="filtroEstado === 'en_contacto' ? 'badge-estado-contacto fw-bold text-white shadow-sm' : 'btn-outline-secondary'"
             @click="filtroEstado = 'en_contacto'"
           >
-            En contacto
+            En contacto ({{ totalEnContacto }})
           </button>
           <button
             type="button"
             class="btn btn-sm"
-            :class="filtroEstado === 'cotizado' ? 'badge-subtle-indigo fw-bold' : 'btn-outline-secondary'"
+            :class="filtroEstado === 'cotizado' ? 'badge-estado-cotizado fw-bold text-white shadow-sm' : 'btn-outline-secondary'"
             @click="filtroEstado = 'cotizado'"
           >
-            Cotizados
+            Cotizados ({{ totalCotizados }})
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm"
+            :class="filtroEstado === 'cerrado' ? 'badge-estado-cerrado fw-bold text-white shadow-sm' : 'btn-outline-secondary'"
+            @click="filtroEstado = 'cerrado'"
+          >
+            ✓ Cerrados ({{ totalCerrados }})
           </button>
         </div>
 
@@ -989,39 +997,9 @@ const obtenerLinkWhatsapp = (c: Cotizacion) => {
   animation: fadeIn 0.3s ease-in-out;
 }
 
-/* Colores sutiles y no neón para badges en modo oscuro */
-.badge-subtle-amber {
-  background-color: rgba(217, 119, 6, 0.18);
-  color: #fde68a;
-  border: 1px solid rgba(217, 119, 6, 0.35);
-}
-
-.badge-subtle-sky {
-  background-color: rgba(56, 189, 248, 0.15);
-  color: #bae6fd;
-  border: 1px solid rgba(56, 189, 248, 0.35);
-}
-
-.badge-subtle-indigo {
-  background-color: rgba(99, 102, 241, 0.18);
-  color: #c7d2fe;
-  border: 1px solid rgba(99, 102, 241, 0.35);
-}
-
-.badge-subtle-emerald {
-  background-color: rgba(16, 185, 129, 0.18);
-  color: #a7f3d0;
-  border: 1px solid rgba(16, 185, 129, 0.35);
-}
-
-.badge-subtle-slate {
-  background-color: rgba(100, 116, 139, 0.2);
-  color: #cbd5e1;
-  border: 1px solid rgba(100, 116, 139, 0.35);
-}
-
 .active-tab-border {
   border-color: #d06c26 !important;
+  background: rgba(208, 108, 38, 0.08);
 }
 
 @keyframes fadeIn {

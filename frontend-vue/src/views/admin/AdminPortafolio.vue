@@ -381,10 +381,10 @@ const eliminarTipo = async (t: EventoTipo) => {
           <h6 class="card-title mb-1">{{ ev.nombre }}</h6>
           <div class="small text-secondary mb-2">{{ ev.cliente }} · {{ ev.fecha_realizacion }}</div>
           <div class="d-flex gap-1 flex-wrap">
-            <span class="admin-badge-estado" :class="ev.publicado ? 'text-success' : 'text-secondary'">
-              {{ ev.publicado ? 'Visible' : 'Oculto' }}
+            <span class="badge" :class="ev.publicado ? 'badge-estado-visible' : 'badge-estado-oculto'">
+              {{ ev.publicado ? '● Visible' : 'Oculto' }}
             </span>
-            <span v-if="ev.destacado" class="admin-badge-estado text-orion-primary">Destacado</span>
+            <span v-if="ev.destacado" class="badge badge-estado-destacado">★ Destacado</span>
           </div>
         </div>
         <div class="card-footer bg-transparent d-flex justify-content-between">
@@ -435,17 +435,17 @@ const eliminarTipo = async (t: EventoTipo) => {
               <small class="text-secondary">{{ ev.fecha_realizacion }}</small>
             </td>
             <td>
-              <span class="badge bg-secondary bg-opacity-25 text-body text-uppercase" style="font-size: 10px;">
+              <span class="badge badge-categoria text-uppercase" style="font-size: 10px;">
                 {{ ev.tipo_slug || 'Sin tipo' }}
               </span>
             </td>
             <td>
-              <span v-if="ev.destacado" class="badge bg-primary bg-opacity-25 text-primary">★ Sí</span>
+              <span v-if="ev.destacado" class="badge badge-estado-destacado">★ Sí</span>
               <span v-else class="text-secondary small">No</span>
             </td>
             <td>
-              <span class="badge" :class="ev.publicado ? 'bg-success bg-opacity-25 text-success' : 'bg-secondary bg-opacity-25 text-secondary'">
-                {{ ev.publicado ? 'Visible' : 'Oculto' }}
+              <span class="badge" :class="ev.publicado ? 'badge-estado-visible' : 'badge-estado-oculto'">
+                {{ ev.publicado ? '● Visible' : 'Oculto' }}
               </span>
             </td>
             <td class="text-end">

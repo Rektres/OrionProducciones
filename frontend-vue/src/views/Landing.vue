@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, nextTick, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, nextTick, watch } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 import ContactForm from '@/components/ContactForm.vue';
 import ServicioModal from '@/components/ServicioModal.vue';
@@ -29,6 +29,23 @@ const cargando = ref(true);
 const filtroCategoria = ref<string>('todos');
 
 const heroCoverIndex = ref(0);
+let heroAutoplayTimer: ReturnType<typeof setInterval> | null = null;
+
+const startHeroAutoplay = () => {
+  stopHeroAutoplay();
+  if (eventosDestacados.value.length <= 1) return;
+  heroAutoplayTimer = setInterval(() => {
+    nextHeroCover();
+  }, 4800);
+};
+
+const stopHeroAutoplay = () => {
+  if (heroAutoplayTimer) {
+    clearInterval(heroAutoplayTimer);
+    heroAutoplayTimer = null;
+  }
+};
+
 const prevHeroCover = () => {
   if (eventosDestacados.value.length <= 1) return;
   if (heroCoverIndex.value > 0) {
@@ -48,6 +65,7 @@ const nextHeroCover = () => {
 const goToHeroCover = (idx: number) => {
   heroCoverIndex.value = idx;
 };
+
 
 // Touch swipe support para el Cover Flow de eventos del Hero
 let heroTouchStartX = 0;
@@ -301,6 +319,7 @@ onMounted(async () => {
     ]);
     servicios.value = todosServicios;
     eventosDestacados.value = todosEventos.filter((e) => e.destacado).slice(0, 4);
+    startHeroAutoplay();
 
     const pool: FotoGaleria[] = [];
     for (const ev of todosEventos) {
@@ -322,6 +341,11 @@ onMounted(async () => {
     });
   }
 });
+
+onUnmounted(() => {
+  stopHeroAutoplay();
+});
+
 
 const route = useRoute();
 
@@ -389,8 +413,13 @@ watch(() => route.hash, () => {
 
         <div class="col-lg-5 d-flex justify-content-center justify-content-lg-end hero-coverflow-col">
           <FadeInUp :delay="0.3" class="w-100">
-            <!-- 3D COVER FLOW DE EVENTOS EN EL HERO -->
-            <div v-if="eventosDestacados.length" class="coverflow-container hero-coverflow">
+            <!-- 3D COVER FLOW DE EVENTOS EN EL HERO (AUTOPLAY SUAVE) -->
+            <div
+              v-if="eventosDestacados.length"
+              class="coverflow-container hero-coverflow"
+              @mouseenter="stopHeroAutoplay"
+              @mouseleave="startHeroAutoplay"
+            >
               <!-- Botón Anterior -->
               <button
                 type="button"
@@ -436,9 +465,10 @@ watch(() => route.hash, () => {
                       />
                       <div class="stage-card__overlay-bottom">
                         <span class="stage-card__tag-pill">{{ ev.tipo_slug || 'PRODUCCIÓN ESCÉNICA' }}</span>
-                        <h3 class="stage-card__overlay-title">{{ ev.nombre }}</h3>
+                        <h3 class="stage-card__overlay-title text-white">{{ ev.nombre }}</h3>
                       </div>
                     </div>
+
 
                     <!-- Pie con botón -->
                     <div class="stage-card__footer">
@@ -723,7 +753,7 @@ watch(() => route.hash, () => {
               />
               <div class="stage-card__overlay-bottom">
                 <span class="stage-card__tag-pill">{{ svc.categoria_slug || 'PRODUCCIÓN TÉCNICA' }}</span>
-                <h3 class="stage-card__overlay-title">{{ svc.nombre }}</h3>
+                <h3 class="stage-card__overlay-title text-white">{{ svc.nombre }}</h3>
               </div>
             </div>
 

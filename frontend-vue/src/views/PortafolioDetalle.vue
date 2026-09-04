@@ -45,11 +45,11 @@ onMounted(async () => {
       <img v-if="evento.imagen_url" :src="evento.imagen_url"
         :alt="`${evento.nombre} — evento producido por Orion en ${evento.lugar}`"
         class="img-cover position-absolute top-0 start-0" fetchpriority="high" decoding="async" />
-      <div class="container p-4 position-relative w-100" style="background: linear-gradient(0deg, rgba(3, 8, 28, 0.92) 0%, rgba(3, 8, 28, 0.5) 60%, transparent 100%)">
-        <span class="badge mb-2 d-inline-block" style="background: rgba(19, 214, 234, 0.25); color: #13d6ea; border: 1px solid rgba(19, 214, 234, 0.6); font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">
+      <div class="container p-4 position-relative w-100" style="background: linear-gradient(0deg, rgba(2, 6, 23, 0.95) 0%, rgba(2, 6, 23, 0.6) 60%, transparent 100%)">
+        <span class="badge badge-estado-contacto text-white mb-2 d-inline-block" style="font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">
           {{ evento.tipo_slug }}
         </span>
-        <h1 class="text-white fw-bold mb-0">{{ evento.nombre }}</h1>
+        <h1 class="text-white fw-bold mb-0" style="text-shadow: 0 2px 10px rgba(0,0,0,0.9);">{{ evento.nombre }}</h1>
       </div>
     </div>
 

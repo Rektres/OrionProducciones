@@ -288,8 +288,8 @@ const eliminarCategoria = async (c: CategoriaServicio) => {
         <div class="card-body">
           <h6 class="card-title mb-1">{{ s.nombre }}</h6>
           <div class="small text-secondary mb-2">{{ s.categoria_slug || 'sin categoría' }}</div>
-          <span class="admin-badge-estado" :class="s.activo ? 'text-success' : 'text-secondary'">
-            {{ s.activo ? 'Visible' : 'Oculto' }}
+          <span class="badge" :class="s.activo ? 'badge-estado-visible' : 'badge-estado-oculto'">
+            {{ s.activo ? '● Visible' : 'Oculto' }}
           </span>
         </div>
         <div class="card-footer bg-transparent d-flex justify-content-between">
@@ -326,7 +326,7 @@ const eliminarCategoria = async (c: CategoriaServicio) => {
                 class="rounded"
                 style="width: 44px; height: 44px; object-fit: cover;"
               />
-              <div v-else class="rounded bg-secondary bg-opacity-25 d-flex align-items-center justify-content-center text-secondary small" style="width: 44px; height: 44px;">
+              <div v-else class="bg-secondary bg-opacity-25 rounded d-flex align-items-center justify-content-center text-secondary small" style="width: 44px; height: 44px;">
                 -
               </div>
             </td>
@@ -335,14 +335,14 @@ const eliminarCategoria = async (c: CategoriaServicio) => {
               <small class="text-secondary text-truncate d-block" style="max-width: 320px;">{{ s.descripcion_corta }}</small>
             </td>
             <td>
-              <span class="badge bg-secondary bg-opacity-25 text-body text-uppercase" style="font-size: 10px;">
+              <span class="badge badge-categoria text-uppercase" style="font-size: 10px;">
                 {{ s.categoria_slug || 'Sin categoría' }}
               </span>
             </td>
             <td>{{ s.orden }}</td>
             <td>
-              <span class="badge" :class="s.activo ? 'bg-success bg-opacity-25 text-success' : 'bg-secondary bg-opacity-25 text-secondary'">
-                {{ s.activo ? 'Visible' : 'Oculto' }}
+              <span class="badge" :class="s.activo ? 'badge-estado-visible' : 'badge-estado-oculto'">
+                {{ s.activo ? '● Visible' : 'Oculto' }}
               </span>
             </td>
             <td class="text-end">

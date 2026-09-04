@@ -100,7 +100,7 @@ onMounted(async () => {
                 />
                 <div class="stage-card__overlay-bottom">
                   <span class="stage-card__tag-pill">{{ ev.tipo_slug || 'PRODUCCIÓN ESCÉNICA' }}</span>
-                  <h3 class="stage-card__overlay-title">{{ ev.nombre }}</h3>
+                  <h3 class="stage-card__overlay-title text-white">{{ ev.nombre }}</h3>
                 </div>
               </div>
 
